@@ -1,8 +1,8 @@
+import NoPage from "@/components/NoPage"
+
 const Legal = () => {
     return(
-        <section>
-            <h1>Legal</h1>
-        </section>
+        <NoPage/>
     )
 }
 
