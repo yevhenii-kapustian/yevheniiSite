@@ -1,16 +1,11 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Open_Sans } from "next/font/google";
+import { Open_Sans } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const openSans = Open_Sans({
-  weight: "600",
-  subsets: ["latin"]
-});
-
-const babes = Bebas_Neue({
-  weight: "400",
+  weight: ["400","500","600","700","800"],
   subsets: ["latin"]
 });
 

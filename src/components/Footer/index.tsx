@@ -16,9 +16,9 @@ const Footer = () => {
             <div className="flex flex-col gap-4">
                 <p className="text-white font-thin">© 2024 Copyright. Yevhenii. All rights reserved.</p>
                 <div className="text-center">
-                    <a className="text-white" href="/terms-conditions">Terms and conditions</a>
+                    <a className="text-white" href="/legal/terms-conditions">Terms and conditions</a>
                     <span className="text-white">|</span>
-                    <a className="text-white" href="/privacy">Privacy policy</a>
+                    <a className="text-white" href="/legal/privacy">Privacy policy</a>
                 </div>
             </div>
         </footer>
