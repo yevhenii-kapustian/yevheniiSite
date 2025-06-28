@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { navigation, Navigation } from "@/data/navigation";
 import Logo from "../Logo";
 import { desktopStyles, burgerMenuStyles, mobileStyles } from "./styles";
-import { List, X } from "@phosphor-icons/react";
 
 const ScrollY = 300;
 
@@ -34,20 +33,17 @@ const Header = () => {
             document.removeEventListener('scroll', handleScroll);
           };
     }, [])
-
-    console.log(isScrolled);
     
-    const headerStyles = ():string => {
-        const basicStyles = "w-full fixed flex justify-around items-center z-10 duration-300 ease-in-out"
+    const navigationStyles = ():string => {
         const isHomeStyles = isHome ? "" : "bg-black"
         const isScrolledStyles = isScrolled ? "bg-black" : ""
 
-        return `${basicStyles} ${isHomeStyles} ${isScrolledStyles}`
+        return `${isHomeStyles} ${isScrolledStyles}`
     }
 
     return(
-        <header className={headerStyles()}>
-            <div>
+        <header className={`${navigationStyles()} w-full fixed flex justify-around items-center z-10 duration-300 ease-in-out`}>
+            <div className="w-20">
                 <Logo/>
             </div>
 
@@ -56,21 +52,27 @@ const Header = () => {
                     {navigation.map((item:Navigation) => <Link key={item.name} href={item.path}>{item.name.toUpperCase()}</Link>)}
                 </div>
 
-                <div className={burgerMenuStyles}>
-                    <button onClick={toggleMobileMenu}>
-                        {!mobileOpen ? <List className="cursor-pointer" size={32} color="white"/> : <X className="cursor-pointer" size={32} color="white"/>}
+                 <div className={burgerMenuStyles}>
+                    <button onClick={toggleMobileMenu} className="w-[35px] h-[35px]">
+                        <div className="grid flex-col justify-items-center gap-1.5">
+                            <span className={`h-[3px] w-8 rounded-full bg-white duration-300 ease-in-out ${mobileOpen ? 'rotate-45 translate-y-2.5' : ''}`}/>
+                            <span className={`h-[3px] w-8 rounded-full bg-white duration-300 ease-in ${mobileOpen ? 'scale-x-0' : ''}`}/>
+                            <span className={`h-[3px] w-8 rounded-full bg-white duration-300 ease-in-out ${mobileOpen ? '-rotate-45 -translate-y-2' : ""}`}/>
+                        </div>
                     </button>
                 </div>
-
-                {mobileOpen && 
-                    <ul className={mobileStyles}>
-                        {navigation.map((item:Navigation) => (
-                            <li key={item.name}>
-                                <Link onClick={() => setMobileOpen(false)} href={item.path}>{item.name.toUpperCase()}</Link>
-                            </li>)
-                        )}
-                    </ul>
-                }
+ 
+                <ul className={`${mobileStyles}
+                                ${navigationStyles()} 
+                                duration-300 ease-in-out
+                                ${!mobileOpen ? "opacity-0" : "opacity-100"}
+                                `}>
+                    {navigation.map((item:Navigation) => (
+                        <li key={item.name}>
+                            <Link onClick={() => setMobileOpen(false)} href={item.path}>{item.name.toUpperCase()}</Link>
+                        </li>)
+                    )}
+                </ul>
             </nav>
         </header>
     )

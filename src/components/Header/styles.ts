@@ -9,14 +9,20 @@ export const desktopStyles = clsx(
 
 export const burgerMenuStyles = clsx(
     "hidden",
-    "max-sm:block"
+    "max-sm:flex"
 )
 
 export const mobileStyles = clsx(
+    "w-full",
+    "p-4",
+    "absolute",
+    "top-[80px]",
+    "left-0",
     "hidden",
+    "max-sm:flex",
     "flex-col",
     "gap-4",
     "text-center",
     "text-white",
-    "max-sm:flex"
+    "transition-all"
 )

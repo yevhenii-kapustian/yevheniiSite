@@ -9,10 +9,6 @@ const Logo = () => {
                             width={1000}  
                             height={1000} 
                             priority 
-                            style={{
-                                width: "100px",
-                                height: "auto"
-                            }}
                     />
         </a>
     )
