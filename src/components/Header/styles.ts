@@ -18,7 +18,6 @@ export const mobileStyles = clsx(
     "absolute",
     "top-[80px]",
     "left-0",
-    "hidden",
     "max-sm:flex",
     "flex-col",
     "gap-4",

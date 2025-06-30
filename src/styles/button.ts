@@ -2,10 +2,9 @@ import { clsx } from "clsx";
 
 export const basicButtonStyles = clsx(
     "w-max",
-    "mx-auto my-0",
-    "border-2 border-black",
-    "py-4 px-10",
+    "border-2",
+    "py-4 px-10 max-sm:py-4 max-sm:px-7",
     "rounded-xl",
     "duration-200 ease-in",
-    "hover:bg-black hover:border-white hover:text-white"
+    "cursor-pointer"
 )

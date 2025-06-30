@@ -65,7 +65,7 @@ const Header = () => {
                 <ul className={`${mobileStyles}
                                 ${navigationStyles()} 
                                 duration-300 ease-in-out
-                                ${!mobileOpen ? "opacity-0" : "opacity-100"}
+                                ${mobileOpen ? "opacity-100 visible" : "opacity-0 invisible"}
                                 `}>
                     {navigation.map((item:Navigation) => (
                         <li key={item.name}>

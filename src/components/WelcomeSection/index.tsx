@@ -1,12 +1,44 @@
 import Image from "next/image"
 
-import { ImageStyles } from "./styles"
+import { imageStyles, bgGradient, mainSectionStyles, textMainStyles } from "./styles"
+import { basicButtonStyles } from "@/styles/button"
+import { babes } from "@/app/fonts"
 
-const WelcomeSection = () => {
+type WelcomeSectionProps = {
+    title: any,
+    description: string
+}
+
+const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
     return(
-        <section>
-            <div className="relative flex justify-center w-full">
-                <Image className={`${ImageStyles}`} src="/welcomeSection.jpg" alt="" width={2000} height={2000} priority/>
+        <section className={`${mainSectionStyles}`}>
+            <div>
+                <Image className={`${imageStyles}`} src="/welcomeSection.jpg" alt="welcome image" fill priority/>
+                <span className={`${bgGradient}`}/>
+            </div>
+
+            <div className={`${textMainStyles}`}>
+                <h1 className={`${babes.className} text-7xl font-extrabold text-white max-[1025px]:text-6xl max-sm:text-[47px]`}>{title}</h1>
+                <h2 className="text-l text-white max-[1025px]:text-[14px] w-[70%] max-[1200px]:w-full ">{description}</h2>
+                <div className="flex gap-5">
+                    <button className={`${basicButtonStyles} 
+                                            bg-white 
+                                            border-transparent
+                                            hover:text-white 
+                                            hover:bg-transparent 
+                                            hover:border-white
+                                        `}>
+                            Get started
+                    </button>
+                    <button className={`${basicButtonStyles} 
+                                            text-white 
+                                            border-white 
+                                            hover:bg-white 
+                                            hover:text-black
+                                        `}>
+                            My account
+                    </button>
+                </div>
             </div>
         </section>
     )

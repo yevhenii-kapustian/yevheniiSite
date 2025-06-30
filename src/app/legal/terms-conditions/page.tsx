@@ -4,7 +4,7 @@ import { basicButtonStyles } from "@/styles/button"
 
 const TermsConditions = () => {
     return(
-        <section className={`p-16 ${flexColStyles}`}>
+        <section className={`pt-25 px-6 pb-6 ${flexColStyles}`}>
             <h1 className={`text-5xl text-center ${babes.className}`}>Terms and conditions</h1>
             <div className={`${flexColStyles}`}>
                 <div>
@@ -32,7 +32,7 @@ const TermsConditions = () => {
                     </p>
                 </div>
             </div>
-            <a className={`${basicButtonStyles}`} href="/">Back to home</a>
+            <a className={`${basicButtonStyles} border-black hover:bg-black hover:border-white hover:text-white mx-auto my-0`} href="/">Back to home</a>
         </section>
     )
 }
