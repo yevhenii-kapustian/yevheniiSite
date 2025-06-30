@@ -18,8 +18,8 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
             </div>
 
             <div className={`${textMainStyles}`}>
-                <h1 className={`${babes.className} text-7xl font-extrabold text-white max-[1025px]:text-6xl max-sm:text-[47px]`}>{title}</h1>
-                <h2 className="text-l text-white max-[1025px]:text-[14px] w-[70%] max-[1200px]:w-full ">{description}</h2>
+                <h1 className={`${babes.className} text-7xl font-extrabold text-shadow-[0px_0px_12px_#00000070] text-white max-[1025px]:text-6xl max-sm:text-[47px]`}>{title}</h1>
+                <h2 className="text-l text-shadow-[0px_0px_12px_#00000070] text-white max-[1025px]:text-[14px] w-[70%] max-[1200px]:w-full ">{description}</h2>
                 <div className="flex gap-5">
                     <button className={`${basicButtonStyles} 
                                             bg-white 
@@ -28,7 +28,7 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                                             hover:bg-transparent 
                                             hover:border-white
                                         `}>
-                            Get started
+                            Get Started
                     </button>
                     <button className={`${basicButtonStyles} 
                                             text-white 
@@ -36,7 +36,7 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                                             hover:bg-white 
                                             hover:text-black
                                         `}>
-                            My account
+                            My Account
                     </button>
                 </div>
             </div>

@@ -8,7 +8,10 @@ export const mainSectionStyles = clsx(
 
 export const imageStyles = clsx(
     "w-full h-full",
-    "object-cover"
+    "object-cover",
+    "object-[0_25%]",
+
+    "max-[1025px]:object-[70%_25%] max-sm:object-[75%_25%]"
 )
 
 export const bgGradient = clsx(
@@ -17,12 +20,12 @@ export const bgGradient = clsx(
 )
 
 export const textMainStyles = clsx(
-    "pt-10",
     "w-full h-full",
     "max-w-[45%]",
     "relative left-[10vw]",
     "flex flex-col justify-center items-start gap-5",
 
+    "max-sm:pt-10",
     "max-[1025px]:max-w-[55%]",
     "max-[821px]:max-w-[60%]",
     "max-sm:max-w-[100%] max-sm:left-0 max-sm:px-5"
