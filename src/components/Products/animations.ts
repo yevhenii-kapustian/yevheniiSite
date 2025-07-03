@@ -1,13 +1,13 @@
-import { animate, MotionValue, useMotionValue, useMotionValueEvent } from "framer-motion";
-
-const left = `0%`
-const right = `100%`
-const leftInset = `20%`
-const rightInset = `80%`
-const transparent = `#0000`
-const opaque = `#000`
+import { animate, easeIn, MotionValue, useMotionValue, useMotionValueEvent } from "framer-motion";
 
 export function useProductsMask(scrollXProgress: MotionValue<number>) {
+    const left = `0%`
+    const right = `100%`
+    const leftInset = `20%`
+    const rightInset = `80%`
+    const transparent = `#0000`
+    const opaque = `#000`
+
      const maskImage = useMotionValue(
         `linear-gradient(90deg, ${opaque}, ${opaque} ${left}, ${opaque} ${rightInset}, ${transparent})`
     )
@@ -35,4 +35,25 @@ export function useProductsMask(scrollXProgress: MotionValue<number>) {
     })
 
     return maskImage
+}
+
+export const productVisibility = {
+    visible: (i: number) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            delay: i * 0.1,
+            easeIn
+        }
+    }),
+    hidden: {
+        y: -200,
+        opacity: 0, 
+    },
+    hover: {
+        scale: 1.05
+    },
+    tap: {
+        scale: 0.9
+    }
 }

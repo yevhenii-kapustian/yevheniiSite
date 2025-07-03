@@ -4,13 +4,14 @@ import Image from "next/image";
 import { products } from "@/data/products"
 import { useProducts } from "@/context/ProductsContext";
 import { ProductsType } from "@/types/products";
-import { motion, useScroll} from 'framer-motion'
+import { motion, useInView, useScroll} from 'framer-motion'
 import { useRef } from "react"
-import { useProductsMask } from "@/utils/productsMask";
+import { useProductsMask } from "./animations";
 import { productsContainerStyles,
          productsWrapperStyles,
          textItemsWrapperStyles, 
          buttonStyles } from "./styles";
+import { productVisibility } from "./animations";
 
 type ProductsPropsType = {
     showName?: boolean,
@@ -32,6 +33,8 @@ const Products = ({showName = true,
     const ref = useRef(null)
     const { scrollXProgress } = useScroll({ container: ref })
     const maskImage = useProductsMask(scrollXProgress)
+    const isInView = useInView(ref)
+
         
     console.log(savedProducts);
 
@@ -39,7 +42,15 @@ const Products = ({showName = true,
         <>
         <motion.ul ref={ref} style={{maskImage}} className={productsContainerStyles}>
             {getProducts?.map((item:ProductsType, index:number) => (
-                <li className={productsWrapperStyles} key={index}>
+                <motion.li
+                        className={productsWrapperStyles} 
+                        variants={productVisibility}
+                        initial='hidden'
+                        animate={isInView ? "visible" : "hidden"}
+                        whileHover='hover'
+                        whileTap='tap'
+                        custom={index}
+                        key={index}>
                     <Image className="rounded-xl" src={item.image} alt={item.name} width={1000} height={1000} priority/>
                     <div className={textItemsWrapperStyles}>
                         {showName && <h4 className="text-xl font-bold uppercase">{item.name}</h4> }
@@ -48,7 +59,7 @@ const Products = ({showName = true,
                         {showBuy && <button className={buttonStyles} onClick={() => handleSave(item)}>Buy Now</button> }
                         {showLernMore && <a className={buttonStyles} href="#">Learn More</a> }
                     </div>
-                </li>
+                </motion.li>
             ))}
         </motion.ul>
         </>

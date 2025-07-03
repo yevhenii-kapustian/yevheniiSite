@@ -1,8 +1,18 @@
-import Image from "next/image"
+'use client'
 
-import { imageStyles, bgGradient, mainSectionStyles, textMainStyles } from "./styles"
-import { basicButtonStyles } from "@/styles/button"
+import Image from "next/image"
+import { motion } from 'framer-motion'
 import { babes } from "@/app/fonts"
+import { imageStyles, 
+         bgGradient, 
+         welcomeContainerStyles, 
+         textContainerStyles, 
+         titleStyles, 
+         descriptionStyles,
+         buttonStartStyles, 
+         buttonAccountStyles} from "./styles"
+import { basicButtonStyles } from "@/styles/button"
+import { titleVariants } from "./animation"
 
 type WelcomeSectionProps = {
     title: any,
@@ -11,30 +21,26 @@ type WelcomeSectionProps = {
 
 const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
     return(
-        <section className={`${mainSectionStyles}`}>
+        <section className={`${welcomeContainerStyles}`}>
             <div className="relative h-full">
                 <Image className={`${imageStyles}`} src="/welcomeSection.jpg" alt="welcome image" fill priority/>
                 <span className={`${bgGradient}`}/>
                 
-                <div className={`${textMainStyles}`}>
-                    <h1 className={`${babes.className} text-7xl font-extrabold text-shadow-[0px_0px_12px_#00000070] text-white max-[1025px]:text-6xl max-sm:text-[47px]`}>{title}</h1>
-                    <h2 className="text-l text-shadow-[0px_0px_12px_#00000070] text-white max-[1025px]:text-[14px] w-[70%] max-[1200px]:w-full ">{description}</h2>
+                <div className={`${textContainerStyles}`}>
+                    <motion.h1
+                        initial={'hidden'}
+                        animate={'visible'}
+                        transition={{
+                            delay: 0.1,
+                        }}
+                        variants={titleVariants}
+                        className={`${babes.className} ${titleStyles}`}>{title}</motion.h1>
+                    <h2 className={descriptionStyles}>{description}</h2>
                     <div className="flex gap-5">
-                        <button className={`${basicButtonStyles} 
-                                                bg-white 
-                                                border-transparent
-                                                hover:text-white 
-                                                hover:bg-transparent 
-                                                hover:border-white
-                                            `}>
+                        <button className={`${basicButtonStyles} ${buttonStartStyles}`}>
                                 Get Started
                         </button>
-                        <button className={`${basicButtonStyles} 
-                                                text-white 
-                                                border-white 
-                                                hover:bg-white 
-                                                hover:text-black
-                                            `}>
+                        <button className={`${basicButtonStyles} ${buttonAccountStyles}`}>
                                 My Account
                         </button>
                     </div>
