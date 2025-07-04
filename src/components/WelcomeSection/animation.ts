@@ -11,7 +11,7 @@ export const titleVariant = {
 
 export const descriptionVariant= {
     hidden: {
-        x: 100,
+        x: -100,
         opacity: 0,
     },
     visible: {
