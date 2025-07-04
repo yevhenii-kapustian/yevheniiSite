@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
 export default function LayoutWrapperMotion ({children}: {children:ReactNode }) {

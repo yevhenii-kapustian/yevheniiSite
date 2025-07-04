@@ -1,4 +1,4 @@
-import { clsx } from "clsx";
+import clsx from "clsx";
 
 export const wellnessContainerStyles = clsx(
     "py-10 px-20",
