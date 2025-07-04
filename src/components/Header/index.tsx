@@ -8,7 +8,7 @@ import { navigation, Navigation } from "@/data/navigation";
 import Logo from "../Logo";
 import { desktopStyles, burgerMenuStyles, mobileStyles } from "./styles";
 
-const ScrollY:number = 300;
+const ScrollY:number = 50;
 
 const Header = () => {
     const [mobileOpen, setMobileOpen] = useState<boolean>(false);
