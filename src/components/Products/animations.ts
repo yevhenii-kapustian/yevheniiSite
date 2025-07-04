@@ -43,6 +43,7 @@ export const productVisibility = {
         y: 0,
         transition: {
             delay: i * 0.1,
+            duration: 0.8,
             easeIn
         }
     }),

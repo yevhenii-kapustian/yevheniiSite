@@ -1,10 +1,21 @@
-export const titleVariants = {
+export const titleVariant = {
     hidden: {
-        x: -1000,
+        x: -100,
         opacity: 0,
     },
     visible: {
         x: 0,
         opacity: 1,
     },
+}
+
+export const descriptionVariant= {
+    hidden: {
+        x: 100,
+        opacity: 0,
+    },
+    visible: {
+        x: 0,
+        opacity: 1,
+    }
 }

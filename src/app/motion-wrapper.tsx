@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { ReactNode } from "react";
 
-export function LayoutWrapperMotion ({children}: {children:ReactNode }) {
+export default function LayoutWrapperMotion ({children}: {children:ReactNode }) {
     return(
         <motion.main
                     initial={{opacity: 0, y: 40}}

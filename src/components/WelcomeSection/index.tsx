@@ -12,7 +12,7 @@ import { imageStyles,
          buttonStartStyles, 
          buttonAccountStyles} from "./styles"
 import { basicButtonStyles } from "@/styles/button"
-import { titleVariants } from "./animation"
+import { titleVariant, descriptionVariant } from "./animation"
 
 type WelcomeSectionProps = {
     title: any,
@@ -31,11 +31,18 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                         initial={'hidden'}
                         animate={'visible'}
                         transition={{
-                            delay: 0.1,
+                            duration: 0.5
                         }}
-                        variants={titleVariants}
+                        variants={titleVariant}
                         className={`${babes.className} ${titleStyles}`}>{title}</motion.h1>
-                    <h2 className={descriptionStyles}>{description}</h2>
+                    <motion.h2
+                        variants={descriptionVariant}
+                        initial='hidden'
+                        animate='visible'
+                        transition={{
+                            duration: 0.5
+                        }}
+                        className={descriptionStyles}>{description}</motion.h2>
                     <div className="flex gap-5">
                         <button className={`${basicButtonStyles} ${buttonStartStyles}`}>
                                 Get Started
