@@ -2,6 +2,7 @@ import WelcomeSection from "@/components/WelcomeSection";
 import WellnessSection from "@/components/WellnessSection";
 import Form from "@/components/Form";
 
+
 export default function Home() {
   return (
     <>
