@@ -12,7 +12,7 @@ import { imageStyles,
          buttonStartStyles, 
          buttonAccountStyles} from "./styles"
 import { basicButtonStyles } from "@/styles/button"
-import { titleVariant, descriptionVariant } from "./animation"
+import { titleVariant, descriptionVariant, buttonsVariant } from "./animation"
 
 type WelcomeSectionProps = {
     title: any,
@@ -28,8 +28,8 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                 
                 <div className={`${textContainerStyles}`}>
                     <motion.h1
-                        initial={'hidden'}
-                        animate={'visible'}
+                        initial='hidden'
+                        animate='visible'
                         transition={{
                             duration: 0.5
                         }}
@@ -40,17 +40,26 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                         initial='hidden'
                         animate='visible'
                         transition={{
+                            delay: 0.3,
                             duration: 0.5
                         }}
                         className={descriptionStyles}>{description}</motion.h2>
-                    <div className="flex gap-5">
+                    <motion.div
+                        variants={buttonsVariant}
+                        initial='hidden'
+                        animate='visible'
+                        transition={{
+                            delay: 0.6,
+                            duration: 0.5
+                        }}
+                        className="flex gap-5">
                         <button className={`${basicButtonStyles} ${buttonStartStyles}`}>
                                 Get Started
                         </button>
                         <button className={`${basicButtonStyles} ${buttonAccountStyles}`}>
                                 My Account
                         </button>
-                    </div>
+                    </motion.div>
                 </div>
             </div>
 
