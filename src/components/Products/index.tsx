@@ -6,7 +6,6 @@ import { useProducts } from "@/context/ProductsContext";
 import { ProductsType } from "@/types/products";
 import { motion, useInView, useScroll} from 'framer-motion'
 import { useRef } from "react"
-import { useProductsMask } from "./animations";
 import { productsContainerStyles,
          productsWrapperStyles,
          textItemsWrapperStyles, 
@@ -31,8 +30,6 @@ const Products = ({showName = true,
     const getProducts = products.get('plans');
 
     const ref = useRef(null)
-    const { scrollXProgress } = useScroll({ container: ref })
-    const maskImage = useProductsMask(scrollXProgress)
     const isInView = useInView(ref)
 
         
@@ -40,7 +37,7 @@ const Products = ({showName = true,
 
     return(
         <>
-        <motion.ul ref={ref} style={{maskImage}} className={productsContainerStyles}>
+        <motion.ul ref={ref} className={productsContainerStyles}>
             {getProducts?.map((item:ProductsType, index:number) => (
                 <motion.li
                         className={productsWrapperStyles} 

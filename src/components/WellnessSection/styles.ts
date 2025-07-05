@@ -3,7 +3,8 @@ import clsx from "clsx";
 export const wellnessContainerStyles = clsx(
     "py-10 px-20",
     "flex items-center justify-evenly",
-
+    "bg-white",
+    
     "max-sm:flex-col gap-5",
     "max-[1201]:px-5"
 )
