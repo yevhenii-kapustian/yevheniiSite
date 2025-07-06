@@ -40,8 +40,7 @@ const Products = ({showName = true,
         <>
         <motion.ul ref={ref} className={productsContainerStyles}>
             {productsToShow?.map((item:ProductsType, index:number) => {
-                const now = Date.now();
-                const successUrl = `https://yevhenii-site.vercel.app/success?product=${encodeURIComponent(item.name)}&t=${now}`;
+                const successUrl = `https://yevhenii-site.vercel.app/success?product=${encodeURIComponent(item.name)}`;
                 const fullBuyLink = `${item.pathToProduct}?success_url=${encodeURIComponent(successUrl)}`;
                 return(
                     <motion.li
