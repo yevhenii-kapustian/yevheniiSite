@@ -39,30 +39,26 @@ const Products = ({showName = true,
     return(
         <>
         <motion.ul ref={ref} className={productsContainerStyles}>
-            {productsToShow?.map((item:ProductsType, index:number) => {
-                const successUrl = `https://yevhenii-site.vercel.app/success?product=${encodeURIComponent(item.name)}`;
-                const fullBuyLink = `${item.pathToProduct}?success_url=${encodeURIComponent(successUrl)}`;
-                return(
-                    <motion.li
-                            className={productsWrapperStyles} 
-                            variants={productVisibility}
-                            initial='hidden'
-                            animate={isInView ? "visible" : "hidden"}
-                            whileHover='hover'
-                            whileTap='tap'
-                            custom={index}
-                            key={index}>
-                        <Image className="rounded-xl" src={item.image} alt={item.name} width={1000} height={1000} priority/>
-                        <div className={textItemsWrapperStyles}>
-                            {showName && <h4 className="text-xl font-bold uppercase">{item.name}</h4> }
-                            {showDescription && <p>{item.description}</p> }
-                            {showPrice && <p><strong>Price:</strong> {item.price}</p> }
-                            {showBuy && <Link target="_ablank" href={fullBuyLink} className={buttonStyles}>Buy Now</Link> }
-                            {showLernMore && <Link href={`/programs/${item.name.toLocaleLowerCase()}`} className={buttonStyles}>Learn More</Link> }
-                        </div>
-                    </motion.li>
-                )
-                })}
+            {productsToShow?.map((item:ProductsType, index:number) => (
+                <motion.li
+                        className={productsWrapperStyles} 
+                        variants={productVisibility}
+                        initial='hidden'
+                        animate={isInView ? "visible" : "hidden"}
+                        whileHover='hover'
+                        whileTap='tap'
+                        custom={index}
+                        key={index}>
+                    <Image className="rounded-xl" src={item.image} alt={item.name} width={1000} height={1000} priority/>
+                    <div className={textItemsWrapperStyles}>
+                        {showName && <h4 className="text-xl font-bold uppercase">{item.name}</h4> }
+                        {showDescription && <p>{item.description}</p> }
+                        {showPrice && <p><strong>Price:</strong> {item.price}</p> }
+                        {showBuy && <Link href={item.pathToProduct} className={buttonStyles}>Buy Now</Link> }
+                        {showLernMore && <Link href={`/programs/${item.name.toLocaleLowerCase()}`} className={buttonStyles}>Learn More</Link> }
+                    </div>
+                </motion.li>
+            ))}
         </motion.ul>
         </>
     )
