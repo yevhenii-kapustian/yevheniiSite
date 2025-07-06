@@ -14,10 +14,10 @@ export const productVisibility = {
         y: -200,
         opacity: 0, 
     },
-    hover: {
-        scale: 1.05
-    },
-    tap: {
-        scale: 0.9
-    }
+    // hover: {
+    //     scale: 1.05
+    // },
+    // tap: {
+    //     scale: 0.9
+    // }
 }

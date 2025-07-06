@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import LayoutWrapperMotion from "./motion-wrapper";
+import { ProductsProvider } from "@/context/ProductsContext";
 
 const openSans = Open_Sans({
   weight: ["400","500","600","700","800"],
@@ -27,7 +28,9 @@ export default function RootLayout({
       >
         <Header/>
           <LayoutWrapperMotion>
-            {children}
+            <ProductsProvider>
+              {children}
+            </ProductsProvider >
           </LayoutWrapperMotion>
         <Footer/>
       </body>

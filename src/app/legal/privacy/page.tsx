@@ -1,6 +1,7 @@
 import { flexColStyles, textDescriptionStyles } from "../styles";
 import { basicButtonStyles } from "@/styles/button";
 import { babes } from "@/app/fonts";
+import Link from "next/link";
 
 const Privacy = () => {
     return(
@@ -49,7 +50,7 @@ const Privacy = () => {
                     </p>
                 </div>
             </div>
-            <a className={`${basicButtonStyles} border-black hover:bg-black hover:border-white hover:text-white mx-auto my-0`} href="/">Back to home</a>
+            <Link className={`${basicButtonStyles} border-black hover:bg-black hover:border-white hover:text-white mx-auto my-0`} href="/">Back to home</Link>
         </section>
     )
 }

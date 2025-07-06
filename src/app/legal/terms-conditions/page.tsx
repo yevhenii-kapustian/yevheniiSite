@@ -1,6 +1,7 @@
 import { babes } from "@/app/fonts"
 import { flexColStyles, textDescriptionStyles } from "../styles"
 import { basicButtonStyles } from "@/styles/button"
+import Link from "next/link"
 
 const TermsConditions = () => {
     return(
@@ -32,7 +33,7 @@ const TermsConditions = () => {
                     </p>
                 </div>
             </div>
-            <a className={`${basicButtonStyles} border-black hover:bg-black hover:border-white hover:text-white mx-auto my-0`} href="/">Back to home</a>
+            <Link className={`${basicButtonStyles} border-black hover:bg-black hover:border-white hover:text-white mx-auto my-0`} href="/">Back to home</Link>
         </section>
     )
 }

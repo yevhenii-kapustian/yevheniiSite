@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
+    "@stripe/stripe-js": "^7.4.0",
     "clsx": "^2.1.1",
     "motion": "^12.23.0",
     "next": "15.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "stripe": "^18.3.0",
     "tailwind-scrollbar-hide": "^4.0.0"
   },
   "devDependencies": {

@@ -1,3 +1,5 @@
+'use client'
+
 import WelcomeSection from "@/components/WelcomeSection";
 import WellnessSection from "@/components/WellnessSection";
 import Form from "@/components/Form";
