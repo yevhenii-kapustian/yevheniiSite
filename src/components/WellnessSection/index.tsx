@@ -1,12 +1,19 @@
 import { babes } from "@/app/fonts";
 import Products from "../Products";
 import Link from "next/link";
+import { motion, useInView } from "framer-motion";
 import { wellnessContainerStyles, 
          wellnessTextWrapperStyles, 
          wellnessButtonStyles,
          productContainer } from "./styles";
+import { useRef } from "react";
+import { productVisibility } from "./animation";
 
 const WellnessSection = () => {
+
+    const ref = useRef(null)
+    const isInView = useInView(ref, {once: true})
+
     return(
         <section className={wellnessContainerStyles}>
             <div className={wellnessTextWrapperStyles}>
@@ -17,9 +24,15 @@ const WellnessSection = () => {
                 </p>
                 <Link className={wellnessButtonStyles} href="/programs">Find Your Plan</Link>
             </div>
-            <div className={productContainer}>
+            <motion.div
+                ref={ref}
+                className={productContainer}
+                variants={productVisibility}
+                initial='hidden'
+                animate={isInView ? "visible" : "hidden"}
+                >
                 <Products showPrice={false} showBuy={false} showName={false}/>
-            </div>
+            </motion.div>
         </section>
     )
 }

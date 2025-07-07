@@ -2,15 +2,11 @@
 
 import Image from "next/image";
 import { products } from "@/data/products"
-import { useProducts } from "@/context/ProductsContext";
 import { ProductsType } from "@/types/products";
-import { motion, useInView} from 'framer-motion'
-import { useRef } from "react"
 import { productsContainerStyles,
          productsWrapperStyles,
          textItemsWrapperStyles, 
          buttonStyles } from "./styles";
-import { productVisibility } from "./animations";
 import Link from "next/link";
 
 type ProductsPropsType = {
@@ -28,39 +24,27 @@ const Products = ({showName = true,
                    showBuy = true, 
                    showLernMore = true,
                    product: customProduct}: ProductsPropsType) => {
-                    
-    const { handleSave, handleLearnMore } = useProducts();
+
     const allProducts = products.get('plans');
     const productsToShow = customProduct ?? allProducts;
 
-    const ref = useRef(null)
-    const isInView = useInView(ref)
-
     return(
-        <>
-        <motion.ul ref={ref} className={productsContainerStyles}>
+        <ul className={productsContainerStyles}>
             {productsToShow?.map((item:ProductsType, index:number) => (
-                <motion.li
+                <li
                         className={productsWrapperStyles} 
-                        variants={productVisibility}
-                        initial='hidden'
-                        animate={isInView ? "visible" : "hidden"}
-                        whileHover='hover'
-                        whileTap='tap'
-                        custom={index}
                         key={index}>
                     <Image className="rounded-xl" src={item.image} alt={item.name} width={1000} height={1000} priority/>
                     <div className={textItemsWrapperStyles}>
                         {showName && <h4 className="text-xl font-bold uppercase">{item.name}</h4> }
                         {showDescription && <p>{item.description}</p> }
                         {showPrice && <p><strong>Price:</strong> {item.price}</p> }
-                        {showBuy && <Link href={item.pathToProduct} className={buttonStyles}>Buy Now</Link> }
+                        {showBuy && <Link target="_ablank" href={item.pathToProduct} className={buttonStyles}>Buy Now</Link> }
                         {showLernMore && <Link href={`/programs/${item.name.toLowerCase()}`} className={buttonStyles}>Learn More</Link> }
                     </div>
-                </motion.li>
+                </li>
             ))}
-        </motion.ul>
-        </>
+        </ul>
     )
 }
 
