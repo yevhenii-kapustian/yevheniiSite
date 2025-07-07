@@ -15,7 +15,7 @@ export const products = new Map<string, ProductsType[]>([
             image: "/images/products/loseWeight.png",
             description: "Burn fat efficiently and reach your ideal shape with smart training and healthy habits.",
             price: 11,
-            pathToProduct: "",
+            pathToProduct: "https://buy.stripe.com/00w6oHapxbdEbRr3le1RC03",
             downloadProduct: ""
         },
         {

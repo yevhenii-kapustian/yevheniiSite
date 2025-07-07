@@ -55,7 +55,7 @@ const Products = ({showName = true,
                         {showDescription && <p>{item.description}</p> }
                         {showPrice && <p><strong>Price:</strong> {item.price}</p> }
                         {showBuy && <Link href={item.pathToProduct} className={buttonStyles}>Buy Now</Link> }
-                        {showLernMore && <Link href={`/programs/${item.name.toLocaleLowerCase()}`} className={buttonStyles}>Learn More</Link> }
+                        {showLernMore && <Link href={`/programs/${item.name.toLowerCase()}`} className={buttonStyles}>Learn More</Link> }
                     </div>
                 </motion.li>
             ))}
