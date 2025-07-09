@@ -13,7 +13,7 @@ export default function ProductPage () {
 
     return(
         <section className="pt-[80px]">
-            <Products product={product ? [product] : []}/>
+            <Products variants="programs" product={product ? [product] : []}/>
         </section>
     )
 }

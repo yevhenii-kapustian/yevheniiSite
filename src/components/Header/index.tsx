@@ -6,9 +6,12 @@ import { usePathname } from "next/navigation";
 
 import { navigation, Navigation } from "@/data/navigation";
 import Logo from "../Logo";
-import { desktopStyles, burgerMenuStyles, mobileStyles } from "./styles";
+import { desktopStyles,
+         burgerMenuStyles,
+         mobileStyles,
+         headerMainStyles } from "./styles";
 
-const ScrollY:number = 50;
+const ScrollY:number = 20;
 
 const Header = () => {
     const [mobileOpen, setMobileOpen] = useState<boolean>(false);
@@ -29,9 +32,7 @@ const Header = () => {
 
         document.addEventListener('scroll', handleScroll);
         
-        return () => {
-            document.removeEventListener('scroll', handleScroll);
-          };
+        return () => document.removeEventListener('scroll', handleScroll)
     }, [])
     
     const navigationStyles = ():string => {
@@ -42,7 +43,7 @@ const Header = () => {
     }
 
     return(
-        <header className={`${navigationStyles()} w-full fixed flex justify-around items-center z-10 duration-300 ease-in-out`}>
+        <header className={`${navigationStyles()} ${headerMainStyles}`}>
             <div className="w-20">
                 <Logo/>
             </div>
@@ -55,9 +56,9 @@ const Header = () => {
                  <div className={burgerMenuStyles}>
                     <button onClick={toggleMobileMenu} className="w-[35px] h-[35px]">
                         <div className="grid flex-col justify-items-center gap-1.5">
-                            <span className={`h-[3px] w-8 rounded-full bg-white duration-300 ease-in-out ${mobileOpen ? 'rotate-45 translate-y-2.5' : ''}`}/>
-                            <span className={`h-[3px] w-8 rounded-full bg-white duration-300 ease-in ${mobileOpen ? 'scale-x-0' : ''}`}/>
-                            <span className={`h-[3px] w-8 rounded-full bg-white duration-300 ease-in-out ${mobileOpen ? '-rotate-45 -translate-y-2' : ""}`}/>
+                            <span className={`h-[2px] w-7 rounded-full bg-white duration-300 ease-in-out ${mobileOpen ? 'rotate-45 translate-y-2' : ''}`}/>
+                            <span className={`h-[2px] w-7 rounded-full bg-white duration-300 ease-in ${mobileOpen ? 'scale-x-0' : ''}`}/>
+                            <span className={`h-[2px] w-7 rounded-full bg-white duration-300 ease-in-out ${mobileOpen ? '-rotate-45 -translate-y-2' : ""}`}/>
                         </div>
                     </button>
                 </div>

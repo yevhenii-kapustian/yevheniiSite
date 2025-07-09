@@ -1,5 +1,16 @@
 import clsx from "clsx";
 
+export const headerMainStyles = clsx(
+    "w-full",
+    "fixed",
+    "flex justify-around items-center",
+    "z-10",
+    "duration-300 ease-in-out",
+
+    "max-sm:justify-between",
+    "max-sm:px-5"
+)
+
 export const desktopStyles = clsx(
     "flex",
     "gap-10",

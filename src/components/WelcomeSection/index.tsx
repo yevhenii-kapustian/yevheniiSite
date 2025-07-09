@@ -9,8 +9,7 @@ import { imageStyles,
          textContainerStyles, 
          titleStyles, 
          descriptionStyles,
-         buttonStartStyles, 
-         buttonAccountStyles} from "./styles"
+         buttonStartStyles} from "./styles"
 import { basicButtonStyles } from "@/styles/button"
 import { titleVariant, descriptionVariant, buttonsVariant } from "./animation"
 
@@ -55,9 +54,6 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                         className="flex gap-5">
                         <button className={`${basicButtonStyles} ${buttonStartStyles}`}>
                                 Get Started
-                        </button>
-                        <button className={`${basicButtonStyles} ${buttonAccountStyles}`}>
-                                My Account
                         </button>
                     </motion.div>
                 </div>

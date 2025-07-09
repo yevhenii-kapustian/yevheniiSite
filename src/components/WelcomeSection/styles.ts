@@ -4,6 +4,8 @@ export const welcomeContainerStyles = clsx(
     "relative",
     "w-full",
     "h-180",
+
+    "max-sm:h-screen"
 )
 
 export const imageStyles = clsx(
@@ -28,7 +30,8 @@ export const textContainerStyles = clsx(
     "max-sm:pt-10",
     "max-[1025px]:max-w-[55%]",
     "max-[821px]:max-w-[60%]",
-    "max-sm:max-w-[100%] max-sm:left-0 max-sm:px-5"
+    "max-sm:max-w-[100%] max-sm:left-0 max-sm:px-5",
+    "max-sm:gap-[clamp(1rem,3vh,4rem)]"
 )
 
 export const titleStyles = clsx(
@@ -57,11 +60,4 @@ export const buttonStartStyles = clsx(
     "hover:text-white",
     "hover:bg-transparent",
     "hover:border-white",
-)
-
-export const buttonAccountStyles = clsx(
-    "text-white",
-    "border-white",
-    "hover:bg-white",
-    "hover:text-black",
 )

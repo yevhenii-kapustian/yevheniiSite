@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from "react";
 import { productVisibility } from "./animation";
 
 const WellnessSection = () => {
-
     const ref = useRef(null)
     const isInView = useInView(ref, {once: true})
     const [isMobileWidth, setIsMobileWidth] = useState<boolean>(false)
@@ -21,11 +20,9 @@ const WellnessSection = () => {
                 setIsMobileWidth(true)
             } 
         }
-
+        
         handleWidth()
-
     })
-    
 
     return(
         <section className="relative overflow-hidden">
