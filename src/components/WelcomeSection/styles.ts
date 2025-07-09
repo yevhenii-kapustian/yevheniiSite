@@ -5,7 +5,7 @@ export const welcomeContainerStyles = clsx(
     "w-full",
     "h-180",
 
-    "max-sm:h-screen"
+    "max-sm:h-[100dvh]"
 )
 
 export const imageStyles = clsx(
