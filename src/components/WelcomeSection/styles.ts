@@ -3,9 +3,8 @@ import clsx from "clsx";
 export const welcomeContainerStyles = clsx(
     "relative",
     "w-full",
-    // "h-180",
 
-    "max-sm:min-h-[100dvh]",
+    "max-sm:min-h-screen",
     "max-sm:h-[100dvh]"
 )
 

@@ -4,29 +4,31 @@ export const variantsStyles = {
 
     home: {
         productsContainerStyles: clsx(
-             "p-5",
              "flex gap-5",
-             "overflow-x-scroll",
-         ),
+        ),
          
         productsWrapperStyles: clsx(
              "flex flex-col",
-             "shadow-[0px_0px_18px_-6px_#000000]",
              "rounded-xl",
-             "min-w-[250px]"
+             "min-w-[250px]",
+             
+             "max-sm:min-w-1/2"
         ),
 
         imageProductStyles: clsx(
-            "rounded-xl",
+
         ),
          
         textItemsWrapperStyles: clsx(
-             "h-full",
-             "p-5",
-             "flex flex-col justify-between gap-2"
+            "pt-3",
+             "flex flex-col justify-between"
+        ),
+
+        nameProductStyles: clsx(
+            "max-sm:text-sm"
         ),
          
-        buttonStyles:  clsx(
+        buttonStyles: clsx(
              "size-fit",
              "font-semibold",
              "underline underline-offset-6"    
@@ -48,6 +50,10 @@ export const variantsStyles = {
          
         textItemsWrapperStyles: clsx(
             "bg-black"
+        ),
+
+        nameProductStyles: clsx(
+
         ),
          
         buttonStyles:  clsx(

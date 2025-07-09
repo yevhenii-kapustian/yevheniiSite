@@ -5,6 +5,8 @@ import { products } from "@/data/products"
 import { ProductsType } from "@/types/products";
 import { variantsStyles } from "./styles";
 import Link from "next/link";
+import { fromattedCurrancy } from "@/utils/currency";
+import { useRouter } from "next/navigation";
 
 type ProductsPropsType = {
     showName?: boolean,
@@ -27,20 +29,25 @@ const Products = ({showName = true,
     const allProducts = products.get('plans');
     const productsToShow = customProduct ?? allProducts;
     const styles = variantsStyles[variants]
+    const router = useRouter()
 
     return(
-        <ul className={styles.productsContainerStyles}>
+        <ul className={`${styles.productsContainerStyles} overflow-x-auto scrollbar-hide snap-x snap-mandatory`}>
             {productsToShow?.map((item:ProductsType, index:number) => (
                 <li
-                    className={styles.productsWrapperStyles} 
+                    className={`${styles.productsWrapperStyles} max-sm:w-1/2 snap-center`} 
                     key={index}>
-                    <Image className={styles.imageProductStyles} src={item.image} alt={item.name} width={1000} height={1000} priority/>
-                    <div className={styles.textItemsWrapperStyles}>
-                        {showName && <h4 className="text-xl font-bold uppercase">{item.name}</h4> }
-                        {showDescription && <p>{item.description}</p> }
-                        {showPrice && <p><strong>Price:</strong> {item.price}</p> }
-                        {showBuy && <Link target="_ablank" href={item.pathToProduct} className={styles.buttonStyles}>Buy Now</Link> }
-                        {showLernMore && <Link href={`/programs/${item.name.toLowerCase()}`} className={styles.buttonStyles}>Learn More</Link> }
+                    <div onClick={() => router.push(`/programs/${item.name.toLowerCase()}`)}
+                         className="cursor-pointer"
+                    >
+                        <Image className={styles.imageProductStyles} src={item.image} alt={item.name} width={1000} height={1000} priority/>
+                        <div className={styles.textItemsWrapperStyles}>
+                            {showName && <h4 className={styles.nameProductStyles}>{item.name}</h4> }
+                            {showDescription && <p>{item.description}</p> }
+                            {showPrice && <p>{fromattedCurrancy(item.price)}</p> }
+                            {showBuy && <Link target="_ablank" href={item.pathToProduct} className={styles.buttonStyles}>Buy Now</Link> }
+                            {/* {showLernMore && <Link href={`/programs/${item.name.toLowerCase()}`} className={styles.buttonStyles}>Learn More</Link> } */}
+                        </div>
                     </div>
                 </li>
             ))}

@@ -17,7 +17,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "stripe": "^18.3.0",
-    "tailwind-scrollbar-hide": "^4.0.0"
+    "tailwind-scrollbar-hide": "^4.0.0",
+    "ts-money": "^0.4.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
