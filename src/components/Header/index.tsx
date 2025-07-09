@@ -10,6 +10,7 @@ import { desktopStyles,
          burgerMenuStyles,
          mobileStyles,
          headerMainStyles } from "./styles";
+import clsx from "clsx";
 
 const ScrollY:number = 20;
 
@@ -35,22 +36,19 @@ const Header = () => {
         return () => document.removeEventListener('scroll', handleScroll)
     }, [])
     
-    const navigationStyles = ():string => {
-        const isHomeStyles = isHome ? "" : "bg-black"
-        const isScrolledStyles = isScrolled ? "bg-black" : ""
-
-        return `${isHomeStyles} ${isScrolledStyles}`
-    }
+    const dynamicHeaderStyles = clsx({
+        "bg-black": !isHome || isScrolled || mobileOpen
+    })
 
     return(
-        <header className={`${navigationStyles()} ${headerMainStyles}`}>
+        <header className={`${dynamicHeaderStyles} ${headerMainStyles}`}>
             <div className="w-20">
                 <Logo/>
             </div>
 
             <nav>
                 <div className={desktopStyles}>
-                    {navigation.map((item:Navigation) => <Link key={item.name} href={item.path}>{item.name.toUpperCase()}</Link>)}
+                    {navigation.map((item:Navigation) => <Link className="capitalize" key={item.name} href={item.path}>{item.name}</Link>)}
                 </div>
 
                  <div className={burgerMenuStyles}>
@@ -64,13 +62,13 @@ const Header = () => {
                 </div>
  
                 <ul className={`${mobileStyles}
-                                ${navigationStyles()} 
+                                ${dynamicHeaderStyles} 
                                 duration-300 ease-in-out
                                 ${mobileOpen ? "opacity-100 visible" : "opacity-0 invisible"}
                                 `}>
                     {navigation.map((item:Navigation) => (
                         <li key={item.name}>
-                            <Link onClick={() => setMobileOpen(false)} href={item.path}>{item.name.toUpperCase()}</Link>
+                            <Link className="capitalize" onClick={() => setMobileOpen(false)} href={item.path}>{item.name}</Link>
                         </li>)
                     )}
                 </ul>

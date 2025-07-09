@@ -42,7 +42,7 @@ const WellnessSection = () => {
 
                 <div className={wellnessTextWrapperStyles}>
                     <h2 className={`${babes.className} text-7xl uppercase max-[1201]:text-6xl max-md:text-6xl`}>Invest in Your Health Today</h2>
-                    <p>
+                    <p className="text-[16px] max-sm:text-[14px]">
                         Your body is your most valuable asset. Start building long-term strength, energy, and resilience — one healthy
                         choice at a time. Small daily actions lead to powerful results. Make your health a priority, starting now.
                     </p>

@@ -6,12 +6,12 @@ export const productVisibility = {
         y: 0,
         transition: {
             delay: i * 0.1,
-            duration: 0.8,
+            duration: 0.5,
             easeIn
         }
     }),
     hidden: {
-        y: -200,
+        y: -50,
         opacity: 0, 
     },
     // hover: {
