@@ -21,7 +21,7 @@ type WelcomeSectionProps = {
 const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
     return(
         <section className={`${welcomeContainerStyles}`}>
-            <div className="relative h-full">
+            <div className="relative h-full py-40">
                 <Image className={`${imageStyles}`} src="/welcomeSection.jpg" alt="welcome image" fill priority/>
                 <span className={`${bgGradient}`}/>
                 
