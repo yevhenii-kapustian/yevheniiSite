@@ -5,7 +5,7 @@ export const welcomeContainerStyles = clsx(
     "w-full",
     // "h-180",
 
-    "max-sm:min-h-screen",
+    "max-sm:min-h-[100dvh]",
     "max-sm:h-[100dvh]"
 )
 
