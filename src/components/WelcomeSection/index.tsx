@@ -11,6 +11,7 @@ import { imageStyles,
          descriptionStyles,
          buttonStartStyles} from "./styles"
 import { basicButtonStyles } from "@/styles/button"
+import Link from "next/link"
 import { titleVariant, descriptionVariant, buttonsVariant } from "./animation"
 
 type WelcomeSectionProps = {
@@ -52,9 +53,9 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                             duration: 0.5
                         }}
                         className="flex gap-5">
-                        <button className={`${basicButtonStyles} ${buttonStartStyles}`}>
+                        <Link href="/programs" className={`${basicButtonStyles} ${buttonStartStyles}`}>
                                 Get Started
-                        </button>
+                        </Link>
                     </motion.div>
                 </div>
             </div>

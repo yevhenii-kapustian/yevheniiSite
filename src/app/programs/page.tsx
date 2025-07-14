@@ -1,5 +1,6 @@
 import { ProductsProvider } from "@/context/ProductsContext"
 import Products from "@/components/Products"
+import { babes } from "../fonts"
 
 export const metadata = {
     title: "Programs",
@@ -8,9 +9,10 @@ export const metadata = {
 
 const Programs = () => {
     return(
-        <section className="pt-[80px]">
+        <section className="pt-[80px] pb-5 px-15">
+            <h1 className={`${babes.className} py-5 text-center text-5xl`}>All Programs</h1>
             <ProductsProvider>
-                <Products/>
+                <Products variants="programs" showBuy={false} showDescription={false}/>
             </ProductsProvider>
         </section>
     )

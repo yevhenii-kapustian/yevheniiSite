@@ -5,6 +5,10 @@ export const variantsStyles = {
     home: {
         productsContainerStyles: clsx(
              "flex gap-5",
+             
+             "overflow-x-auto",
+             "snap-x",
+             "snap-mandatory"
         ),
          
         productsWrapperStyles: clsx(
@@ -12,7 +16,8 @@ export const variantsStyles = {
              "rounded-xl",
              "min-w-[250px]",
              
-             "max-sm:min-w-1/2"
+             "max-sm:min-w-1/2",
+             "max-sm:w-1/2 snap-center"
         ),
 
         imageProductStyles: clsx(
@@ -37,19 +42,23 @@ export const variantsStyles = {
 
     programs: {
         productsContainerStyles: clsx(
-            "bg-black"
+            "grid gap-5",
+            "grid-cols-[repeat(4,1fr)]",
+
+            "max-lg:grid-cols-[repeat(3,1fr)]",
+            "max-sm:grid-cols-[repeat(2,1fr)]",  
         ),
          
         productsWrapperStyles: clsx(
-            "bg-black"
+
         ),
 
         imageProductStyles: clsx(
-            "rounded-xl",
+
         ),
          
         textItemsWrapperStyles: clsx(
-            "bg-black"
+
         ),
 
         nameProductStyles: clsx(

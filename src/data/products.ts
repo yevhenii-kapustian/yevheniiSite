@@ -3,28 +3,39 @@ import { ProductsType } from "@/types/products"
 export const products = new Map<string, ProductsType[]>([
     ['plans', [
         {
-            name: "Gain muscles",
+            name: "4 Weeks Mass Builder",
             image: "/images/products/gainMuscles.png",
-            description: "Build strength and size with targeted workouts and optimal nutrition.",
-            price: 12,
-            pathToProduct: "https://buy.stripe.com/5kQ8wP9lt3Lc7Bb7Bu1RC02",
-            downloadProduct: "gainMuscles.txt"
+            description: "",
+            price: 199,
+            buyProduct: "https://buy.stripe.com/5kQ8wP9lt3Lc7Bb7Bu1RC02",
         },
         {
-            name: "Lose Weight",
+            name: "Bye-Bye, Belly Fat!",
             image: "/images/products/loseWeight.png",
-            description: "Burn fat efficiently and reach your ideal shape with smart training and healthy habits.",
-            price: 11,
-            pathToProduct: "https://buy.stripe.com/00w6oHapxbdEbRr3le1RC03",
-            downloadProduct: ""
+            description: "",
+            price: 149,
+            buyProduct: "https://buy.stripe.com/00w6oHapxbdEbRr3le1RC03",
         },
         {
-            name: "Nutrition Plans",
+            name: "The Fuel Plan",
             image: "/images/products/nutritionPlans.png",
-            description: "Fuel your body right with balanced, goal-focused meal plans tailored for results.",
-            price: 9,
-            pathToProduct: "",
-            downloadProduct: ""
+            description: "",
+            price: 199,
+            buyProduct: "",
         },
+        {
+            name: "30-day Body Transformation",
+            image: "/images/products/nutritionPlans.png",
+            description: "",
+            price: 199,
+            buyProduct: "",
+        },
+        {
+            name: "Strong & Slim: Glute + Core Sculpt",
+            image: "/images/products/nutritionPlans.png",
+            description: "",
+            price: 149,
+            buyProduct: "",
+        }
     ]]
 ])

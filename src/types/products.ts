@@ -3,6 +3,5 @@ export type ProductsType = {
     image: string,
     description: string,
     price: number,
-    pathToProduct: string,
-    downloadProduct: string
+    buyProduct: string,
 }
