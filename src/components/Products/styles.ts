@@ -12,7 +12,7 @@ export const variantsStyles = {
         ),
          
         productsWrapperStyles: clsx(
-             "flex flex-col",
+             "flex flex-col justify-center",
              "rounded-xl",
              "min-w-[250px]",
              
@@ -21,7 +21,7 @@ export const variantsStyles = {
         ),
 
         imageProductStyles: clsx(
-
+            "rounded-xl"
         ),
          
         textItemsWrapperStyles: clsx(

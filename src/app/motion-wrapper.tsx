@@ -5,11 +5,11 @@ import { ReactNode } from "react";
 
 export default function LayoutWrapperMotion ({children}: {children:ReactNode }) {
     return(
-        <motion.main
+        <motion.section
                     initial={{opacity: 0, y: -50}}
                     animate={{opacity: 1, y: 0}}
                     transition={{duration: 0.5}}>
             {children}
-        </motion.main>
+        </motion.section>
     )
 }

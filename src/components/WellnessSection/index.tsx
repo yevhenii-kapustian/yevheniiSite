@@ -26,22 +26,9 @@ const WellnessSection = () => {
 
     return(
         <section className="relative overflow-hidden">
-            <motion.div
-                    initial={{
-                            scale: 1,
-                            }}
-                    transition={{
-                                duration: 0.5,
-                                ease: easeInOut
-                                }}
-                    viewport={{
-                                amount: 0.5
-                            }}
-                    whileInView={isMobileWidth ? {scale: 1.05} : {scale: 1}}
-                    className={wellnessContainerStyles}>
-
+            <div className={wellnessContainerStyles}>
                 <div className={wellnessTextWrapperStyles}>
-                    <h2 className={`${babes.className} text-7xl uppercase max-[1201]:text-6xl`}>Invest in Your Health Today</h2>
+                    <h2 className={`${babes.className} text-5xl text-[#1F1F1F] uppercase max-[1201]:text-6xl`}>Invest in Your Health Today</h2>
                     <p className="text-[16px] max-sm:text-[14px]">
                         Your body is your most valuable asset. Start building long-term strength, energy, and resilience — one healthy
                         choice at a time. Small daily actions lead to powerful results. Make your health a priority, starting now.
@@ -57,7 +44,7 @@ const WellnessSection = () => {
                     >
                     <Products showDescription={false} showBuy={false} showLernMore={false}/>
                 </motion.div>
-            </motion.div>
+            </div>
         </section>
     )
 }

@@ -6,7 +6,7 @@ import Link from "next/link";
 const Privacy = () => {
     return(
         <section className={`pt-25 px-6 pb-6 ${flexColStyles}`}>
-            <h1 className={`text-5xl text-center ${babes.className}`}>Privacy policy</h1>
+            <h1 className={`text-5xl text-center ${babes.className}`}>Privacy Policy</h1>
             <div className={`${flexColStyles}`}>
                 <div>
                     <h3 className={`${textDescriptionStyles}`}>Your privacy is important</h3>
