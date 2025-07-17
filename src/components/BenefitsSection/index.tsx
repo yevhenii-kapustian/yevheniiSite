@@ -7,12 +7,14 @@ import { itemsContainerStyles,
          itemTitleStyles, 
          itemDescriptionStyles,
          itemImageStyles,
-         mainTitleStyles} from "./styles"
+         mainTitleStyles,
+         getLinkStyles} from "./styles"
 import Image from "next/image"
+import Link from "next/link"
 
 const BenefitsSection = () => {
     return(
-        <section className="px-20 py-10 max-sm:px-5">
+        <section className="px-20 py-10 max-sm:px-5 flex flex-col items-center">
             <h2 className={`${babes.className} ${mainTitleStyles}`}>How it works</h2>
             <div className={itemsContainerStyles}>
                 {benefitsSteps.map((item:BenefitsStepsType, index:number) => (
@@ -24,6 +26,7 @@ const BenefitsSection = () => {
                     </div>
                 ))}
             </div>
+            <Link className={getLinkStyles} href="#">Get My Personalized Plan</Link>
         </section>
     )
 }

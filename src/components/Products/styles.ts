@@ -12,7 +12,7 @@ export const variantsStyles = {
         ),
          
         productsWrapperStyles: clsx(
-             "flex flex-col justify-center",
+             "flex flex-col ",
              "rounded-xl",
              "min-w-[250px]",
              

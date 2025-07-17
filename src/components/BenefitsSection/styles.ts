@@ -45,3 +45,18 @@ export const itemDescriptionStyles = clsx(
 export const itemImageStyles = clsx(
     "pt-4",
 )
+
+export const getLinkStyles = clsx(
+    "w-max",
+    "border-2",
+    "bg-black",
+    "py-4 px-5 max-sm:py-3 max-sm:px-6",
+    "rounded-xl",
+    "duration-200 ease-in",
+    "cursor-pointer",
+    "text-white",
+    "text-[14px]",
+
+    "hover:bg-white",
+    "hover:text-black",
+)
