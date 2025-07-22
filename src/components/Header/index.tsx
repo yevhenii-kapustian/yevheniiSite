@@ -37,7 +37,7 @@ const Header = () => {
     }, [])
     
     const dynamicHeaderStyles = clsx({
-        "bg-black": !isHome || isScrolled || mobileOpen
+        "bg-[rgba(0,0,0,95%)]": !isHome || isScrolled || mobileOpen
     })
 
     return(

@@ -38,7 +38,6 @@ export const inputTextAreaStyles = clsx(
     "p-2",
     "border-b",
     "resize-none",
-    "outline-none"
-    ,
+    "outline-none",
     "max-sm:placeholder:text-[14px]"
 )

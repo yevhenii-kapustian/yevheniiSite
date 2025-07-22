@@ -5,6 +5,7 @@ import WellnessSection from "@/components/WellnessSection";
 import BenefitsSection from "@/components/BenefitsSection";
 import Form from "@/components/Form/form";
 import LayoutWrapperMotion from "./motion-wrapper";
+import StatsSection from "@/components/StatsSection";
 
 export default function Home() {
   return (
@@ -21,8 +22,9 @@ export default function Home() {
                                    stronger. One step at a time — and you're already on your way."
       />
       <WellnessSection/>
-      <Form/>
+      <StatsSection/>
       <BenefitsSection/>
+      <Form/>
     </LayoutWrapperMotion>
     </>
   );
