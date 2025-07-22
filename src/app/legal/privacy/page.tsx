@@ -1,4 +1,4 @@
-import { flexColStyles, textDescriptionStyles } from "../styles";
+import { flexColStyles, textTitleStyles } from "../styles";
 import { basicButtonStyles } from "@/styles/button";
 import { babes } from "@/app/fonts";
 import Link from "next/link";
@@ -6,48 +6,98 @@ import Link from "next/link";
 const Privacy = () => {
     return(
         <section className={`pt-25 px-6 pb-6 ${flexColStyles}`}>
-            <h1 className={`text-5xl text-center ${babes.className}`}>Privacy Policy</h1>
+            <div>
+                <h1 className={`text-5xl text-center ${babes.className}`}>Privacy Policy</h1>
+                <h2><strong>Effective date:</strong> July 20, 2025</h2>
+                <p>Your privacy is very important to us. This Privacy Policy explains how we collect, use, store, and protect your personal data when you interact with our website and services.</p>
+            </div>
             <div className={`${flexColStyles}`}>
                 <div>
-                    <h3 className={`${textDescriptionStyles}`}>Your privacy is important</h3>
+                    <h3 className={`${textTitleStyles}`}>What We Collect</h3>
+                    <h4>When you fill out our form, we collect the following personal data:</h4>
+                    <div>
+                        <p>Your name</p>
+                        <p>Your email address</p>
+                        <p>Your Instagram handle</p>
+                        <p>Any additional information you provide in free-text fields</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 className={`${textTitleStyles}`}>Why We Collect This Data</h3>
+                    <h4>We collect this data to:</h4>
+                    <div>
+                        <p>Contact you regarding our coaching programs and offers</p>
+                        <p>Provide personalized support</p>
+                        <p>Improve our services and user experience</p>
+                        <p>Send important updates or communication</p>
+                    </div>
+                    <p>We rely on your explicit consent when you submit the form.</p>
+                </div>
+
+                <div>
+                    <h3 className={`${textTitleStyles}`}>How Your Data is Used</h3>
+                    <h4>We use your information solely to:</h4>
+                    <div>
+                        <p>Communicate with you (including via Instagram or email)</p>
+                        <p>Match you with the right fitness or nutrition program</p>
+                        <p>Respond to your questions or requests</p>
+                    </div>
+                    <h4>We do not sell or share your data with third parties, except:</h4>
+                    <div>
+                        <p>When required by law</p>
+                        <p>When using trusted service providers (e.g. Stripe for payments, Meta for advertising), and only under strict confidentiality agreements</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 className={`${textTitleStyles}`}>Data Storage & Security</h3>
                     <p>
-                        We are totally committed to protecting the privacy of our site visitors and customers, we fully appreciate and respect the importance of privacy on the Internet. We will not disclose information about my customers to third parties except where it is part of providing a service to you - e.g. arranging for a product to be sent to you, carrying out credit and other security checks and for the purposes of customer research and profiling or where we have your express permission to do so.
+                        Your data is stored securely using encrypted tools and protected databases.
+                        We retain your data only as long as necessary for the purpose of communication or service delivery, and then delete or anonymize it.
                     </p>
                 </div>
 
                 <div>
-                    <h3 className={`${textDescriptionStyles}`}>Your consent</h3>
+                    <h3 className={`${textTitleStyles}`}>Your Rights</h3>
+                    <h4>At any time, you may:</h4>
+                    <div>
+                        <p>Request to access your data</p>
+                        <p>Ask us to correct or delete your data</p>
+                        <p>Withdraw your consent</p>
+                        <p>Object to marketing communications</p>
+                    </div>
+                    <p>To do so, simply contact us using the information at the bottom of this page.</p>
+                </div>
+
+                <div>
+                    <h3 className={`${textTitleStyles}`}>Cookies</h3>
                     <p>
-                        We will not sell your name, address, e-mail address, credit card information or personal information to any third party (excluding partners from whom you may have linked to our site) without your permission.
+                        Our website may use cookies to enhance user experience and store preferences.
+                        You can disable cookies in your browser settings at any time.
                     </p>
                 </div>
 
                 <div>
-                    <h3 className={`${textDescriptionStyles}`}>Communication & marketing</h3>
+                    <h3 className={`${textTitleStyles}`}>Instagram and Messaging</h3>
                     <p>
-                        If you have made a purchase from my store I may occasionally update you on our latest products, news and special offers via e-mail. All our customers have the option to opt-out of receiving marketing communications from me and/or selected third parties. If you do not wish to continue to receive marketing from me and/or selected third parties on checkout.
+                        By submitting your Instagram handle, you consent to us reaching out to you via Instagram to follow up or provide coaching information.
                     </p>
                 </div>
 
                 <div>
-                    <h3 className={`${textDescriptionStyles}`}>Cookies</h3>
+                    <h3 className={`${textTitleStyles}`}>Consent</h3>
                     <p>
-                        A cookie are a small information file that is sent to your computer and is stored on your hard drive. If you have registered with us then your computer will store an identifying cookie which will save you time each time you re-visit our site, by remembering your email address for you. You can change the settings on your browser to prevent cookies being stored on your computer without your explicit consent.
+                        By using our site and submitting your information through a form, you agree to the terms outlined in this Privacy Policy.
                     </p>
                 </div>
 
                 <div>
-                    <h3 className={`${textDescriptionStyles}`}>Checking your details</h3>
-                    <p>
-                        If you wish to verify the details you have submitted to us you may do so by contacting us via thee-mail address given below. Our security procedures mean that we may request proof of identity before we reveal information. This proof of identity will take the form of your e-mail address and password submitted upon registration. You must therefore keep this information safe as you will be responsible for any action which we take in response to a request from someone using your e-mail and password. We would strongly recommend that you do not use the browser's password memory function as that would permit other people using your terminal to access your personal information.
-                    </p>
-                </div>
-
-                <div>
-                    <h3 className={`${textDescriptionStyles}`}>Contacting us</h3>
-                    <p>
-                        We are always pleased to hear from my customers (even if it is a complaint!). we are always grateful for any time you spend providing us with the knowledge we need to ensure our customers are completely satisfied - we want you to return to the site and to recommend us to your friends and family. If you have any questions or feedback about this statement, or if you would like us to stop processing your information, please do not hesitate to contact customer support, who will be delighted to answer any questions you may have.
-                    </p>
+                    <h3 className={`${textTitleStyles}`}>Contact Us</h3>
+                    <h4>If you have any questions, concerns, or wish to request or delete your data, please contact us at:</h4>
+                    <div>
+                        <p>ke1vin.kapustian@gmail.com</p>
+                    </div>
                 </div>
             </div>
             <Link className={`${basicButtonStyles} border-black hover:bg-black hover:border-white hover:text-white mx-auto my-0`} href="/">Back to home</Link>

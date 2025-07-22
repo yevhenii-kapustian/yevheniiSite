@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ProductsProvider } from "@/context/ProductsContext";
+import CookieConsentBanner from "@/components/Cookie";
 
 const openSans = Open_Sans({
   weight: ["400","500","600","700","800"],
@@ -29,6 +30,7 @@ export default function RootLayout({
           <main className="flex-grow">
             <ProductsProvider>
               {children}
+              <CookieConsentBanner/>
             </ProductsProvider >
           </main>
         <Footer/>

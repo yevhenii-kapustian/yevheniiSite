@@ -6,7 +6,7 @@ export const flexColStyles = clsx(
     "gap-7"
 )
 
-export const textDescriptionStyles = clsx(
+export const textTitleStyles = clsx(
     "pb-3",
     "text-xl",
     "font-bold"

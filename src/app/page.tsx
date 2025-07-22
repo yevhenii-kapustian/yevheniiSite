@@ -3,9 +3,8 @@
 import WelcomeSection from "@/components/WelcomeSection";
 import WellnessSection from "@/components/WellnessSection";
 import BenefitsSection from "@/components/BenefitsSection";
-import Form from "@/components/Form";
+import Form from "@/components/Form/form";
 import LayoutWrapperMotion from "./motion-wrapper";
-
 
 export default function Home() {
   return (
@@ -22,9 +21,9 @@ export default function Home() {
                                    stronger. One step at a time — and you're already on your way."
       />
       <WellnessSection/>
+      <Form/>
       <BenefitsSection/>
     </LayoutWrapperMotion>
-    {/* <Form/> */}
     </>
   );
 }
