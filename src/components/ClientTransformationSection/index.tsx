@@ -1,5 +1,7 @@
 import Image from "next/image"
 import { babes } from "@/app/fonts"
+import { motion, useInView } from 'framer-motion'
+import { useRef } from "react"
 import { transformContainerStyles,
         transformTitleStyles,
         transformSubtitleStyles,
@@ -11,8 +13,17 @@ import { transformContainerStyles,
  } from "./styles"
 
 const ClientTransformationSection = () => {
+    const ref = useRef(null)
+    const isInView = useInView(ref, {once: true})
+    
     return(
-        <section className={transformContainerStyles}>
+        <motion.section
+            ref={ref} 
+            initial={{y: -100, opacity: 0}}
+            animate={isInView ? {y: 0, opacity: 1} : {}}
+            transition={{duration: 0.5}} 
+            className={transformContainerStyles}
+        >
             <h2 className={`${babes.className} ${transformTitleStyles}`}>Client Transformation Spotlight</h2>
             <h3 className={transformSubtitleStyles}>Real words from someone who's lived the process</h3>
             <div className={transformItemsContainerStyles}>
@@ -32,7 +43,7 @@ const ClientTransformationSection = () => {
                     <p className={transformItemTextSubtitle}>-Daryush</p>
                 </div>
             </div>
-        </section>
+        </motion.section>
     )
 }
 

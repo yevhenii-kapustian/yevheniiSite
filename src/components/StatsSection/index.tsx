@@ -1,5 +1,7 @@
 import { CalendarCheck, Barbell, ChartLineUp } from "@phosphor-icons/react";
 import { babes } from "@/app/fonts";
+import { motion, useInView } from 'framer-motion'
+import { useRef } from "react";
 import { statsContainerStyles,
         statsTitleStyles,
         statsItemsContainer,
@@ -12,8 +14,17 @@ import { statsContainerStyles,
  } from "./styles";
 
 const StatsSection = () => {
+    const ref = useRef(null)
+    const isInView = useInView(ref, {once: true})
+
     return(
-        <section className={statsContainerStyles}>
+        <motion.section
+            ref={ref} 
+            initial={{y: -100, opacity: 0}}
+            animate={isInView ? {y: 0, opacity: 1} : {}}
+            transition={{duration: 0.5}} 
+            className={statsContainerStyles}
+        >
             <h2 className={`${babes.className} ${statsTitleStyles}`}>A stronger, healthier, and more confident <span>you</span></h2>
             <div className={statsItemsContainer}>
                 <div className={statsItemsWrapper}>
@@ -42,7 +53,7 @@ const StatsSection = () => {
                 </div>
             </div>
             <h5 className={statsDescriptionStyles}>*survey feedback shows strong approval of Yevhenii's coaching results</h5>
-        </section>
+        </motion.section>
     )
 }
 
