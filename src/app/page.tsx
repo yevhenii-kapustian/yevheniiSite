@@ -6,6 +6,7 @@ import BenefitsSection from "@/components/BenefitsSection";
 import Form from "@/components/Form/form";
 import LayoutWrapperMotion from "./motion-wrapper";
 import StatsSection from "@/components/StatsSection";
+import ClientTransformationSection from "@/components/ClientTransformationSection";
 
 export default function Home() {
   return (
@@ -25,6 +26,7 @@ export default function Home() {
       <StatsSection/>
       <BenefitsSection/>
       <Form/>
+      <ClientTransformationSection/>
     </LayoutWrapperMotion>
     </>
   );

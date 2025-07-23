@@ -40,7 +40,7 @@ const BenefitsSection = () => {
                         <p className={itemStepStyles}>{item.step}</p>
                         <h3 className={itemTitleStyles}>{item.title}</h3>
                         <p className={itemDescriptionStyles}>{item.description}</p>
-                        <Image className={itemImageStyles} src={item.image} alt={item.title} width={1500} height={1500}/>
+                        <Image className={itemImageStyles} src={item.image} alt={item.title} width={1500} height={1500} priority/>
                     </div>
                 ))}
             </div>
