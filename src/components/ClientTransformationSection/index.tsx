@@ -36,7 +36,7 @@ const ClientTransformationSection = () => {
                     <h5 className={transformItemTextTitle}>
                         I used to think I just had "bad genetics".
                         I tried bulking on my own before, but all I gained was fat.
-                        With Yevhenii's trainingx and nutrition plan, I started seeing real changes.
+                        With Yevhenii's training and nutrition plan, I started seeing real changes.
                         Every week was well-structured, and I felt supported every step of the way.
                         Trust me — this guy knows exactly how to help you become the best version of yourself.
                     </h5>

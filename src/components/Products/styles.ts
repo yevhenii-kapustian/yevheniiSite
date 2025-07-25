@@ -26,11 +26,19 @@ export const variantsStyles = {
          
         textItemsWrapperStyles: clsx(
             "pt-3",
-             "flex flex-col justify-between"
+            "flex flex-col justify-between"
         ),
 
         nameProductStyles: clsx(
             "max-sm:text-sm"
+        ),
+
+        descriptionProductStyles: clsx(
+            ""
+        ),
+
+        subDescriptionProductStyles: clsx(
+            ""
         ),
          
         buttonStyles: clsx(
@@ -45,8 +53,7 @@ export const variantsStyles = {
             "grid gap-5",
             "grid-cols-[repeat(4,1fr)]",
 
-            "max-lg:grid-cols-[repeat(3,1fr)]",
-            "max-sm:grid-cols-[repeat(2,1fr)]",  
+            "max-lg:grid-cols-[repeat(2,1fr)]",
         ),
          
         productsWrapperStyles: clsx(
@@ -64,10 +71,69 @@ export const variantsStyles = {
         nameProductStyles: clsx(
 
         ),
+
+        descriptionProductStyles: clsx(
+            ""
+        ),
+
+        subDescriptionProductStyles: clsx(
+            ""
+        ),
          
-        buttonStyles:  clsx(
+        buttonStyles: clsx(
             "bg-black"     
         )
-    }
+    },
 
+    product: {
+        productsContainerStyles: clsx(
+        ),
+         
+        productsWrapperStyles: clsx(
+            "flex justify-center gap-10",
+
+            "max-[860]:flex-col"
+        ),
+
+        imageProductStyles: clsx(
+            "w-[35%]",
+            "rounded-xl",
+
+            "max-[1150]:w-[50%]",
+            "max-[860]:w-full"
+        ),
+         
+        textItemsWrapperStyles: clsx(
+            "w-[35%]",
+
+            "max-[1150]:w-[50%]",
+            "max-[860]:w-full"
+        ),
+
+        nameProductStyles: clsx(
+            "pt-5",
+            "text-3xl",
+            "font-extrabold"
+        ),
+
+        descriptionProductStyles: clsx(
+            ""
+        ),
+
+        subDescriptionProductStyles: clsx(
+            "pl-5",
+            "whitespace-pre-line"
+        ),
+         
+        buttonStyles: clsx(
+            "mt-8",
+            "p-3",
+            "w-full",
+            "inline-block",
+            "bg-black",
+            "text-white",
+            "text-center",
+            "rounded"
+        )
+    }
 }

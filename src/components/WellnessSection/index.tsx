@@ -42,7 +42,7 @@ const WellnessSection = () => {
                     initial='hidden'
                     animate={isInView ? "visible" : "hidden"}
                     >
-                    <Products showDescription={false} showBuy={false} showLernMore={false}/>
+                    <Products showDescription={false} showSubDescription={false} showBuy={false} showLernMore={false}/>
                 </motion.div>
             </div>
         </section>
