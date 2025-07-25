@@ -12,7 +12,7 @@ const Programs = () => {
         <section className="pt-[80px] pb-5 px-15 max-sm:px-5">
             <h1 className={`${babes.className} py-6 text-center text-4xl max-lg:text-start`}>All Programs</h1>
             <ProductsProvider>
-                <Products variants="programs" showBuy={false} showDescription={false} showSubDescription={false}/>
+                <Products variants="programs" showBuy={false} showDescription={false}/>
             </ProductsProvider>
         </section>
     )
