@@ -1,28 +1,17 @@
 import { babes } from "@/app/fonts";
 import Products from "../Products";
 import Link from "next/link";
-import { easeInOut, motion, useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { wellnessContainerStyles, 
          wellnessTextWrapperStyles, 
          wellnessButtonStyles,
          productContainer } from "./styles";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { productVisibility } from "./animation";
 
 const WellnessSection = () => {
     const ref = useRef(null)
     const isInView = useInView(ref, {once: true})
-    const [isMobileWidth, setIsMobileWidth] = useState<boolean>(false)
-
-    useEffect(() => {
-        const handleWidth = () => {
-            if (window.innerWidth > 1000) {
-                setIsMobileWidth(true)
-            } 
-        }
-        
-        handleWidth()
-    }, [])
 
     return(
         <section className="relative overflow-hidden">
@@ -42,7 +31,7 @@ const WellnessSection = () => {
                     initial='hidden'
                     animate={isInView ? "visible" : "hidden"}
                     >
-                    <Products showDescription={false} showSubDescription={false} showBuy={false} showLernMore={false}/>
+                    <Products showDescription={false} showBuy={false}/>
                 </motion.div>
             </div>
         </section>
