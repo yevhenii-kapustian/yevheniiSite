@@ -13,18 +13,11 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, useInView } from 'framer-motion'
 import React, { useRef } from "react"
+import { handleElementInView } from "@/utils/handleElementInView"
 
 const BenefitsSection = () => {
     const ref = useRef(null)
     const isInView = useInView(ref, {once: true})
-
-    const handleClick = (e:React.MouseEvent<HTMLElement>): void => {
-        e.preventDefault()
-        const getFormInView = document.querySelector("#formCoaching")
-        if (getFormInView) {
-                getFormInView.scrollIntoView({block: "center", behavior: "smooth"})
-        }
-    }
 
     return(
         <motion.section
@@ -44,7 +37,7 @@ const BenefitsSection = () => {
                     </div>
                 ))}
             </div>
-            <Link scroll={false} onClick={handleClick} className={getLinkStyles} href="#formCoaching">Get My Personalized Plan</Link>
+            <Link scroll={false} onClick={e => handleElementInView(e, "#formCoaching")} className={getLinkStyles} href="#formCoaching">Get My Personalized Plan</Link>
         </motion.section>
     )
 }

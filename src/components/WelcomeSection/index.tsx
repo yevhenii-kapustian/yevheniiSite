@@ -9,10 +9,12 @@ import { imageStyles,
          textContainerStyles, 
          titleStyles, 
          descriptionStyles,
-         buttonStartStyles} from "./styles"
+         buttonPersonalPlanStyles,
+         buttonAllPlansStyles} from "./styles"
 import { basicButtonStyles } from "@/styles/button"
 import Link from "next/link"
 import { titleVariant, descriptionVariant, buttonsVariant } from "./animation"
+import { handleElementInView } from "@/utils/handleElementInView"
 
 type WelcomeSectionProps = {
     title: any,
@@ -53,8 +55,16 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                             duration: 0.5
                         }}
                         className="flex gap-5">
-                        <Link href="/programs" className={`${basicButtonStyles} ${buttonStartStyles}`}>
-                                Get Started
+                        <Link href="/#formCoaching" 
+                                onClick={e => handleElementInView(e, "#formCoaching")} 
+                                className={`${basicButtonStyles} ${buttonPersonalPlanStyles}`}
+                        >
+                                Personal Plan
+                        </Link>
+                        <Link href="/programs" 
+                                className={`${basicButtonStyles} ${buttonAllPlansStyles}`}
+                        >
+                                View All Plans
                         </Link>
                     </motion.div>
                 </div>

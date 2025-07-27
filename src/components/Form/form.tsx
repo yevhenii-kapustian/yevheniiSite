@@ -6,6 +6,7 @@ import { formContainerStyles,
         formTitleStyles
      } from "./styles";
 import { useRef } from "react";
+import LoadingIcons from 'react-loading-icons'
 
 const Form = () => {
     const { step,
@@ -38,19 +39,15 @@ const Form = () => {
                             <p>Form has been submitted</p>
                         </motion.div>
                     ) : loading ? (
-                        <p className="text-lg">One moment...</p>
+                        <LoadingIcons.Oval />
                     ) : (
                     <motion.form className="w-140 max-sm:w-full" onSubmit={handleSubmit}>
-                        {step < formMerged.length ? (
+                        {step < formMerged.length && (
                                 <FormStep currentQuestions={currentQuestions}
                                             isLastStep={step === formMerged.length - 1}
                                             onNext={handleNext} 
                                             setInput={setInput} 
                                             input={input}/>
-                        ) : (
-                            <div>
-                                <p>Thx for submitted</p> 
-                            </div>
                         )}
                     </motion.form>
                 )}

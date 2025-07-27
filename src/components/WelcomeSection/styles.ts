@@ -54,7 +54,15 @@ export const descriptionStyles = clsx(
     "max-[1025px]:text-[14px]",
 )
 
-export const buttonStartStyles = clsx(
+export const buttonPersonalPlanStyles = clsx(
+    "bg-transparent",
+    "text-white",
+    "hover:text-black",
+    "hover:bg-white",
+    "hover:border-transparent"
+)
+
+export const buttonAllPlansStyles = clsx(
     "bg-white",
     "border-transparent",
     "hover:text-white",
