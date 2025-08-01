@@ -8,22 +8,24 @@ export const aboutItemsWrapperStyles = clsx(
     "mx-8",
     "flex justify-center gap-10",
 
-    "max-[1200px]:flex-col",
-    "max-[1200px]:items-center"
+    "max-[769px]:flex-col"
 )
 
 export const aboutItemsImageStyles = clsx(
-    "w-130",
+    "max-w-130",
+    "w-[50%]",
     "rounded-xl",
+    "object-contain",
 
-    "max-[1200px]:w-full"
+    "max-[769px]:max-w-full",
+    "max-[769px]:w-full"
 )
 
 export const aboutItemsTextWrapperStyles = clsx(
     "w-150",
     "flex flex-col gap-5",
 
-    "max-[1200px]:w-full"
+    "max-[769px]:w-full"
 )
 
 export const aboutItemsTextDescriptionStyles = clsx(
@@ -33,7 +35,7 @@ export const aboutItemsTextDescriptionStyles = clsx(
 
 export const aboutItemsButtonsWrapper = clsx(
     "flex gap-5",
-    "max-sm:flex-col"
+
 )
 
 export const aboutButtonStyles = clsx(

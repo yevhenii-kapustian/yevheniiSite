@@ -23,10 +23,10 @@ export default function Home() {
                                    stronger. One step at a time — and you're already on your way."
       />
       <WellnessSection/>
-      <StatsSection/>
       <BenefitsSection/>
-      <Form/>
+      <StatsSection/>
       <ClientTransformationSection/>
+      <Form/>
     </LayoutWrapperMotion>
     </>
   );

@@ -98,6 +98,7 @@ export const variantsStyles = {
         imageProductStyles: clsx(
             "w-[35%]",
             "rounded-xl",
+            "object-contain",
 
             "max-[1150]:w-[50%]",
             "max-[860]:w-full"
