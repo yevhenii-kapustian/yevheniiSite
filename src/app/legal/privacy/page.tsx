@@ -3,6 +3,11 @@ import { basicButtonStyles } from "@/styles/button";
 import { babes } from "@/app/fonts";
 import Link from "next/link";
 
+export const metadata = {
+    title: "Privacy Policy",
+    description: "Learn how we collect, use, and protect your personal data. Your privacy and trust are important to us. Read our full Privacy Policy to understand your rights.",
+}
+
 const Privacy = () => {
     return(
         <section className={`pt-25 px-6 pb-6 ${flexColStyles}`}>

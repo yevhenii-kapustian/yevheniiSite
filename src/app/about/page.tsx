@@ -10,6 +10,11 @@ import { aboutContainerStyles,
         aboutButtonStyles
  } from './styles'
 
+export const metadata = {
+    title: "About",
+    description: "Meet Yevhenii — a transformation coach who turned personal struggle into real results. Discover his journey from self-doubt to strength and how he helps others build muscle, burn fat, and boost confidence — with no fluff, just what works.",
+}
+
 const About = () => {
     return(
         <section className={aboutContainerStyles}>

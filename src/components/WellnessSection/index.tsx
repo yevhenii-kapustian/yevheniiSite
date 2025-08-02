@@ -30,8 +30,8 @@ const WellnessSection = () => {
                     variants={productVisibility}
                     initial='hidden'
                     animate={isInView ? "visible" : "hidden"}
-                    >
-                    <Products showDescription={false} showBuy={false}/>
+                >
+                    <Products showArrows={true} showDescription={false} showBuy={false}/>
                 </motion.div>
             </div>
         </section>

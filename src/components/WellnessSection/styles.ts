@@ -25,11 +25,12 @@ export const wellnessButtonStyles = clsx(
 )
 
 export const productContainer = clsx(
-    "flex gap-10",
+    "flex items-center gap-8",
     "w-[75%]",
     "max-w-[1000px]",
 
     "max-[1201]:w-[60%]",
-    "max-sm:w-[100%]"
+    "max-sm:w-[100%]",
+    "max-sm:gap-3"
 
 )

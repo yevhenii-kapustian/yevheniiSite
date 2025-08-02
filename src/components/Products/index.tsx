@@ -8,6 +8,8 @@ import Link from "next/link";
 import { fromattedCurrancy } from "@/utils/currency";
 import { useRouter } from "next/navigation";
 import slugify from 'slugify'
+import { CaretDoubleLeft, CaretDoubleRight } from "@phosphor-icons/react";
+import { useProducts } from "@/context/ProductsContext";
 
 type ProductsPropsType = {
     showName?: boolean,
@@ -15,6 +17,7 @@ type ProductsPropsType = {
     showPrice?: boolean,
     showBuy?: boolean,
     showPath?: boolean,
+    showArrows?: boolean,
     product?: ProductsType[],
     variants?: "home" | "programs" | "product"
 }
@@ -24,6 +27,7 @@ const Products = ({showName = true,
                    showPrice = true, 
                    showBuy = true, 
                    showPath = false,
+                   showArrows = false,
                    product: customProduct,
                    variants="home"}: ProductsPropsType) => {
 
@@ -32,8 +36,13 @@ const Products = ({showName = true,
     const styles = variantsStyles[variants]
     const router = useRouter()
 
+    const { containerRef, isAtStart, isAtEnd, handleScrollLeft, handleScrollRight } = useProducts()
+  
     return(
-        <ul className={`${styles.productsContainerStyles} scrollbar-hide`}>
+        <>
+        {showArrows && <CaretDoubleLeft className={`mb-18 min-w-[20px] ${isAtStart ? "opacity-50 cursor-default" : "opacity-100 cursor-pointer"}`} 
+                                        onClick={handleScrollLeft} size={150}/>}
+        <ul ref={containerRef} className={`${styles.productsContainerStyles} scrollbar-hide`}>
             {productsToShow?.map((item:ProductsType, index:number) => {
                 const learnMoreLink = slugify(item.name, {lower: true, strict: true})
                 return(
@@ -59,12 +68,14 @@ const Products = ({showName = true,
                                 </div>
                             )}
                             {showBuy && <Link target="_ablank" href={item.buyProduct} className={styles.buttonStyles}>Buy Now</Link> }
-                            {/* {showLernMore && <Link href={`/programs/${item.name.toLowerCase()}`} className={styles.buttonStyles}>Learn More</Link> } */}
                         </div>
                     </li>
                    )
                 })}
         </ul>
+        {showArrows && <CaretDoubleRight className={`mb-18 min-w-[20px] ${isAtEnd ? "opacity-50 cursor-default" : "opacity-100 cursor-pointer"}`} 
+                                            onClick={handleScrollRight} size={150}/>}
+        </>
     )
 }
 

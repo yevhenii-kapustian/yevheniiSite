@@ -1,32 +1,65 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode } from "react";
-import { ProductsType } from "@/types/products";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
+
 
 type ProductsContextType = {
-    savedProducts: ProductsType[],
-    handleSave: (item:ProductsType) => void,
-    toShowProduct: ProductsType | null,
-    handleLearnMore: (item:ProductsType) => void,
+    containerRef: React.RefObject<HTMLUListElement | null>,
+    isAtStart: boolean,
+    isAtEnd: boolean,
+    handleScrollLeft: () => void,
+    handleScrollRight: () => void,
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
 export const ProductsProvider = ({children} : {children:ReactNode}) => {
-    const [savedProducts, setSavedProducts] = useState<ProductsType[]>([])
-    const [toShowProduct, setToShowProduct] = useState<ProductsType | null>(null)
 
-    const handleLearnMore = (item: ProductsType): void => {
-        setToShowProduct(item)
-    }
-    
-    const handleSave = (item: ProductsType): void => {
-        if (savedProducts.includes(item)) return
-        setSavedProducts((prev) => [...prev, item])
-    }
+
+    const containerRef = useRef<HTMLUListElement>(null);
+    const [isAtStart, setIsAtStart] = useState(true);
+    const [isAtEnd, setIsAtEnd] = useState(false);
+
+    const updateScrollState = () => {
+        if (!containerRef.current) return;
+        const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
+
+        setIsAtStart(scrollLeft <= 0);
+        setIsAtEnd(scrollLeft + clientWidth >= scrollWidth - 1);
+    };
+
+    useEffect(() => {
+        updateScrollState();
+        const container = containerRef.current;
+
+        if (container) {
+            container.addEventListener("scroll", updateScrollState);
+            return () => container.removeEventListener("scroll", updateScrollState);
+        }
+    }, []);
+
+    const handleScrollLeft = () => {
+        if (containerRef.current) {
+            containerRef.current.scrollBy({
+                left: -150,
+                behavior: 'smooth',
+            });
+        }
+    };
+
+    const handleScrollRight = () => {
+        if (containerRef.current) {
+            containerRef.current.scrollBy({
+                left: 150,
+                behavior: 'smooth',
+            });
+        }
+    };
 
     return(
-        <ProductsContext.Provider value={{savedProducts, handleSave, toShowProduct, handleLearnMore}}>
+        <ProductsContext.Provider value={{isAtStart, isAtEnd, containerRef,
+                                         handleScrollLeft, handleScrollRight
+                                         }}>
             {children}
         </ProductsContext.Provider>
     )
