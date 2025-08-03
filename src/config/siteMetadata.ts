@@ -44,4 +44,7 @@ export const siteMetadata: Metadata = {
         "max-video-preview": -1,
         },
     },
+    other: {
+        "fb:app_id": "1682995145732700",
+    },
 }
