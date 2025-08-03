@@ -8,6 +8,7 @@ import CookieConsentBanner from "@/components/Cookie";
 import OrganizationSchema from "@/components/scripts/OrganizationSchema";
 import GoogleAnalytics from "@/components/scripts/GoogleAnalytics";
 import { siteMetadata } from "@/config/siteMetadata";
+import FacebookAppIdMeta from "@/components/FacebookAppIdMeta";
 
 
 const openSans = Open_Sans({
@@ -28,9 +29,9 @@ export default function RootLayout({
         <meta property="fb:app_id" content="1682995145732700" />
       </head>
       <body className={`${openSans.className} antialiased flex flex-col`}>
+        <FacebookAppIdMeta/>
         <GoogleAnalytics/>
         <OrganizationSchema/>
-
         <Header />
         <main className="flex-grow">
           <ProductsProvider>
