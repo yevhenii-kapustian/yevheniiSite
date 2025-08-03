@@ -5,7 +5,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ProductsProvider } from "@/context/ProductsContext";
 import CookieConsentBanner from "@/components/Cookie";
-import CustomMeta from "@/components/CustomMeta";
 import OrganizationSchema from "@/components/scripts/OrganizationSchema";
 import GoogleAnalytics from "@/components/scripts/GoogleAnalytics";
 import { siteMetadata } from "@/config/siteMetadata";
@@ -27,7 +26,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${openSans.className} antialiased flex flex-col`}>
         <GoogleAnalytics/>
-        <CustomMeta/>
         <OrganizationSchema/>
 
         <Header />
