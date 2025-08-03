@@ -17,40 +17,40 @@ export const products = new Map<string, ProductsType[]>([
         {
             name: "Bye-Bye, Belly Fat!",
             image: "/images/products/loseWeight.png",
-            description: `• 4-week training plan focused on fat-burning
-                            • All exercises with video breakdowns & written explanations
-                            • Weekly split example
-                            • Quick Nutrition Tips for Fat Loss`,
+            description: `• A 4-week fat-burning training plan designed to help you torch stubborn fat and boost your energy!
+                            • Step-by-step exercise videos paired with clear written instructions—perfect for all fitness levels
+                            • A sample weekly workout split to keep you organized and motivated throughout your journey
+                            • Quick and easy nutrition tips for fat loss—no complicated diets, just practical advice for lasting results!`,
             price: 149,
             buyProduct: "https://buy.stripe.com/5kQcN58hpftU5t3cVO1RC05",
         },
         {
             name: "The Fuel Plan",
             image: "/images/products/nutritionPlans.png",
-            description: `• Step-by-step guide to calculating your daily calories & macros
-                            • Learn how to balance your Protein / Fats / Carbs
-                            • What to eat — and why
-                            • Supplements & Vitamins: What Matters`,
+            description: `• A clear, step-by-step guide to calculating your daily calories and macros tailored just for you
+                            • Master the art of balancing protein, fats, and carbs to fuel your body the right way
+                            • Discover exactly what to eat — and why each choice matters for your goals
+                            • Unlock the truth about supplements and vitamins: what truly makes a difference`,
             price: 199,
             buyProduct: "https://buy.stripe.com/fZu9ATbtBa9AbRr5tm1RC06",
         },
         {
             name: "30-day Body Transformation",
             image: "/images/products/30dayBodyTransformation.png",
-            description: `• Daily workout schedule
-                            • Progression by Week
-                            • All exercises with video breakdowns & written explanations
-                            • Basic Nutritional Recommendations`,
+            description: `• A clear daily workout schedule designed to keep you motivated and consistent
+                            • Weekly progressions that help you level up safely and effectively
+                            • Step-by-step video tutorials and easy-to-follow explanations for every exercise
+                            • Simple yet powerful basic nutrition tips to fuel your transformation`,
             price: 199,
             buyProduct: "https://buy.stripe.com/7sYaEXgNV2H81cN8Fy1RC07",
         },
         {
             name: "Strong & Slim: Glute + Core Sculpt",
             image: "/images/products/glute&coreSculpt.png",
-            description: `• 4-Week Schedule by Week
-                            • All exercises with video demos & explanations
-                            • What weight should you choose
-                            • Nutritional Recommendations`,
+            description: `• A detailed 4-week training roadmap to keep you on track and motivated
+                            • Comprehensive video demos and clear explanations for every exercise — perfect form guaranteed!
+                            • Expert tips on choosing the right weights to maximize gains and avoid injury
+                            • Practical nutritional recommendations to fuel your progress and boost recovery`,
             price: 149,
             buyProduct: "https://buy.stripe.com/4gMaEX2X5gxY7Bb5tm1RC08",
         }
