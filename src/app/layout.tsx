@@ -24,6 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta property="fb:app_id" content="1682995145732700" />
+      </head>
       <body className={`${openSans.className} antialiased flex flex-col`}>
         <GoogleAnalytics/>
         <OrganizationSchema/>
