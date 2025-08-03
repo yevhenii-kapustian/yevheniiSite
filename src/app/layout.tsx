@@ -42,8 +42,8 @@ export const metadata: Metadata = {
     images: ["https://www.yevheniifit.com/og-image.png"],
   },
   icons: {
-    icon: "https://www.yevheniifit.com/favicon.ico",
-    apple: "https://www.yevheniifit.com/apple-touch-icon.png",
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
   robots: {
     index: true,
