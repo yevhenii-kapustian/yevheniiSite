@@ -7,6 +7,7 @@ import Form from "@/components/Form/form";
 import LayoutWrapperMotion from "./motion-wrapper";
 import StatsSection from "@/components/StatsSection";
 import ClientTransformationSection from "@/components/ClientTransformationSection";
+import FAQs from "@/components/FAQsSection";
 
 export default function Home() {
   return (
@@ -27,6 +28,7 @@ export default function Home() {
       <StatsSection/>
       <ClientTransformationSection/>
       <Form/>
+      <FAQs/>
     </LayoutWrapperMotion>
     </>
   );

@@ -10,7 +10,7 @@ export const siteMetadata: Metadata = {
         description:
         "Transform your body and mind with expert coaching, personalized workouts, and meal plans. Join Yevhenii Fit and start your transformation today!",
         url: "https://www.yevheniifit.com",
-        siteName: "Yevhenii Fit",
+        siteName: "Yevhenii Fit - Online Coaching & Fitness Programs",
         locale: "en_US",
         type: "website",
         images: [
