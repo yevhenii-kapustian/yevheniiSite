@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run generate-sitemap && next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "generate-sitemap": "node generate-sitemap.js"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
