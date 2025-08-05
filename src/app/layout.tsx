@@ -8,7 +8,7 @@ import CookieConsentBanner from "@/components/Cookie";
 import GoogleAnalytics from "@/components/scripts/GoogleAnalytics";
 import { siteMetadata } from "@/config/siteMetadata";
 import JsonLd from "@/components/scripts/JsonLd";
-import CustomHead from "@/components/CustomHead";
+import Head from "next/head";
 
 
 const openSans = Open_Sans({
@@ -25,8 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <CustomHead/>
       <body className={`${openSans.className} antialiased flex flex-col`}>
+         <Head>
+          <meta property="fb:app_id" content="1682995145732700" />
+        </Head>
         <GoogleAnalytics/>
         <JsonLd/>
         <Header />
