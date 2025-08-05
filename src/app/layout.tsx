@@ -7,6 +7,7 @@ import { ProductsProvider } from "@/context/ProductsContext";
 import CookieConsentBanner from "@/components/Cookie";
 import GoogleAnalytics from "@/components/scripts/GoogleAnalytics";
 import { siteMetadata } from "@/config/siteMetadata";
+import OrganizationSchema from "@/components/scripts/OrganizationSchema";
 
 
 const openSans = Open_Sans({
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${openSans.className} antialiased flex flex-col`}>
         <GoogleAnalytics/>
+        <OrganizationSchema/>
         <Header />
         <main className="flex-grow">
           <ProductsProvider>

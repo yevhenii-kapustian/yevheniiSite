@@ -1,4 +1,4 @@
-export default function Head() {
+export default function OrganizationSchema() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -9,11 +9,9 @@ export default function Head() {
   };
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-    </>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
   );
 }
