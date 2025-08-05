@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en-SE">
       <body className={`${openSans.className} antialiased flex flex-col`}>
         <GoogleAnalytics/>
         <OrganizationSchema/>
