@@ -10,7 +10,7 @@ export default function OrganizationSchema() {
                __html: JSON.stringify({
                  "@context": "https://schema.org",
                  "@type": "Organization",
-                 name: "Yevhenii Fit",
+                 name: "Yevhenii Fit - Online Coaching & Fitness Programs",
                  url: "https://www.yevheniifit.com",
                  logo: "https://www.yevheniifit.com/og-image.png",
                  sameAs: [
