@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)', // для всех страниц
+        source: '/(.*)',
         headers: [
           {
             key: 'Strict-Transport-Security',
@@ -13,7 +13,14 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; img-src https://www.yevheniifit.com https: data:; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self';",
+            value: `
+              default-src 'self';
+              script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net 'unsafe-eval' 'unsafe-inline';
+              connect-src 'self' https://region1.google-analytics.com https://www.google-analytics.com https://connect.facebook.net;
+              img-src 'self' https://www.yevheniifit.com https: data:;
+              style-src 'self' https://fonts.googleapis.com 'unsafe-inline';
+              font-src 'self' https://fonts.gstatic.com;
+            `.replace(/\n/g, ' '),
           },
           {
             key: 'X-Frame-Options',
