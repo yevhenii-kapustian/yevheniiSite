@@ -1,9 +1,5 @@
-# *
 User-agent: *
 Allow: /
 
-# Host
-Host: https://www.yevheniifit.com
-
-# Sitemaps
 Sitemap: https://www.yevheniifit.com/sitemap.xml
+Host: https://www.yevheniifit.com
