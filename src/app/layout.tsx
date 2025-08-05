@@ -8,6 +8,7 @@ import CookieConsentBanner from "@/components/Cookie";
 import GoogleAnalytics from "@/components/scripts/GoogleAnalytics";
 import { siteMetadata } from "@/config/siteMetadata";
 import JsonLd from "@/components/scripts/JsonLd";
+import CustomHead from "@/components/CustomHead";
 
 
 const openSans = Open_Sans({
@@ -24,6 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <CustomHead/>
       <body className={`${openSans.className} antialiased flex flex-col`}>
         <GoogleAnalytics/>
         <JsonLd/>
