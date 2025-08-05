@@ -7,7 +7,7 @@ import { ProductsProvider } from "@/context/ProductsContext";
 import CookieConsentBanner from "@/components/Cookie";
 import GoogleAnalytics from "@/components/scripts/GoogleAnalytics";
 import { siteMetadata } from "@/config/siteMetadata";
-import Head from "next/head";
+import JsonLd from "@/components/scripts/JsonLd";
 
 
 const openSans = Open_Sans({
@@ -24,23 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "Yevhenii Fit - Online Coaching & Fitness Programs",
-              url: "https://www.yevheniifit.com",
-              logo: "https://www.yevheniifit.com/og-image.png",
-              sameAs: ["https://www.instagram.com/_ev_ge_niii_/"],
-            }),
-          }}
-        />
-      </head>
       <body className={`${openSans.className} antialiased flex flex-col`}>
         <GoogleAnalytics/>
+        <JsonLd/>
         <Header />
         <main className="flex-grow">
           <ProductsProvider>
