@@ -43,5 +43,8 @@ export const siteMetadata: Metadata = {
         "max-image-preview": "large",
         "max-video-preview": -1,
         },
-    }
+    },
+    facebook: {
+    appId: '1682995145732700',
+  },
 }
