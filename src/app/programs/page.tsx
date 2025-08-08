@@ -3,7 +3,7 @@ import Products from "@/components/Products"
 import { babes } from "../fonts"
 
 export const metadata = {
-    title: "Programs",
+    title: "Programs - Online Coaching & Fitness Programs",
     description: "Discover science-based fitness programs designed to help you lose fat, build muscle, and boost energy. Find the perfect plan tailored to your goals and lifestyle.",
 }
 

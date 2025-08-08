@@ -11,7 +11,7 @@ import { aboutContainerStyles,
  } from './styles'
 
 export const metadata = {
-    title: "About",
+    title: "About - Online Coaching & Fitness Programs",
     description: "Meet Yevhenii — a transformation coach who turned personal struggle into real results. Discover his journey from self-doubt to strength and how he helps others build muscle, burn fat, and boost confidence — with no fluff, just what works.",
 }
 
