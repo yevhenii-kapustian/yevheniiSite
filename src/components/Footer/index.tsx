@@ -16,7 +16,7 @@ const Footer = () => {
                 <a target="_blank" href="https://www.instagram.com/_ev_ge_niii_/"><InstagramLogo color="white" size={32} /></a>
             </div>
             <div className="flex flex-col gap-4">
-                <p className="text-white font-thin">© {currentTime} Copyright. Yevhenii. All rights reserved.</p>
+                <p className="text-white font-thin">© {currentTime} Copyright. Yevhenii Fit. All rights reserved.</p>
                 <div className="text-center">
                     <a className="text-white" href="/legal/terms-conditions">Terms and conditions</a>
                     <span className="text-white">|</span>
