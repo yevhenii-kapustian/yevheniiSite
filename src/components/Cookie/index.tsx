@@ -1,10 +1,7 @@
 "use client";
 import CookieConsent from "react-cookie-consent";
 import Script from "next/script";
-import { cookieContainer,
-         cookieWrapperButtons,
-         cookieButton
-        } from "./styles";
+import { cookieContainer, cookieWrapperButtons, cookieButton } from "./styles";
 
 export default function CookieConsentBanner() {
   const fbPixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
@@ -23,8 +20,9 @@ export default function CookieConsentBanner() {
         declineButtonClasses={`${cookieButton} bg-[#ef4444] text-white`}
         expires={365}
       >
-        <p>We use cookies to improve your experience and show you relevant advertising.
-            Click <strong>"Accept"</strong> to agree or <strong>"Decline"</strong> to opt out. Find out more in the <a className="underline" href="/legal/privacy">Privacy Policy</a>.
+        <p>
+          We use cookies to improve your experience and show you relevant advertising.
+          Click <strong>"Accept"</strong> to agree or <strong>"Decline"</strong> to opt out. Find out more in the <a className="underline" href="/legal/privacy">Privacy Policy</a>.
         </p>
       </CookieConsent>
 
@@ -33,7 +31,7 @@ export default function CookieConsentBanner() {
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
-            if (document.cookie.includes("user_cookie_consent=true")) {
+            if (document.cookie.includes("user_cookie_consent=true") && '${fbPixelId}') {
               !function(f,b,e,v,n,t,s)
               {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
               n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -51,4 +49,3 @@ export default function CookieConsentBanner() {
     </>
   );
 }
-
