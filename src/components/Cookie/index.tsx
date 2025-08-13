@@ -7,7 +7,6 @@ import { cookieContainer,
         } from "./styles";
 
 export default function CookieConsentBanner() {
-  console.log("FB Pixel ID:", process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID);
   const fbPixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
 
   return (
