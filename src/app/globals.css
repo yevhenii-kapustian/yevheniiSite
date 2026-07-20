@@ -1,25 +1,28 @@
 @import "tailwindcss";
 
+@theme {
+  --color-ink: #1f1f1f;
+  --color-ink-strong: #1a1a1a;
+  --color-charcoal: #131313;
+  --color-charcoal-strong: #090909;
+  --color-steel: #464646;
+  --color-steel-strong: #3b3b3b;
+  --color-accent: #ffdc26;
+  --color-surface-muted: #f0f0f0;
+}
+
 * {
   box-sizing: border-box;
 }
 
-html,
-body {
-  height: 100%;
-  background-color: white; 
-  color: #1F1F1F;
+html {
+  background-color: white;
 }
 
 body {
+  min-height: 100dvh;
+  color: var(--color-ink);
   overflow-x: hidden;
-  overflow-y: scroll;
-}
-
-@media screen and (max-width: 640px) {
-  p, a, button {
-    font-size: 14px;
-  }
 }
 
 .scrollbar-hide {

@@ -1,18 +1,12 @@
+'use client'
+
 import { benefitsSteps } from "@/data/benefitsSteps"
 import { BenefitsStepsType } from "@/types/benefits"
 import { babes } from "@/app/fonts"
-import { itemsContainerStyles, 
-         itemsWrapperStyles, 
-         itemStepStyles,
-         itemTitleStyles, 
-         itemDescriptionStyles,
-         itemImageStyles,
-         mainTitleStyles,
-         getLinkStyles} from "./styles"
 import Image from "next/image"
-import Link from "next/link"
+import Button from "@/components/Button"
 import { motion, useInView } from 'framer-motion'
-import React, { useRef } from "react"
+import { useRef } from "react"
 import { handleElementInView } from "@/utils/handleElementInView"
 
 const BenefitsSection = () => {
@@ -21,23 +15,31 @@ const BenefitsSection = () => {
 
     return(
         <motion.section
-                        ref={ref} 
-                        initial={{y: -100, opacity: 0}}
-                        animate={isInView ? {y: 0, opacity: 1} : {}}
-                        transition={{duration: 0.5}}
-                        className="px-20 py-10 max-sm:px-5 flex flex-col items-center">
-            <h2 className={`${babes.className} ${mainTitleStyles}`}>How it works</h2>
-            <div className={itemsContainerStyles}>
+            ref={ref}
+            initial={{y: 32, opacity: 0}}
+            animate={isInView ? {y: 0, opacity: 1} : {}}
+            transition={{duration: 0.6, ease: "easeOut"}}
+            className="px-5 lg:px-20 py-10 flex flex-col items-center"
+        >
+            <h2 className={`${babes.className} text-3xl sm:text-4xl text-ink text-center`}>How it works</h2>
+            <div className="py-10 flex flex-col items-center gap-10 sm:flex-row sm:justify-center">
                 {benefitsSteps.map((item:BenefitsStepsType, index:number) => (
-                    <div className={itemsWrapperStyles} key={index}>
-                        <p className={itemStepStyles}>{item.step}</p>
-                        <h3 className={itemTitleStyles}>{item.title}</h3>
-                        <p className={itemDescriptionStyles}>{item.description}</p>
-                        <Image className={itemImageStyles} src={item.image} alt={item.title} width={1500} height={1500} priority/>
+                    <div className="w-full sm:w-[70%] lg:w-[30%] lg:max-w-[22%] flex flex-col justify-between items-center text-center" key={index}>
+                        <p className="w-10 h-10 flex justify-center items-center text-white font-bold bg-charcoal rounded-full">{item.step}</p>
+                        <h3 className="pt-3 text-lg sm:text-xl font-bold">{item.title}</h3>
+                        <p className="pt-2 text-sm sm:text-base">{item.description}</p>
+                        <Image className="pt-4" src={item.image} alt={item.title} width={1500} height={1500} priority/>
                     </div>
                 ))}
             </div>
-            <Link scroll={false} onClick={e => handleElementInView(e, "#formCoaching")} className={getLinkStyles} href="#formCoaching">Get My Personalized Plan</Link>
+            <Button
+                scroll={false}
+                onClick={e => handleElementInView(e, "#formCoaching")}
+                href="#formCoaching"
+                variant="solid"
+            >
+                Get My Personalized Plan
+            </Button>
         </motion.section>
     )
 }

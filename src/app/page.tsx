@@ -14,9 +14,9 @@ export default function Home() {
     <>
     <LayoutWrapperMotion>
       <WelcomeSection title={<>
-                            <span className="max-sm:text-5xl">This is your moment.</span> 
-                            <br/><span className="max-sm:text-[clamp(4.5rem,17vw,6rem)]">Right here. Right now.</span> 
-                            <br/><span className="max-sm:text-[clamp(5rem,20vw,8rem)]">On site.</span></>
+                            This is your moment.
+                            <br/>Right here. Right now.
+                            <br/>On site.</>
                             }
                       description="Stop waiting for “Monday”. Start now. The gym builds more than 
                                    muscles — it builds confidence. With us, you'll get a custom workout
