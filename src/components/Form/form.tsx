@@ -2,9 +2,6 @@
 import useFormLogic from "./useFormLogic";
 import FormStep from "./formStep";
 import { motion, useInView } from "framer-motion"
-import { formContainerStyles,
-        formTitleStyles
-     } from "./styles";
 import { useRef } from "react";
 import LoadingIcons from 'react-loading-icons'
 
@@ -25,14 +22,16 @@ const Form = () => {
 
     return(
         <motion.section
-                ref={ref} 
-                initial={{y: -100, opacity: 0}}
+                ref={ref}
+                initial={{y: 32, opacity: 0}}
                 animate={isInView ? {y: 0, opacity: 1} : {}}
-                transition={{duration: 0.5}}
-                id="formCoaching" className={formContainerStyles}>
+                transition={{duration: 0.6, ease: "easeOut"}}
+                id="formCoaching"
+                className="min-h-100 px-5 sm:px-10 py-10 relative flex flex-col justify-center items-center gap-5 text-ink-strong bg-accent"
+        >
             <div>
-                <h2 className={formTitleStyles}>Build the Body You Deserve</h2>
-                <p className="text-center">Leave your answers and we'll get back to you on Instagram within 24 hours.</p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-center">Build the Body You Deserve</h2>
+                <p className="text-center text-sm sm:text-base">Leave your answers and we'll get back to you on Instagram within 24 hours.</p>
             </div>
              {submitted ? (
                         <motion.div>
@@ -41,12 +40,12 @@ const Form = () => {
                     ) : loading ? (
                         <LoadingIcons.Oval />
                     ) : (
-                    <motion.form className="w-140 max-sm:w-full" onSubmit={handleSubmit}>
+                    <motion.form className="w-full sm:w-140" onSubmit={handleSubmit}>
                         {step < formMerged.length && (
                                 <FormStep currentQuestions={currentQuestions}
                                             isLastStep={step === formMerged.length - 1}
-                                            onNext={handleNext} 
-                                            setInput={setInput} 
+                                            onNext={handleNext}
+                                            setInput={setInput}
                                             input={input}/>
                         )}
                     </motion.form>

@@ -1,5 +1,3 @@
-import { easeIn } from "framer-motion";
-
 export const productVisibility = {
     visible: (i: number) => ({
         opacity: 1,
@@ -7,17 +5,11 @@ export const productVisibility = {
         transition: {
             delay: i * 0.1,
             duration: 0.5,
-            easeIn
+            ease: "easeOut" as const
         }
     }),
     hidden: {
-        y: -50,
-        opacity: 0, 
+        y: 24,
+        opacity: 0,
     },
-    // hover: {
-    //     scale: 1.05
-    // },
-    // tap: {
-    //     scale: 0.9
-    // }
 }

@@ -1,6 +1,6 @@
 export const titleVariant = {
     hidden: {
-        x: -100,
+        x: -32,
         opacity: 0,
     },
     visible: {
@@ -11,7 +11,7 @@ export const titleVariant = {
 
 export const descriptionVariant = {
     hidden: {
-        x: -100,
+        x: -32,
         opacity: 0,
     },
     visible: {
@@ -22,7 +22,7 @@ export const descriptionVariant = {
 
 export const buttonsVariant = {
     hidden: {
-        x: -100,
+        x: -32,
         opacity: 0,
     },
     visible: {

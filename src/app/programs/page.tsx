@@ -9,8 +9,8 @@ export const metadata = {
 
 const Programs = () => {
     return(
-        <section className="pt-[80px] pb-5 px-15 max-sm:px-5">
-            <h1 className={`${babes.className} py-6 text-center text-4xl max-lg:text-start`}>All Programs</h1>
+        <section className="pt-10 pb-5 px-5 lg:px-15">
+            <h1 className={`${babes.className} py-6 text-2xl sm:text-3xl lg:text-4xl text-start lg:text-center`}>All Programs</h1>
             <ProductsProvider>
                 <Products variants="programs" showBuy={false} showDescription={false}/>
             </ProductsProvider>
