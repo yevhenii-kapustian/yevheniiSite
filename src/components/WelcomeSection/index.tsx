@@ -16,8 +16,8 @@ type WelcomeSectionProps = {
 
 const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
     return(
-        <section id="hero" className="relative w-full min-h-[560px] h-[85dvh] sm:h-auto sm:min-h-0">
-            <div className="relative h-full py-10 sm:py-40">
+        <section id="hero" className="relative w-full flex flex-col min-h-[560px] sm:min-h-0">
+            <div className="relative flex-1 py-10 sm:py-40">
                 <div className="absolute inset-x-0 -top-[90px] h-[calc(100%+90px)] sm:-top-[100px] sm:h-[calc(100%+100px)]">
                     <Image
                         className="w-full h-full object-cover object-[75%_25%] sm:object-[70%_25%] lg:object-[0_25%]"
@@ -64,12 +64,12 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                             onClick={e => handleElementInView(e, "#formCoaching")}
                             variant="outline-light"
                             size="sm"
-                            className="w-full sm:w-auto gap-2"
+                            className="h-12 w-full sm:w-auto gap-2"
                         >
                             Personal Plan
                             <ArrowRight size={16} weight="bold" />
                         </Button>
-                        <Button href="/programs" variant="solid-light" size="sm" className="w-full sm:w-auto">
+                        <Button href="/programs" variant="solid-light" size="sm" className="h-12 w-full sm:w-auto">
                             View All Plans
                         </Button>
                     </motion.div>

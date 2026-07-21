@@ -24,8 +24,9 @@ type ProductsPropsType = {
 const variantsStyles = {
     home: {
         productsContainerStyles: "flex gap-5 overflow-x-auto snap-x snap-mandatory",
-        productsWrapperStyles: "flex flex-col rounded-2xl w-1/2 snap-center sm:w-auto sm:min-w-[250px]",
-        imageProductStyles: "rounded-2xl",
+        productsWrapperStyles: "flex flex-col rounded-2xl w-1/2 min-w-0 shrink-0 snap-center sm:w-auto sm:min-w-[250px]",
+        imageWrapperStyles: "relative aspect-square w-full overflow-hidden rounded-2xl",
+        imageProductStyles: "object-cover",
         textItemsWrapperStyles: "pt-3 flex flex-col justify-between",
         nameProductStyles: "text-sm sm:text-base font-semibold",
         subDescriptionProductStyles: "text-sm sm:text-base",
@@ -35,7 +36,8 @@ const variantsStyles = {
     programs: {
         productsContainerStyles: "grid gap-5 grid-cols-2 lg:grid-cols-4",
         productsWrapperStyles: "overflow-hidden rounded-2xl border border-black/5 bg-white transition-shadow duration-200 hover:shadow-lg",
-        imageProductStyles: "w-full",
+        imageWrapperStyles: "relative aspect-square w-full",
+        imageProductStyles: "object-cover",
         textItemsWrapperStyles: "p-4",
         nameProductStyles: "text-sm sm:text-base font-semibold",
         subDescriptionProductStyles: "text-sm sm:text-base",
@@ -45,6 +47,7 @@ const variantsStyles = {
     product: {
         productsContainerStyles: "",
         productsWrapperStyles: "flex flex-col md:flex-row justify-center gap-10",
+        imageWrapperStyles: "",
         imageProductStyles: "w-full md:w-[50%] lg:w-[35%] rounded-3xl object-contain",
         textItemsWrapperStyles: "w-full md:w-[50%] lg:w-[35%]",
         nameProductStyles: "pt-5 text-xl sm:text-2xl font-bold",
@@ -71,8 +74,8 @@ const Products = ({showName = true,
 
     return(
         <>
-        {showArrows && <CaretDoubleLeft className={`mb-18 min-w-[20px] ${isAtStart ? "opacity-50 cursor-default" : "opacity-100 cursor-pointer"}`}
-                                        onClick={handleScrollLeft} size={150}/>}
+        {showArrows && <CaretDoubleLeft className={`hidden sm:block shrink-0 transition-opacity duration-150 ${isAtStart ? "opacity-30 cursor-default" : "opacity-70 hover:opacity-100 cursor-pointer"}`}
+                                        onClick={handleScrollLeft} size={32}/>}
         <ul ref={containerRef} className={`${styles.productsContainerStyles} scrollbar-hide`}>
             {productsToShow?.map((item:ProductsType, index:number) => {
                 const learnMoreLink = slugify(item.name, {lower: true, strict: true})
@@ -81,7 +84,13 @@ const Products = ({showName = true,
                         className={`${styles.productsWrapperStyles} ${variants !== "product" ? "cursor-pointer" : undefined}`}
                         key={index}
                     >
-                        <Image className={styles.imageProductStyles} src={item.image} alt={item.name} width={1000} height={1000} priority/>
+                        {variants === "product" ? (
+                            <Image className={styles.imageProductStyles} src={item.image} alt={item.name} width={1000} height={1000} priority/>
+                        ) : (
+                            <div className={styles.imageWrapperStyles}>
+                                <Image className={styles.imageProductStyles} src={item.image} alt={item.name} fill priority/>
+                            </div>
+                        )}
                         <div className={styles.textItemsWrapperStyles}>
                             {showPath && (
                                             <p className="text-xs">
@@ -104,8 +113,8 @@ const Products = ({showName = true,
                    )
                 })}
         </ul>
-        {showArrows && <CaretDoubleRight className={`mb-18 min-w-[20px] ${isAtEnd ? "opacity-50 cursor-default" : "opacity-100 cursor-pointer"}`}
-                                            onClick={handleScrollRight} size={150}/>}
+        {showArrows && <CaretDoubleRight className={`hidden sm:block shrink-0 transition-opacity duration-150 ${isAtEnd ? "opacity-30 cursor-default" : "opacity-70 hover:opacity-100 cursor-pointer"}`}
+                                            onClick={handleScrollRight} size={32}/>}
         </>
     )
 }
