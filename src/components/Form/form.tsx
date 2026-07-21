@@ -27,11 +27,11 @@ const Form = () => {
                 animate={isInView ? {y: 0, opacity: 1} : {}}
                 transition={{duration: 0.6, ease: "easeOut"}}
                 id="formCoaching"
-                className="min-h-100 px-5 sm:px-10 py-10 relative flex flex-col justify-center items-center gap-5 text-ink-strong bg-accent"
+                className="min-h-100 px-5 sm:px-10 py-16 relative flex flex-col justify-center items-center gap-6 text-white bg-surface-strong"
         >
-            <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-center">Build the Body You Deserve</h2>
-                <p className="text-center text-sm sm:text-base">Leave your answers and we'll get back to you on Instagram within 24 hours.</p>
+            <div className="text-center">
+                <h2 className="text-2xl sm:text-3xl font-bold">Build the Body You Deserve</h2>
+                <p className="pt-2 text-sm sm:text-base text-white/60">Leave your answers and we'll get back to you on Instagram within 24 hours.</p>
             </div>
              {submitted ? (
                         <motion.div>

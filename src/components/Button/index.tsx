@@ -7,7 +7,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 export type ButtonVariant = "solid" | "solid-light" | "outline-dark" | "outline-light"
 export type ButtonSize = "sm" | "md"
 
-const baseStyles = "inline-flex items-center justify-center rounded-xl font-semibold transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+const baseStyles = "inline-flex items-center justify-center rounded-full font-semibold transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
 
 const variantStyles: Record<ButtonVariant, string> = {
     solid: "bg-black text-white border-2 border-black hover:bg-ink-strong hover:border-ink-strong",

@@ -4,11 +4,9 @@
   --color-ink: #1f1f1f;
   --color-ink-strong: #1a1a1a;
   --color-charcoal: #131313;
-  --color-charcoal-strong: #090909;
-  --color-steel: #464646;
-  --color-steel-strong: #3b3b3b;
-  --color-accent: #ffdc26;
-  --color-surface-muted: #f0f0f0;
+  --color-surface: #1c1c1e;
+  --color-surface-strong: #0d0d0e;
+  --color-surface-muted: #f5f5f7;
 }
 
 * {

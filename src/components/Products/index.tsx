@@ -24,8 +24,8 @@ type ProductsPropsType = {
 const variantsStyles = {
     home: {
         productsContainerStyles: "flex gap-5 overflow-x-auto snap-x snap-mandatory",
-        productsWrapperStyles: "flex flex-col rounded-xl w-1/2 snap-center sm:w-auto sm:min-w-[250px]",
-        imageProductStyles: "rounded-xl",
+        productsWrapperStyles: "flex flex-col rounded-2xl w-1/2 snap-center sm:w-auto sm:min-w-[250px]",
+        imageProductStyles: "rounded-2xl",
         textItemsWrapperStyles: "pt-3 flex flex-col justify-between",
         nameProductStyles: "text-sm sm:text-base font-semibold",
         subDescriptionProductStyles: "text-sm sm:text-base",
@@ -34,22 +34,22 @@ const variantsStyles = {
 
     programs: {
         productsContainerStyles: "grid gap-5 grid-cols-2 lg:grid-cols-4",
-        productsWrapperStyles: "",
-        imageProductStyles: "",
-        textItemsWrapperStyles: "",
+        productsWrapperStyles: "overflow-hidden rounded-2xl border border-black/5 bg-white transition-shadow duration-200 hover:shadow-lg",
+        imageProductStyles: "w-full",
+        textItemsWrapperStyles: "p-4",
         nameProductStyles: "text-sm sm:text-base font-semibold",
         subDescriptionProductStyles: "text-sm sm:text-base",
-        buttonStyles: "bg-black text-white text-sm sm:text-base"
+        buttonStyles: "rounded-full bg-black text-white text-sm sm:text-base"
     },
 
     product: {
         productsContainerStyles: "",
         productsWrapperStyles: "flex flex-col md:flex-row justify-center gap-10",
-        imageProductStyles: "w-full md:w-[50%] lg:w-[35%] rounded-xl object-contain",
+        imageProductStyles: "w-full md:w-[50%] lg:w-[35%] rounded-3xl object-contain",
         textItemsWrapperStyles: "w-full md:w-[50%] lg:w-[35%]",
         nameProductStyles: "pt-5 text-xl sm:text-2xl font-bold",
         subDescriptionProductStyles: "pl-5 text-sm sm:text-base whitespace-pre-line",
-        buttonStyles: "mt-8 p-3 w-full inline-block bg-black text-white text-center text-sm sm:text-base rounded"
+        buttonStyles: "mt-8 p-3.5 w-full inline-block rounded-full bg-black text-white text-center text-sm sm:text-base transition-colors duration-200 hover:bg-ink-strong"
     }
 }
 

@@ -2,7 +2,7 @@
 
 import { babes } from "@/app/fonts"
 import { useRef, useState } from "react"
-import { ArrowDown } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react";
 import { faqs } from "@/data/faqs";
 import {motion, AnimatePresence, useInView} from "framer-motion"
 
@@ -22,31 +22,40 @@ const FAQs = () => {
                         initial={{y: 32, opacity: 0}}
                         animate={isInView ? {y: 0, opacity: 1} : {}}
                         transition={{duration: 0.6, ease: "easeOut"}}
-                        className="px-5 py-10 flex flex-col items-center"
+                        className="px-5 py-16 flex flex-col items-center"
         >
             <h2 className={`${babes.className} text-3xl sm:text-4xl text-center`}>FAQs</h2>
-             <div className="w-full sm:w-[90%] lg:w-[70%] pt-10 flex flex-col gap-5">
-                {faqs.map((item, index) => (
-                    <div className="p-5 bg-surface-muted rounded-xl" key={index}>
-                        <div onClick={() => handleClick(index)} className="flex justify-between items-center gap-2 cursor-pointer">
+             <div className="w-full sm:w-[90%] lg:w-[70%] pt-10 flex flex-col gap-3">
+                {faqs.map((item, index) => {
+                    const isOpen = isIndexActive === index
+                    return (
+                    <div className="rounded-2xl bg-surface-muted overflow-hidden" key={index}>
+                        <button
+                            onClick={() => handleClick(index)}
+                            aria-expanded={isOpen}
+                            className="w-full flex justify-between items-center gap-3 px-5 py-4 text-left cursor-pointer"
+                        >
                             <h4 className="text-base sm:text-lg font-semibold">{item.question}</h4>
-                            <ArrowDown className={`min-w-10 transition-all delay-100 duration-400 ease-in-out ${isIndexActive === index && "rotate-180"}`} size={32}/>
-                        </div>
+                            <CaretDown
+                                className={`shrink-0 text-ink-strong/50 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                                size={18}
+                                weight="bold"
+                            />
+                        </button>
                         <AnimatePresence initial={false}>
-
-                                {isIndexActive === index && <motion.div initial={{ opacity: 0, height: 0 }}
+                                {isOpen && <motion.div initial={{ opacity: 0, height: 0 }}
                                                                     animate={{ opacity: 1, height: "auto" }}
                                                                     exit={{ opacity: 0, height: 0 }}
                                                                     transition={{ duration: 0.3, ease: "linear" }}
                                                     >
-                                                        <p className="pt-2 text-sm sm:text-base">
+                                                        <p className="px-5 pb-4 text-sm sm:text-base text-ink-strong/70">
                                                             {item.answer}
                                                         </p>
                                                     </motion.div>
                                 }
                         </AnimatePresence>
                     </div>
-                ))}
+                )})}
             </div>
         </motion.section>
     )
