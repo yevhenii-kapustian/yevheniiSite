@@ -14,10 +14,10 @@ export default function CookieConsentBanner() {
         enableDeclineButton
         cookieName="user_cookie_consent"
         disableStyles={true}
-        containerClasses="w-full p-6 fixed z-40 flex flex-col sm:flex-row justify-evenly items-center gap-5 bg-black text-white text-sm"
-        buttonWrapperClasses="flex gap-5"
-        buttonClasses="px-3 py-2 font-semibold text-sm rounded cursor-pointer bg-green-400 text-black"
-        declineButtonClasses="px-3 py-2 font-semibold text-sm rounded cursor-pointer bg-red-500 text-white"
+        containerClasses="fixed inset-x-4 bottom-4 sm:inset-x-auto sm:right-4 sm:max-w-md z-40 flex flex-col sm:flex-row items-center gap-4 rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-xl p-5 text-white text-sm shadow-[0_24px_70px_rgba(0,0,0,0.35)]"
+        buttonWrapperClasses="flex gap-2 shrink-0"
+        buttonClasses="px-4 py-2 font-semibold text-sm rounded-full cursor-pointer bg-white text-black transition-colors duration-150 hover:bg-white/90"
+        declineButtonClasses="px-4 py-2 font-semibold text-sm rounded-full cursor-pointer bg-white/10 text-white transition-colors duration-150 hover:bg-white/15"
         expires={365}
       >
         <p>

@@ -15,7 +15,7 @@ export default function Home() {
     <LayoutWrapperMotion>
       <WelcomeSection title={<>
                             This is your moment.
-                            <br/>Right here. Right now.
+                            <br/><span className="text-white/45">Right here. Right now.</span>
                             <br/>On site.</>
                             }
                       description="Stop waiting for “Monday”. Start now. The gym builds more than 
