@@ -38,10 +38,20 @@ export const ProductsProvider = ({children} : {children:ReactNode}) => {
         }
     }, []);
 
+    const getScrollStep = (): number => {
+        const container = containerRef.current;
+        if (!container || !container.firstElementChild) return 0;
+
+        const card = container.firstElementChild as HTMLElement;
+        const gap = parseFloat(window.getComputedStyle(container).columnGap || "0");
+
+        return card.getBoundingClientRect().width + gap;
+    };
+
     const handleScrollLeft = () => {
         if (containerRef.current) {
             containerRef.current.scrollBy({
-                left: -150,
+                left: -getScrollStep(),
                 behavior: 'smooth',
             });
         }
@@ -50,7 +60,7 @@ export const ProductsProvider = ({children} : {children:ReactNode}) => {
     const handleScrollRight = () => {
         if (containerRef.current) {
             containerRef.current.scrollBy({
-                left: 150,
+                left: getScrollStep(),
                 behavior: 'smooth',
             });
         }

@@ -15,7 +15,7 @@ const WellnessSection = () => {
         <section className="relative overflow-hidden">
             <div className="py-10 px-5 lg:px-20 flex flex-col items-center gap-5 sm:flex-row sm:justify-evenly bg-white">
                 <div className="w-full sm:w-[40%] lg:w-[25%] flex flex-col gap-3">
-                    <h2 className={`${babes.className} text-3xl sm:text-4xl text-ink uppercase`}>Invest in Your Health Today</h2>
+                    <h2 className={`${babes.className} text-4xl sm:text-5xl leading-[0.95] text-ink uppercase`}>Invest in Your Health Today</h2>
                     <p className="text-sm sm:text-base">
                         Your body is your most valuable asset. Start building long-term strength, energy, and resilience — one healthy
                         choice at a time. Small daily actions lead to powerful results. Make your health a priority, starting now.
