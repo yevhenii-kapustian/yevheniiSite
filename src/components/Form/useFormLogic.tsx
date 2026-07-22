@@ -1,24 +1,29 @@
 import { formMerged } from "@/data/form"
 import { FormType } from "@/types/form"
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
+const REDIRECT_DELAY_MS = 2500
+
 export default function useFormLogic () {
+        const router = useRouter()
         const [step, setStep] = useState<number>(0)
         const [answers, setAnswers] = useState<string[]>([])
         const [input, setInput] = useState<string>('')
         const [loading, setLoading] = useState<boolean>(false)
         const [submitted, setSubmitted] = useState<boolean>(false)
-    
+        const [honeypot, setHoneypot] = useState<string>('')
+
         const currentQuestions:FormType = formMerged[step];
 
         useEffect(() => {
             if (submitted) {
                 const timer = setTimeout(() => {
-                    setSubmitted(false)
-                }, 2000)
+                    router.push("/programs")
+                }, REDIRECT_DELAY_MS)
                 return () => clearTimeout(timer)
             }
-        }, [submitted])
+        }, [submitted, router])
     
         const postFormData = async (data: object) => {
             const response = await fetch("/api/form", {
@@ -63,20 +68,23 @@ export default function useFormLogic () {
             }
 
             const formData: {[key: string]: string} = {}
-    
+
             for (let i = 0; i < formKeys.length; i++) {
                 formData[formKeys[i]] = fullAnswer[i] || ""
             }
-    
+
+            formData.website = honeypot
+
             try {
                 setLoading(true)
                 const res = await postFormData(formData)
-    
+
                 if (res.message === "Success") {
                     setSubmitted(true)
                     setStep(0);
                     setAnswers([]);
                     setInput('');
+                    setHoneypot('');
                 } else {
                     setSubmitted(false)
                 }
@@ -96,6 +104,8 @@ export default function useFormLogic () {
             formMerged,
             handleNext,
             setInput,
-            handleSubmit
+            handleSubmit,
+            honeypot,
+            setHoneypot
         }
 }

@@ -33,7 +33,7 @@ const About = () => {
                         Let's build your transformation together.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                        <Button href="/#formCoaching" variant="solid">Personal Plan</Button>
+                        <Button href="/get-started" variant="solid">Personal Plan</Button>
                         <Button href="/programs" variant="outline-dark">View All Plans</Button>
                     </div>
                 </div>
