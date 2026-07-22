@@ -3,7 +3,6 @@
 import WelcomeSection from "@/components/WelcomeSection";
 import WellnessSection from "@/components/WellnessSection";
 import BenefitsSection from "@/components/BenefitsSection";
-import Form from "@/components/Form/form";
 import LayoutWrapperMotion from "./motion-wrapper";
 import ClientTransformationSection from "@/components/ClientTransformationSection";
 import FAQs from "@/components/FAQsSection";
@@ -25,7 +24,6 @@ export default function Home() {
       <WellnessSection/>
       <BenefitsSection/>
       <ClientTransformationSection/>
-      <Form/>
       <FAQs/>
     </LayoutWrapperMotion>
     </>

@@ -7,7 +7,6 @@ import Image from "next/image"
 import Button from "@/components/Button"
 import { motion, useInView } from 'framer-motion'
 import { useRef } from "react"
-import { handleElementInView } from "@/utils/handleElementInView"
 
 const colStart = ["sm:col-start-1", "sm:col-start-2", "sm:col-start-3"]
 
@@ -82,9 +81,7 @@ const BenefitsSection = () => {
             </div>
 
             <Button
-                scroll={false}
-                onClick={e => handleElementInView(e, "#formCoaching")}
-                href="#formCoaching"
+                href="/get-started"
                 variant="solid"
                 size="sm"
             >

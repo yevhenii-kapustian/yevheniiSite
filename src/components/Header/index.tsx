@@ -97,7 +97,7 @@ const Header = () => {
 
                     <nav className="flex flex-1 items-center justify-end gap-3 lg:justify-between">
                         <div className="hidden items-center rounded-full bg-white/10 p-1 text-sm font-medium text-white lg:flex">
-                            {navigation.filter((item:Navigation) => item.path !== "/programs").map((item:Navigation) => {
+                            {navigation.map((item:Navigation) => {
                                 const isActive = pathname === item.path
                                 return (
                                     <Link
@@ -117,13 +117,7 @@ const Header = () => {
 
                         <div className="hidden items-center justify-end gap-2 lg:flex">
                             <Link
-                                href="/programs"
-                                className="rounded-full px-4 py-2 text-sm font-semibold text-white/70 transition-colors duration-200 hover:bg-white/10 hover:text-white"
-                            >
-                                Programs
-                            </Link>
-                            <Link
-                                href="/#formCoaching"
+                                href="/get-started"
                                 className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-sm transition-colors duration-200 hover:bg-white/90"
                             >
                                 Get started
@@ -204,7 +198,7 @@ const Header = () => {
 
                         <div className="border-t border-white/10 px-6 py-4">
                             <Link
-                                href="/#formCoaching"
+                                href="/get-started"
                                 onClick={() => setMobileOpen(false)}
                                 className="flex items-center justify-between py-2 text-sm font-semibold text-white"
                             >

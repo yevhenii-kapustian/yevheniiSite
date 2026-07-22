@@ -6,7 +6,6 @@ import { babes } from "@/app/fonts"
 import Button from "@/components/Button"
 import { ArrowRight } from "@phosphor-icons/react"
 import { titleVariant, descriptionVariant, buttonsVariant } from "./animation"
-import { handleElementInView } from "@/utils/handleElementInView"
 import type { ReactNode } from "react"
 
 type WelcomeSectionProps = {
@@ -60,8 +59,7 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                         className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto"
                     >
                         <Button
-                            href="/#formCoaching"
-                            onClick={e => handleElementInView(e, "#formCoaching")}
+                            href="/get-started"
                             variant="outline-light"
                             size="sm"
                             className="h-12 w-full sm:w-auto gap-2"
