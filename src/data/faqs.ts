@@ -2,23 +2,23 @@ import { FAQsType } from "@/types/faqs"
 
 export const faqs: FAQsType[] = [
     {
-        question: "I paid for the product but did not receive it. What should I do?",
-        answer: "If you haven't received your product after completing the payment, please contact us at ke1vin.kapustian@gmail.com. We'll get back to you within 24 hours and make sure the issue is resolved promptly."
+        question: "How do I get started?",
+        answer: "Head to the Get Started page and answer a few quick questions about your goals — I'll personally review them and reach out on Instagram within 24 hours to talk through the right plan for you. If you'd rather buy a program directly, check out Programs instead."
     },
     {
         question: "Who are these programs for?",
-        answer: "They are designed for both men and women — from complete beginners to experienced athletes."
+        answer: "Everyone — men and women, complete beginners to experienced athletes. Each program is built to meet you where you're at."
     },
     {
         question: "Do you offer personalized meal plans?",
-        answer: "Yes, based on your goals, weight, age, lifestyle, and food preferences."
+        answer: "Yes. I build them around your goals, weight, age, lifestyle, and food preferences — not a generic template."
     },
     {
-        question: "How do I access the program after purchase?",
-        answer: "Right after payment, you will be redirected to a page with the product."
+        question: "How do I access my program after I buy it?",
+        answer: "You're redirected straight to your program page right after payment — no waiting, no separate download links."
     },
     {
-        question: "I have questions. How can I get support?",
-        answer: "Contact us via email: ke1vin.kapustian@gmail.com. We'll get back to you within 24 hours."
+        question: "I have a question, or didn't receive what I paid for — what do I do?",
+        answer: "Email me at yevheni.fit@gmail.com and I'll get back to you within 24 hours."
     },
 ]
