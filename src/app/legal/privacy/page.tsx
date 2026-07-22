@@ -98,7 +98,7 @@ const Privacy = () => {
                 <div className="border-t border-black/5 pt-8">
                     <h3 className="pb-3 text-lg sm:text-xl font-semibold">Contact Us</h3>
                     <p className="text-sm sm:text-base text-ink-strong/80">If you have any questions, concerns, or wish to request or delete your data, please contact us at:</p>
-                    <p className="mt-2 text-sm sm:text-base text-ink-strong/80">ke1vin.kapustian@gmail.com</p>
+                    <p className="mt-2 text-sm sm:text-base text-ink-strong/80">yevheni.fit@gmail.com</p>
                 </div>
             </div>
             <Button href="/" variant="outline-dark" className="mx-auto">Back to home</Button>

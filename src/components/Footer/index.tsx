@@ -20,7 +20,7 @@ const Footer = () => {
                     </p>
                     <div className="flex gap-2">
                         <a
-                            href="mailto:ke1vin.kapustian@gmail.com?Subject=I would like to ask"
+                            href="mailto:yevheni.fit@gmail.com?Subject=I would like to ask"
                             target="_top"
                             aria-label="Email"
                             className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 transition-colors duration-200 hover:bg-white/10"
@@ -55,8 +55,8 @@ const Footer = () => {
 
                 <div className="flex flex-col items-center sm:items-start gap-3">
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-white/40">Contact</h3>
-                    <a className="text-sm text-white/60 hover:text-white transition-colors" href="mailto:ke1vin.kapustian@gmail.com?Subject=I would like to ask">
-                        ke1vin.kapustian@gmail.com
+                    <a className="text-sm text-white/60 hover:text-white transition-colors" href="mailto:yevheni.fit@gmail.com?Subject=I would like to ask">
+                        yevheni.fit@gmail.com
                     </a>
                 </div>
             </div>

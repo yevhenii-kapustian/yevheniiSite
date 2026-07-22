@@ -56,7 +56,7 @@ const Form = () => {
                     </span>
                     <h1 className={`${babes.className} text-5xl sm:text-6xl leading-[0.95]`}>Build the Body You Deserve</h1>
                     <p className="max-w-md text-sm sm:text-base text-white/60">
-                        Answer a few quick questions about your goals and lifestyle — I&apos;ll personally review your answers and reach out on Instagram with a plan built around you.
+                        Answer a few quick questions about your goals and lifestyle — I&apos;ll personally review your answers and reach out on Instagram to talk through the right plan for you.
                     </p>
                     <ul className="flex flex-col gap-3 pt-2">
                         {perks.map(perk => (
