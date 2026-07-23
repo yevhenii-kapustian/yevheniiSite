@@ -7,8 +7,10 @@ import Link from "next/link";
 import { fromattedCurrancy } from "@/utils/currency";
 import { useRouter } from "next/navigation";
 import slugify from 'slugify'
-import { CaretDoubleLeft, CaretDoubleRight } from "@phosphor-icons/react";
+import { CaretDoubleLeft, CaretDoubleRight, CheckCircle } from "@phosphor-icons/react";
 import { useProducts } from "@/context/ProductsContext";
+import { babes } from "@/app/fonts";
+import Button from "@/components/Button";
 
 type ProductsPropsType = {
     showName?: boolean,
@@ -18,7 +20,7 @@ type ProductsPropsType = {
     showPath?: boolean,
     showArrows?: boolean,
     product?: ProductsType[],
-    variants?: "home" | "programs" | "product"
+    variants?: "home" | "programs" | "product" | "related"
 }
 
 const variantsStyles = {
@@ -30,29 +32,36 @@ const variantsStyles = {
         textItemsWrapperStyles: "pt-3 flex flex-col justify-between",
         nameProductStyles: "text-sm sm:text-base font-semibold",
         subDescriptionProductStyles: "text-sm sm:text-base",
-        buttonStyles: "size-fit font-semibold text-sm sm:text-base underline underline-offset-6"
+    },
+
+    related: {
+        productsContainerStyles: "grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4",
+        productsWrapperStyles: "group flex h-full flex-col overflow-hidden rounded-2xl border border-black/5 bg-white transition-shadow duration-300 hover:shadow-md",
+        imageWrapperStyles: "relative aspect-square w-full overflow-hidden",
+        imageProductStyles: "object-cover transition-transform duration-300 group-hover:scale-105",
+        textItemsWrapperStyles: "flex flex-1 flex-col gap-0.5 p-3",
+        nameProductStyles: "text-xs sm:text-sm font-semibold text-ink-strong",
+        subDescriptionProductStyles: "text-xs sm:text-sm",
     },
 
     programs: {
-        productsContainerStyles: "grid gap-5 grid-cols-2 lg:grid-cols-4",
-        productsWrapperStyles: "overflow-hidden rounded-2xl border border-black/5 bg-white transition-shadow duration-200 hover:shadow-lg",
-        imageWrapperStyles: "relative aspect-square w-full",
-        imageProductStyles: "object-cover",
+        productsContainerStyles: "grid gap-5 sm:gap-6 grid-cols-2 lg:grid-cols-5",
+        productsWrapperStyles: "group overflow-hidden rounded-2xl border border-black/5 bg-white transition-shadow duration-300 hover:shadow-lg",
+        imageWrapperStyles: "relative aspect-square w-full overflow-hidden",
+        imageProductStyles: "object-cover transition-transform duration-300 group-hover:scale-105",
         textItemsWrapperStyles: "p-4",
-        nameProductStyles: "text-sm sm:text-base font-semibold",
+        nameProductStyles: "text-sm sm:text-base font-semibold text-ink-strong",
         subDescriptionProductStyles: "text-sm sm:text-base",
-        buttonStyles: "rounded-full bg-black text-white text-sm sm:text-base"
     },
 
     product: {
-        productsContainerStyles: "",
-        productsWrapperStyles: "flex flex-col md:flex-row justify-center gap-10",
-        imageWrapperStyles: "",
-        imageProductStyles: "w-full md:w-[50%] lg:w-[35%] rounded-3xl object-contain",
-        textItemsWrapperStyles: "w-full md:w-[50%] lg:w-[35%]",
-        nameProductStyles: "pt-5 text-xl sm:text-2xl font-bold",
-        subDescriptionProductStyles: "pl-5 text-sm sm:text-base whitespace-pre-line",
-        buttonStyles: "mt-8 p-3.5 w-full inline-block rounded-full bg-black text-white text-center text-sm sm:text-base transition-colors duration-200 hover:bg-ink-strong"
+        productsContainerStyles: "mx-auto max-w-5xl",
+        productsWrapperStyles: "flex flex-col md:flex-row md:items-start justify-center gap-10 lg:gap-16",
+        imageWrapperStyles: "relative aspect-square w-full overflow-hidden rounded-3xl border border-black/5 md:w-[52%]",
+        imageProductStyles: "object-cover",
+        textItemsWrapperStyles: "w-full pt-2 md:w-[48%]",
+        nameProductStyles: "text-2xl sm:text-3xl leading-[0.95]",
+        subDescriptionProductStyles: "text-sm sm:text-base whitespace-pre-line",
     }
 }
 
@@ -84,30 +93,56 @@ const Products = ({showName = true,
                         className={`${styles.productsWrapperStyles} ${variants !== "product" ? "cursor-pointer" : undefined}`}
                         key={index}
                     >
-                        {variants === "product" ? (
-                            <Image className={styles.imageProductStyles} src={item.image} alt={item.name} width={1000} height={1000} priority/>
-                        ) : (
-                            <div className={styles.imageWrapperStyles}>
-                                <Image className={styles.imageProductStyles} src={item.image} alt={item.name} fill priority/>
-                            </div>
-                        )}
+                        <div className={styles.imageWrapperStyles}>
+                            <Image className={styles.imageProductStyles} src={item.image} alt={item.name} fill priority/>
+                        </div>
                         <div className={styles.textItemsWrapperStyles}>
                             {showPath && (
-                                            <p className="text-xs">
-                                                <Link href="/">Home {'>'} </Link>
-                                                <Link href="/programs">Programs {'>'} </Link>
-                                                <Link href={`/programs/${learnMoreLink}`}>{item.name}</Link>
-                                            </p>
+                                <p className="pb-4 text-xs text-ink-strong/50">
+                                    <Link className="hover:text-ink-strong hover:underline" href="/">Home</Link>
+                                    <span className="px-1.5">/</span>
+                                    <Link className="hover:text-ink-strong hover:underline" href="/programs">Programs</Link>
+                                    <span className="px-1.5">/</span>
+                                    <span className="text-ink-strong/80">{item.name}</span>
+                                </p>
                             )}
-                            {showName && <h4 className={styles.nameProductStyles}>{item.name}</h4> }
-                            {showPrice && <p className="text-sm sm:text-base">{fromattedCurrancy(item.price)}</p> }
+                            {showName && (
+                                <h4 className={variants === "product" ? `${babes.className} ${styles.nameProductStyles}` : styles.nameProductStyles}>
+                                    {item.name}
+                                </h4>
+                            )}
+                            {showPrice && (
+                                <p className={variants === "product"
+                                    ? "pt-2 text-lg sm:text-xl font-semibold text-ink-strong"
+                                    : variants === "related"
+                                        ? "text-xs sm:text-sm font-medium text-ink-strong/60"
+                                        : "text-sm sm:text-base font-medium text-ink-strong/60"}
+                                >
+                                    {fromattedCurrancy(item.price)}
+                                </p>
+                            )}
                             {showDescription && (
                                 <div className="mt-3 pt-3 border-t border-t-[rgba(0,0,0,0.2)]">
                                     <h5 className="text-sm sm:text-base font-bold uppercase">What's Inside:</h5>
-                                    <p className={styles.subDescriptionProductStyles}>{item.description}</p>
+                                    {variants === "product" ? (
+                                        <ul className="mt-3 flex flex-col gap-2.5">
+                                            {item.description.split("\n").map(line => line.trim()).filter(Boolean).map((line, i) => (
+                                                <li key={i} className="flex items-start gap-2 text-sm sm:text-base text-ink-strong/80">
+                                                    <CheckCircle size={18} weight="fill" className="mt-0.5 shrink-0 text-ink-strong/30" />
+                                                    <span>{line.replace(/^•\s*/, "")}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className={styles.subDescriptionProductStyles}>{item.description}</p>
+                                    )}
                                 </div>
                             )}
-                            {showBuy && <Link target="_blank" href={item.buyProduct} className={styles.buttonStyles}>Buy Now</Link> }
+                            {showBuy && (
+                                <Button href={item.buyProduct} target="_blank" variant="solid" size="sm" fullWidth className="mt-8">
+                                    Buy Now
+                                </Button>
+                            )}
                         </div>
                     </li>
                    )

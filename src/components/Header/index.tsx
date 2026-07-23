@@ -81,12 +81,12 @@ const Header = () => {
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 className="sticky left-0 top-0 z-50 w-full px-3 pt-3 sm:px-6 sm:pt-4">
                 <div className={clsx(
-                    "mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#1c1c1e]/80 px-3 py-2 backdrop-blur-xl transition-shadow duration-300 sm:px-4",
-                    isElevated
-                        ? "shadow-[0_24px_70px_rgba(0,0,0,0.35)]"
-                        : "shadow-[0_18px_60px_rgba(0,0,0,0.25)]"
-                )}>
-                    <div className="flex min-w-0 flex-1 items-center">
+                        "relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#1c1c1e]/80 px-3 py-2 backdrop-blur-xl transition-shadow duration-300 sm:px-4",
+                        isElevated
+                            ? "shadow-[0_24px_70px_rgba(0,0,0,0.35)]"
+                            : "shadow-[0_18px_60px_rgba(0,0,0,0.25)]"
+                    )}>
+                    <div className="flex min-w-0 items-center">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                             <Logo/>
                         </div>
@@ -95,34 +95,32 @@ const Header = () => {
                         </Link>
                     </div>
 
-                    <nav className="flex flex-1 items-center justify-end gap-3 lg:justify-between">
-                        <div className="hidden items-center rounded-full bg-white/10 p-1 text-sm font-medium text-white lg:flex">
-                            {navigation.map((item:Navigation) => {
-                                const isActive = pathname === item.path
-                                return (
-                                    <Link
-                                        className={clsx(
-                                            "rounded-full px-4 py-2 capitalize transition-colors duration-200",
-                                            isActive ? "bg-white text-black shadow-sm" : "text-white/70 hover:bg-white/10 hover:text-white"
-                                        )}
-                                        key={item.name}
-                                        href={item.path}
-                                        aria-current={isActive ? "page" : undefined}
-                                    >
-                                        {item.name}
-                                    </Link>
-                                )
-                            })}
-                        </div>
+                    <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center rounded-full bg-white/10 p-1 text-sm font-medium text-white lg:flex">
+                        {navigation.map((item:Navigation) => {
+                            const isActive = pathname === item.path
+                            return (
+                                <Link
+                                    className={clsx(
+                                        "rounded-full px-4 py-2 capitalize transition-colors duration-200",
+                                        isActive ? "bg-white text-black shadow-sm" : "text-white/70 hover:bg-white/10 hover:text-white"
+                                    )}
+                                    key={item.name}
+                                    href={item.path}
+                                    aria-current={isActive ? "page" : undefined}
+                                >
+                                    {item.name}
+                                </Link>
+                            )
+                        })}
+                    </div>
 
-                        <div className="hidden items-center justify-end gap-2 lg:flex">
-                            <Link
-                                href="/get-started"
-                                className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-sm transition-colors duration-200 hover:bg-white/90"
-                            >
-                                Get started
-                            </Link>
-                        </div>
+                    <div className="flex items-center justify-end gap-2">
+                        <Link
+                            href="/get-started"
+                            className="hidden rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-sm transition-colors duration-200 hover:bg-white/90 lg:inline-flex"
+                        >
+                            Get started
+                        </Link>
 
                         <button
                             onClick={toggleMobileMenu}
@@ -144,7 +142,7 @@ const Header = () => {
                                 </motion.span>
                             </AnimatePresence>
                         </button>
-                    </nav>
+                    </div>
                 </div>
             </motion.header>
 
