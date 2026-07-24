@@ -1,7 +1,7 @@
 export const fromattedCurrancy = (amount:number) => {
-    return new Intl.NumberFormat("sv-SE", {
+    return new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "SEK",
+        currency: "USD",
         minimumFractionDigits: 0
     }).format(amount)
 }

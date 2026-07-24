@@ -1,6 +1,4 @@
-import { ProductsProvider } from "@/context/ProductsContext"
-import Products from "@/components/Products"
-import { babes } from "../fonts"
+import ProgramsContent from "./ProgramsContent"
 
 export const metadata = {
     title: "Programs - Online Coaching & Fitness Programs",
@@ -8,14 +6,7 @@ export const metadata = {
 }
 
 const Programs = () => {
-    return(
-        <section className="pt-10 pb-16 px-5 lg:px-15">
-            <h1 className={`${babes.className} py-6 text-2xl sm:text-3xl lg:text-4xl text-start lg:text-center`}>All Programs</h1>
-            <ProductsProvider>
-                <Products variants="programs" showBuy={false} showDescription={false}/>
-            </ProductsProvider>
-        </section>
-    )
+    return <ProgramsContent/>
 }
 
 export default Programs
