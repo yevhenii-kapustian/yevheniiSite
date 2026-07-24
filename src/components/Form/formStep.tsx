@@ -1,8 +1,7 @@
 import { FormType } from "@/types/form";
 import React, {SetStateAction} from "react";
-import { stepButton,
-         optionButton,
-         inputTextAreaStyles } from "./styles";
+import Link from "next/link";
+import Button from "@/components/Button";
 
 type FormStepType = {
     currentQuestions: FormType,
@@ -15,10 +14,19 @@ type FormStepType = {
 export default function FormStep ({currentQuestions, onNext, setInput, input, isLastStep}:FormStepType) {
    if (currentQuestions.type === "button" && 'options' in currentQuestions) {
     return(
-        <div className="flex flex-col justify-center gap-3">
-            <h4 className="text-center text-xl font-extrabold">{currentQuestions.question}</h4>
-            <div className="flex justify-center gap-3">
-                {currentQuestions.options.map(item => <button className={optionButton} onClick={() => onNext(`${item}`)} key={item}>{item}</button> )}
+        <div className="flex flex-col justify-center gap-4">
+            <h4 className="text-center text-lg sm:text-xl font-semibold">{currentQuestions.question}</h4>
+            <div className="flex flex-wrap justify-center gap-3">
+                {currentQuestions.options.map(item => (
+                    <Button
+                        variant="solid-light"
+                        size="sm"
+                        onClick={() => onNext(`${item}`)}
+                        key={item}
+                    >
+                        {item}
+                    </Button>
+                ))}
             </div>
         </div>
     )
@@ -32,22 +40,24 @@ export default function FormStep ({currentQuestions, onNext, setInput, input, is
 
     return(
         <div className="flex flex-col gap-5">
-            <textarea className={inputTextAreaStyles}
-                     rows={1} 
-                     onChange={e => setInput(e.currentTarget.value)} 
-                     value={input} 
-                     placeholder={currentQuestions.question} 
+            <textarea className="p-3 rounded-2xl border border-white/15 bg-white/5 resize-none outline-none text-sm sm:text-base text-white placeholder:text-white/40"
+                     rows={1}
+                     onChange={e => setInput(e.currentTarget.value)}
+                     value={input}
+                     placeholder={currentQuestions.question}
                      name="name"
                      />
-            <button disabled={isButtonDisabled} 
-                    className={`${stepButton} disabled:opacity-50 disabled:cursor-default`} 
-                    type={isLastStep ? "submit" : "button"} 
-                    onClick={!isLastStep ? () => onNext(input) : undefined}
+            <Button
+                disabled={isButtonDisabled}
+                variant="solid-light"
+                size="sm"
+                type={isLastStep ? "submit" : "button"}
+                onClick={!isLastStep ? () => onNext(input) : undefined}
                     >
                 {isLastStep ? "Submit" : "Next"}
-            </button>
-            {isLastStep && <p className="text-[14px] opacity-80">
-                                *By clicking <strong>Submit</strong>, you agree to our <a className="underline" href="/legal/privacy">Privacy Policy</a>.
+            </Button>
+            {isLastStep && <p className="text-xs sm:text-sm text-white/50">
+                                *By clicking <strong>Submit</strong>, you agree to our <Link className="underline" href="/legal/privacy">Privacy Policy</Link>.
                                 Your information will remain confidential and used only for the purpose of this request.
                             </p>
             }

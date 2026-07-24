@@ -3,9 +3,7 @@
 import WelcomeSection from "@/components/WelcomeSection";
 import WellnessSection from "@/components/WellnessSection";
 import BenefitsSection from "@/components/BenefitsSection";
-import Form from "@/components/Form/form";
 import LayoutWrapperMotion from "./motion-wrapper";
-import StatsSection from "@/components/StatsSection";
 import ClientTransformationSection from "@/components/ClientTransformationSection";
 import FAQs from "@/components/FAQsSection";
 
@@ -14,9 +12,9 @@ export default function Home() {
     <>
     <LayoutWrapperMotion>
       <WelcomeSection title={<>
-                            <span className="max-sm:text-5xl">This is your moment.</span> 
-                            <br/><span className="max-sm:text-[clamp(4.5rem,17vw,6rem)]">Right here. Right now.</span> 
-                            <br/><span className="max-sm:text-[clamp(5rem,20vw,8rem)]">On site.</span></>
+                            This is your moment.
+                            <br/><span className="text-white/45">Right here. Right now.</span>
+                            <br/>On site.</>
                             }
                       description="Stop waiting for “Monday”. Start now. The gym builds more than 
                                    muscles — it builds confidence. With us, you'll get a custom workout
@@ -25,9 +23,7 @@ export default function Home() {
       />
       <WellnessSection/>
       <BenefitsSection/>
-      <StatsSection/>
       <ClientTransformationSection/>
-      <Form/>
       <FAQs/>
     </LayoutWrapperMotion>
     </>

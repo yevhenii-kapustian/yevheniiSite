@@ -1,7 +1,7 @@
 "use client";
 import CookieConsent from "react-cookie-consent";
 import Script from "next/script";
-import { cookieContainer, cookieWrapperButtons, cookieButton } from "./styles";
+import Link from "next/link";
 
 export default function CookieConsentBanner() {
   const fbPixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
@@ -14,15 +14,15 @@ export default function CookieConsentBanner() {
         enableDeclineButton
         cookieName="user_cookie_consent"
         disableStyles={true}
-        containerClasses={cookieContainer}
-        buttonWrapperClasses={cookieWrapperButtons}
-        buttonClasses={`${cookieButton} bg-[#4ade80] text-black`}
-        declineButtonClasses={`${cookieButton} bg-[#ef4444] text-white`}
+        containerClasses="fixed inset-x-4 bottom-4 sm:inset-x-auto sm:right-4 sm:max-w-md z-40 flex flex-col sm:flex-row items-center gap-4 rounded-2xl border border-white/10 bg-surface/95 backdrop-blur-xl p-5 text-white text-sm shadow-[0_24px_70px_rgba(0,0,0,0.35)]"
+        buttonWrapperClasses="flex gap-2 shrink-0"
+        buttonClasses="px-4 py-2 font-semibold text-sm rounded-full cursor-pointer bg-white text-black transition-colors duration-150 hover:bg-white/90"
+        declineButtonClasses="px-4 py-2 font-semibold text-sm rounded-full cursor-pointer bg-white/10 text-white transition-colors duration-150 hover:bg-white/15"
         expires={365}
       >
         <p>
           We use cookies to improve your experience and show you relevant advertising.
-          Click <strong>"Accept"</strong> to agree or <strong>"Decline"</strong> to opt out. Find out more in the <a className="underline" href="/legal/privacy">Privacy Policy</a>.
+          Click <strong>"Accept"</strong> to agree or <strong>"Decline"</strong> to opt out. Find out more in the <Link className="underline" href="/legal/privacy">Privacy Policy</Link>.
         </p>
       </CookieConsent>
 

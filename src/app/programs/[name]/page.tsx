@@ -1,26 +1,44 @@
-'use client'
+import type { Metadata } from "next"
+import { createClient } from "@supabase/supabase-js"
+import slugify from "slugify"
+import ProductPageContent from "./ProductPageContent"
 
-import { useParams } from "next/navigation"
-import { products } from "@/data/products"
-import Products from "@/components/Products"
-import slugify from 'slugify'
+const getSupabase = () => createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const getProductBySlug = async (slug: string) => {
+    const supabase = getSupabase()
+    const { data } = await supabase.from("products").select("name, description, image")
+    return data?.find(item => slugify(item.name, { lower: true, strict: true }) === slug) ?? null
+}
+
+type PageProps = {
+    params: Promise<{ name: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { name } = await params
+    const product = await getProductBySlug(decodeURIComponent(name))
+
+    if (!product) {
+        return { title: "Program Not Found - Yevhenii Fit" }
+    }
+
+    const teaser = product.description.split("\n")[0]?.replace(/^•\s*/, "").trim()
+
+    return {
+        title: `${product.name} - Online Coaching & Fitness Programs`,
+        description: teaser || `${product.name} — a digital training and nutrition program by Yevhenii Fit.`,
+        openGraph: {
+            title: product.name,
+            description: teaser,
+            images: [{ url: product.image }],
+        },
+    }
+}
 
 export default function ProductPage () {
-    const params = useParams<{name: string}>()
-    const name = decodeURIComponent(params?.name || "")
-
-    const allProducts = products.get("plans")
-    const productSlug = allProducts?.find(p => slugify(p.name, {strict: true, lower: true}) === name)
-
-    return(
-        <section className="pt-[120px] pb-[40px] px-15 h-full max-sm:px-5">
-            <div>
-                <Products showPath={true} variants="product" product={productSlug ? [productSlug] : []}/>
-            </div>
-            <h3 className="mt-10 text-xl font-semibold text-center">You might also like</h3>
-            <div className="mt-10">
-                <Products showPath={false} showBuy={false} showDescription={false} variants="home"/>
-            </div>
-        </section>
-    )
+    return <ProductPageContent/>
 }
