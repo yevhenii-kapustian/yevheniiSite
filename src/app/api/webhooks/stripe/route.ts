@@ -27,7 +27,7 @@ const sendPurchaseEmail = async (email: string, productName: string, downloadUrl
                 </p>
                 <p style="margin: 24px 0;">
                     <a href="${downloadUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 999px; font-weight: 600; font-size: 14px;">
-                        Download your plan
+                        Get your link
                     </a>
                 </p>
                 <p style="font-size: 13px; color: #888;">

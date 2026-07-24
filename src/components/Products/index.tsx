@@ -168,12 +168,12 @@ const Products = ({showName = true,
                             )}
                             {showBuy && (
                                 <div className="mt-8 flex flex-col gap-3">
-                                    <label className="flex items-start gap-2 text-xs text-ink-strong/60">
+                                    <label className="flex items-start gap-2 text-xs text-ink-strong/60 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={agreedToTermsId === item.id}
                                             onChange={e => setAgreedToTermsId(e.target.checked ? item.id : null)}
-                                            className="mt-0.5 h-4 w-4 shrink-0 accent-black"
+                                            className="mt-0.5 h-4 w-4 shrink-0 accent-black cursor-pointer"
                                         />
                                         <span>I understand I&apos;ll get instant access to this digital plan right after payment.</span>
                                     </label>

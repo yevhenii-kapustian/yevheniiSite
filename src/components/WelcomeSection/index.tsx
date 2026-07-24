@@ -21,7 +21,7 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                     <Image
                         className="w-full h-full object-cover object-[75%_25%] sm:object-[70%_25%] lg:object-[0_25%]"
                         src="/welcomeSection.jpg"
-                        alt="welcome image"
+                        alt="Yevhenii Fit online personal training and coaching"
                         fill
                         priority
                     />

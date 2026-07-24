@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /checkout/
+Disallow: /legal$
 
 Sitemap: https://www.yevheniifit.com/sitemap.xml
 Host: https://www.yevheniifit.com
