@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
             email: session.customer_details?.email ?? null,
             amount: session.amount_total,
             currency: session.currency,
+            terms_accepted: session.metadata?.termsAccepted === "true",
         }, { onConflict: "session_id", ignoreDuplicates: true })
 
         // Atomically claim the download link: this only succeeds the *first* time

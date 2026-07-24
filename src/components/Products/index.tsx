@@ -74,6 +74,7 @@ const Products = ({showName = true,
 
     const { containerRef, isAtStart, isAtEnd, handleScrollLeft, handleScrollRight } = useProducts()
     const [checkoutLoadingId, setCheckoutLoadingId] = useState<number | null>(null)
+    const [agreedToTermsId, setAgreedToTermsId] = useState<number | null>(null)
 
     const handleBuyNow = async (e: React.MouseEvent, productId: number) => {
         e.stopPropagation()
@@ -82,7 +83,7 @@ const Products = ({showName = true,
             const res = await fetch("/api/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ productId })
+                body: JSON.stringify({ productId, termsAccepted: agreedToTermsId === productId })
             })
             const data = await res.json()
             if (data.url) {
@@ -166,16 +167,26 @@ const Products = ({showName = true,
                                 </div>
                             )}
                             {showBuy && (
-                                <Button
-                                    onClick={(e: React.MouseEvent) => handleBuyNow(e, item.id)}
-                                    disabled={checkoutLoadingId === item.id}
-                                    variant="solid"
-                                    size="sm"
-                                    fullWidth
-                                    className="mt-8"
-                                >
-                                    {checkoutLoadingId === item.id ? "Redirecting…" : "Buy Now"}
-                                </Button>
+                                <div className="mt-8 flex flex-col gap-3">
+                                    <label className="flex items-start gap-2 text-xs text-ink-strong/60">
+                                        <input
+                                            type="checkbox"
+                                            checked={agreedToTermsId === item.id}
+                                            onChange={e => setAgreedToTermsId(e.target.checked ? item.id : null)}
+                                            className="mt-0.5 h-4 w-4 shrink-0 accent-black"
+                                        />
+                                        <span>I understand I&apos;ll get instant access to this digital plan right after payment.</span>
+                                    </label>
+                                    <Button
+                                        onClick={(e: React.MouseEvent) => handleBuyNow(e, item.id)}
+                                        disabled={checkoutLoadingId === item.id || agreedToTermsId !== item.id}
+                                        variant="solid"
+                                        size="sm"
+                                        fullWidth
+                                    >
+                                        {checkoutLoadingId === item.id ? "Redirecting…" : "Buy Now"}
+                                    </Button>
+                                </div>
                             )}
                         </div>
                     </li>
