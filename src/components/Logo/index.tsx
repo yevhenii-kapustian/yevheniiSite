@@ -6,7 +6,7 @@ import Link from "next/link"
 const Logo = () => {
     return(
         <Link href="/"><Image src="/logo-site.png"
-                            alt="logo"
+                            alt="Yevhenii Fit logo"
                             width={1000}
                             height={1000}
                             priority

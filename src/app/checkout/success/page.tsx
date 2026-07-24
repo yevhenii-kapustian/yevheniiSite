@@ -72,7 +72,7 @@ function CheckoutSuccessContent () {
                     </p>
                     {result?.downloadUrl ? (
                         <Button href={result.downloadUrl} target="_blank" variant="solid" size="sm" className="mt-2">
-                            Download your plan
+                            Get your link
                         </Button>
                     ) : result?.alreadyClaimed ? (
                         <p className="max-w-md text-sm text-ink-strong/60">

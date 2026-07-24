@@ -9,7 +9,7 @@ const getSupabase = () => createClient(
 
 export async function POST(req: NextRequest) {
     try {
-        const { productId } = await req.json()
+        const { productId, termsAccepted } = await req.json()
         if (!productId) {
             return NextResponse.json({ message: "Missing productId" }, { status: 400 })
         }
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
                 },
                 quantity: 1,
             }],
-            metadata: { productId: String(product.id) },
+            metadata: { productId: String(product.id), termsAccepted: termsAccepted ? "true" : "false" },
             success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${origin}/programs`,
         })

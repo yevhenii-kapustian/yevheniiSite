@@ -3,7 +3,7 @@ import Button from "@/components/Button"
 
 export const metadata = {
     title: "Terms & Conditions",
-    description: "Learn how we collect, use, and protect your personal data. Your privacy and trust are important to us. Read our full Privacy Policy to understand your rights.",
+    description: "Read the terms and conditions for using Yevhenii Fit's coaching programs, digital products, and website, including payment, delivery, and risk disclosures.",
 }
 
 const TermsConditions = () => {
@@ -19,6 +19,15 @@ const TermsConditions = () => {
                         As with any exercise program, you assume certain risks to your health and safety. Any form of exercise program can cause injuries, and our programs are no exception. It is possible that you may become injured doing the exercises in your program, especially if they are done with poor form. Although thorough instruction is included on the form for each exercise. Be aware that our programs (like any other exercise program) do involve a risk of injury. If you choose to participate in these risks, you do so of your own free will and accord, knowingly and voluntarily assuming all risks associated with such exercise activities. These risks may also exist for those who are currently in good health right now.
                         We are not medical practitioners. Our advice whether it be on our website, in our meal plans, exercise program's or via email coaching, none of it is meant as a substitute for medical advice. You must consult your doctor before beginning ANY meal plan or exercise program, with no exceptions. You are using our plans, programs, workout's and coaching at your own risk and we are not responsible for any injuries or health problems you may experience or even death as a result of using our programs.
                         It is to be made clear that we are not responsible for any injuries or health problems you may experience or even death as a result of using any of our products or services.
+                    </p>
+                </div>
+
+                <div className="border-t border-black/5 pt-8">
+                    <h3 className="pb-3 text-lg sm:text-xl font-semibold">Payments, delivery & refunds</h3>
+                    <p className="text-sm sm:text-base text-ink-strong/80">
+                        Payments are processed securely by Stripe. We do not collect or store your card details.
+                        After a successful purchase, you&apos;ll receive a one-time link to access your program. This link can only be used once, so please save your copy of the program somewhere safe as soon as you receive it.
+                        Because our programs are digital products delivered instantly, all sales are final once your access link has been used. If you never received your link, or run into any issue accessing your purchase, contact us at yevheni.fit@gmail.com and we&apos;ll make it right.
                     </p>
                 </div>
 
