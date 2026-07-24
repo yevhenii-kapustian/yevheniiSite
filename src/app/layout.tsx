@@ -5,7 +5,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ProductsProvider } from "@/context/ProductsContext";
 import CookieConsentBanner from "@/components/Cookie";
-import GoogleAnalytics from "@/components/scripts/GoogleAnalytics";
 import { siteMetadata } from "@/config/siteMetadata";
 import OrganizationSchema from "@/components/scripts/OrganizationSchema";
 
@@ -25,7 +24,6 @@ export default function RootLayout({
   return (
     <html lang="en-SE">
       <body className={`${openSans.className} antialiased flex flex-col`}>
-        <GoogleAnalytics/>
         <OrganizationSchema/>
         <Header />
         <main className="flex-grow">
