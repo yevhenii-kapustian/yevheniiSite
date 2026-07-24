@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Button from "@/components/Button"
@@ -14,6 +14,18 @@ type DownloadResult = {
 }
 
 export default function CheckoutSuccess () {
+    return (
+        <Suspense fallback={
+            <section className="flex min-h-[60vh] items-center justify-center px-5 py-24">
+                <LoadingIcons.Oval stroke="currentColor" />
+            </section>
+        }>
+            <CheckoutSuccessContent/>
+        </Suspense>
+    )
+}
+
+function CheckoutSuccessContent () {
     const searchParams = useSearchParams()
     const sessionId = searchParams.get("session_id")
 
