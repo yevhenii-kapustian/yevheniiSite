@@ -1,7 +1,7 @@
 'use client'
 
 import Image from "next/image";
-import { products } from "@/data/products"
+import { useState } from "react";
 import { ProductsType } from "@/types/products";
 import Link from "next/link";
 import { fromattedCurrancy } from "@/utils/currency";
@@ -9,8 +9,11 @@ import { useRouter } from "next/navigation";
 import slugify from 'slugify'
 import { CaretDoubleLeft, CaretDoubleRight, CheckCircle } from "@phosphor-icons/react";
 import { useProducts } from "@/context/ProductsContext";
+import { useProductsData } from "@/hooks/useProductsData";
 import { babes } from "@/app/fonts";
 import Button from "@/components/Button";
+
+const SKELETON_COUNT = 5
 
 type ProductsPropsType = {
     showName?: boolean,
@@ -20,7 +23,7 @@ type ProductsPropsType = {
     showPath?: boolean,
     showArrows?: boolean,
     product?: ProductsType[],
-    variants?: "home" | "programs" | "product" | "related"
+    variants?: "home" | "product" | "related"
 }
 
 const variantsStyles = {
@@ -44,16 +47,6 @@ const variantsStyles = {
         subDescriptionProductStyles: "text-xs sm:text-sm",
     },
 
-    programs: {
-        productsContainerStyles: "grid gap-5 sm:gap-6 grid-cols-2 lg:grid-cols-5",
-        productsWrapperStyles: "group overflow-hidden rounded-2xl border border-black/5 bg-white transition-shadow duration-300 hover:shadow-lg",
-        imageWrapperStyles: "relative aspect-square w-full overflow-hidden",
-        imageProductStyles: "object-cover transition-transform duration-300 group-hover:scale-105",
-        textItemsWrapperStyles: "p-4",
-        nameProductStyles: "text-sm sm:text-base font-semibold text-ink-strong",
-        subDescriptionProductStyles: "text-sm sm:text-base",
-    },
-
     product: {
         productsContainerStyles: "mx-auto max-w-5xl",
         productsWrapperStyles: "flex flex-col md:flex-row md:items-start justify-center gap-10 lg:gap-16",
@@ -74,19 +67,53 @@ const Products = ({showName = true,
                    product: customProduct,
                    variants="home"}: ProductsPropsType) => {
 
-    const allProducts = products.get('plans');
-    const productsToShow = customProduct ?? allProducts;
+    const { products: fetchedProducts, loading } = useProductsData(!customProduct)
+    const productsToShow = customProduct ?? fetchedProducts;
     const styles = variantsStyles[variants]
     const router = useRouter()
 
     const { containerRef, isAtStart, isAtEnd, handleScrollLeft, handleScrollRight } = useProducts()
+    const [checkoutLoadingId, setCheckoutLoadingId] = useState<number | null>(null)
+
+    const handleBuyNow = async (e: React.MouseEvent, productId: number) => {
+        e.stopPropagation()
+        setCheckoutLoadingId(productId)
+        try {
+            const res = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ productId })
+            })
+            const data = await res.json()
+            if (data.url) {
+                window.location.href = data.url
+            } else {
+                setCheckoutLoadingId(null)
+            }
+        } catch (error) {
+            console.log(error)
+            setCheckoutLoadingId(null)
+        }
+    }
+
+    const isLoadingList = loading && !customProduct
 
     return(
         <>
         {showArrows && <CaretDoubleLeft className={`hidden sm:block shrink-0 transition-opacity duration-150 ${isAtStart ? "opacity-30 cursor-default" : "opacity-70 hover:opacity-100 cursor-pointer"}`}
                                         onClick={handleScrollLeft} size={32}/>}
         <ul ref={containerRef} className={`${styles.productsContainerStyles} scrollbar-hide`}>
-            {productsToShow?.map((item:ProductsType, index:number) => {
+            {isLoadingList ? Array.from({ length: SKELETON_COUNT }).map((_, index) => (
+                <li className={styles.productsWrapperStyles} key={index}>
+                    <div className={`${styles.imageWrapperStyles} animate-pulse bg-black/5`}/>
+                    <div className={styles.textItemsWrapperStyles}>
+                        <div className="flex w-full flex-1 flex-col gap-2">
+                            <div className="h-4 w-3/4 animate-pulse rounded-full bg-black/10"/>
+                            {showPrice && <div className="h-4 w-1/4 animate-pulse rounded-full bg-black/10"/>}
+                        </div>
+                    </div>
+                </li>
+            )) : productsToShow?.map((item:ProductsType, index:number) => {
                 const learnMoreLink = slugify(item.name, {lower: true, strict: true})
                 return(
                     <li onClick={variants !== "product" ? () => router.push(`/programs/${learnMoreLink}`) : undefined}
@@ -139,8 +166,15 @@ const Products = ({showName = true,
                                 </div>
                             )}
                             {showBuy && (
-                                <Button href={item.buyProduct} target="_blank" variant="solid" size="sm" fullWidth className="mt-8">
-                                    Buy Now
+                                <Button
+                                    onClick={(e: React.MouseEvent) => handleBuyNow(e, item.id)}
+                                    disabled={checkoutLoadingId === item.id}
+                                    variant="solid"
+                                    size="sm"
+                                    fullWidth
+                                    className="mt-8"
+                                >
+                                    {checkoutLoadingId === item.id ? "Redirecting…" : "Buy Now"}
                                 </Button>
                             )}
                         </div>

@@ -1,20 +1,29 @@
 'use client'
 
 import { useParams } from "next/navigation"
-import { products } from "@/data/products"
+import { useProductsData } from "@/hooks/useProductsData"
 import Products from "@/components/Products"
 import Button from "@/components/Button"
 import Link from "next/link"
 import slugify from 'slugify'
 import { babes } from "@/app/fonts"
+import LoadingIcons from 'react-loading-icons'
 
 export default function ProductPage () {
     const params = useParams<{name: string}>()
     const name = decodeURIComponent(params?.name || "")
 
-    const allProducts = products.get("plans")
-    const productSlug = allProducts?.find(p => slugify(p.name, {strict: true, lower: true}) === name)
-    const relatedProducts = allProducts?.filter(p => p !== productSlug)
+    const { products: allProducts, loading } = useProductsData()
+    const productSlug = allProducts.find(p => slugify(p.name, {strict: true, lower: true}) === name)
+    const relatedProducts = allProducts.filter(p => p !== productSlug)
+
+    if (loading) {
+        return (
+            <section className="flex justify-center px-5 py-24">
+                <LoadingIcons.Oval stroke="currentColor" />
+            </section>
+        )
+    }
 
     if (!productSlug) {
         return(
