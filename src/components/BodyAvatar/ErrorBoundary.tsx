@@ -24,7 +24,7 @@ class BodyAvatarErrorBoundary extends Component<Props, State> {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="flex h-full w-full items-center justify-center p-6 text-center text-sm text-ink-strong/60">
+                <div className="flex h-full w-full items-center justify-center p-6 text-center text-sm text-ink-strong/50">
                     Couldn&apos;t load the 3D preview. Your stats and calorie plan below still work fine.
                 </div>
             )
