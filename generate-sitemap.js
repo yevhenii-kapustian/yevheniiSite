@@ -32,6 +32,7 @@ const staticPages = [
   'about',
   'programs',
   'get-started',
+  'transform',
 ];
 
 async function getProgramPages() {
