@@ -16,8 +16,8 @@ const nextConfig: NextConfig = {
             value: `
               default-src 'self';
               script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net 'unsafe-eval' 'unsafe-inline';
-              connect-src 'self' https://region1.google-analytics.com https://www.google-analytics.com https://connect.facebook.net;
-              img-src 'self' https://www.yevheniifit.com https: data:;
+              connect-src 'self' https://region1.google-analytics.com https://www.google-analytics.com https://connect.facebook.net blob:;
+              img-src 'self' https://www.yevheniifit.com https: data: blob:;
               style-src 'self' https://fonts.googleapis.com 'unsafe-inline';
               font-src 'self' https://fonts.gstatic.com;
             `.replace(/\n/g, ' '),
