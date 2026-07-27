@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe";
-
-const getSupabase = () => createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { getProductForCheckout } from "@/supabase/queries";
 
 export async function POST(req: NextRequest) {
     try {
@@ -14,14 +9,9 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "Missing productId" }, { status: 400 })
         }
 
-        const supabase = getSupabase()
-        const { data: product, error } = await supabase
-            .from("products")
-            .select("id, name, price")
-            .eq("id", productId)
-            .single()
+        const product = await getProductForCheckout(productId)
 
-        if (error || !product) {
+        if (!product) {
             return NextResponse.json({ message: "Product not found" }, { status: 404 })
         }
 

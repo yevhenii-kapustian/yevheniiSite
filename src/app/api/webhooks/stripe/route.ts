@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe";
 import { getResend } from "@/lib/resend";
+import { getProductForFulfillment, getPurchaseBySessionId, upsertPurchase } from "@/supabase/queries";
 import type Stripe from "stripe";
-
-const getSupabase = () => createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const sendPurchaseEmail = async (email: string, productName: string, downloadUrl: string) => {
     const from = process.env.RESEND_FROM_EMAIL
@@ -56,22 +51,13 @@ export async function POST(req: NextRequest) {
         const productId = session.metadata?.productId
 
         if (productId) {
-            const supabase = getSupabase()
-            const { data: product } = await supabase
-                .from("products")
-                .select("id, name, download_url")
-                .eq("id", productId)
-                .single()
+            const product = await getProductForFulfillment(productId)
 
             if (product) {
                 // Check first so we only email once, even if Stripe retries this webhook.
-                const { data: existing } = await supabase
-                    .from("purchases")
-                    .select("id")
-                    .eq("session_id", session.id)
-                    .maybeSingle()
+                const existing = await getPurchaseBySessionId(session.id)
 
-                await supabase.from("purchases").upsert({
+                await upsertPurchase({
                     session_id: session.id,
                     product_id: product.id,
                     product_name: product.name,
@@ -79,7 +65,7 @@ export async function POST(req: NextRequest) {
                     amount: session.amount_total,
                     currency: session.currency,
                     terms_accepted: session.metadata?.termsAccepted === "true",
-                }, { onConflict: "session_id" })
+                })
 
                 const email = session.customer_details?.email
                 if (!existing && email && product.download_url) {

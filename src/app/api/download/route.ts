@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe";
-
-const getSupabase = () => createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { getProductForFulfillment, upsertPurchase, claimPurchaseDownload } from "@/supabase/queries";
 
 export async function GET(req: NextRequest) {
     try {
@@ -26,20 +21,15 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ message: "Missing product reference" }, { status: 400 })
         }
 
-        const supabase = getSupabase()
-        const { data: product, error } = await supabase
-            .from("products")
-            .select("id, name, download_url")
-            .eq("id", productId)
-            .single()
+        const product = await getProductForFulfillment(productId)
 
-        if (error || !product) {
+        if (!product) {
             return NextResponse.json({ message: "Product not found" }, { status: 404 })
         }
 
         // Make sure a purchase row exists (won't touch revealed_at if it's already there,
         // e.g. created earlier by the Stripe webhook).
-        await supabase.from("purchases").upsert({
+        await upsertPurchase({
             session_id: sessionId,
             product_id: product.id,
             product_name: product.name,
@@ -47,18 +37,12 @@ export async function GET(req: NextRequest) {
             amount: session.amount_total,
             currency: session.currency,
             terms_accepted: session.metadata?.termsAccepted === "true",
-        }, { onConflict: "session_id", ignoreDuplicates: true })
+        }, true)
 
         // Atomically claim the download link: this only succeeds the *first* time
         // it's called for this session_id, so forwarding the success-page URL to
         // someone else won't let them reveal the link a second time.
-        const { data: claimed } = await supabase
-            .from("purchases")
-            .update({ revealed_at: new Date().toISOString() })
-            .eq("session_id", sessionId)
-            .is("revealed_at", null)
-            .select()
-            .maybeSingle()
+        const claimed = await claimPurchaseDownload(sessionId)
 
         if (!claimed) {
             return NextResponse.json({

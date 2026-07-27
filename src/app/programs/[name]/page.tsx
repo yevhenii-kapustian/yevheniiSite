@@ -1,16 +1,10 @@
 import type { Metadata } from "next"
-import { createClient } from "@supabase/supabase-js"
 import slugify from "slugify"
+import { getAllProductBasics } from "@/supabase/queries"
 import ProductPageContent from "./ProductPageContent"
 
-const getSupabase = () => createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 const getProductBySlug = async (slug: string) => {
-    const supabase = getSupabase()
-    const { data } = await supabase.from("products").select("name, description, image")
+    const data = await getAllProductBasics()
     return data?.find(item => slugify(item.name, { lower: true, strict: true }) === slug) ?? null
 }
 

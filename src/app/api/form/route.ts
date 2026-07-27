@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { countRecentLeadSubmissions, insertLead } from "@/supabase/queries";
 
 const RATE_LIMIT_MAX_SUBMISSIONS = 3
 const RATE_LIMIT_WINDOW_MINUTES = 10
@@ -15,11 +15,6 @@ type LeadPayload = {
     instagram: string
     website?: string
 }
-
-const getSupabase = () => createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const getClientIp = (req: NextRequest): string => {
     const forwardedFor = req.headers.get("x-forwarded-for")
@@ -60,22 +55,15 @@ export async function POST(req: NextRequest) {
         }
 
         const ip = getClientIp(req)
-        const supabase = getSupabase()
 
         const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000).toISOString()
-        const { count, error: countError } = await supabase
-            .from("leads")
-            .select("*", { count: "exact", head: true })
-            .eq("ip", ip)
-            .gte("created_at", windowStart)
+        const count = await countRecentLeadSubmissions(ip, windowStart)
 
-        if (countError) throw countError
-
-        if ((count ?? 0) >= RATE_LIMIT_MAX_SUBMISSIONS) {
+        if (count >= RATE_LIMIT_MAX_SUBMISSIONS) {
             return NextResponse.json({message: "Too many requests"}, {status: 429})
         }
 
-        const { error } = await supabase.from("leads").insert({
+        await insertLead({
             goal: body.goal,
             gender: body.gender,
             age: body.age,
@@ -86,8 +74,6 @@ export async function POST(req: NextRequest) {
             instagram: body.instagram,
             ip,
         })
-
-        if (error) throw error
 
         await sendTelegramNotification(body)
 

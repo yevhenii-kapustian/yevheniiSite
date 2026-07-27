@@ -1,20 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const getSupabase = () => createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { getActiveProducts } from "@/supabase/queries";
 
 export async function GET() {
     try {
-        const supabase = getSupabase()
-        const { data, error } = await supabase
-            .from("products")
-            .select("id, name, image, description, price")
-            .order("sort_order", { ascending: true })
-
-        if (error) throw error
+        const data = await getActiveProducts()
 
         const products = data.map(item => ({
             id: item.id,
