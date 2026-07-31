@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 
 import { navigation, Navigation } from "@/data/navigation";
+import { getBrowserClient } from "@/supabase/browser-client";
 import Logo from "../Logo";
 
 const SCROLL_THRESHOLD = 20;
@@ -35,6 +36,23 @@ const Header = () => {
     const drawerRef = useRef<HTMLDivElement>(null);
 
     const pathname = usePathname();
+    const [userEmail, setUserEmail] = useState<string | null>(null);
+
+    useEffect(() => {
+        const supabase = getBrowserClient()
+        supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null))
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUserEmail(session?.user.email ?? null)
+        })
+
+        return () => subscription.unsubscribe()
+    }, [])
+
+    const handleSignOut = async () => {
+        await getBrowserClient().auth.signOut()
+        window.location.href = "/"
+    }
 
     const toggleMobileMenu = ():void => {
         setMobileOpen(!mobileOpen)
@@ -83,8 +101,8 @@ const Header = () => {
                 <div className={clsx(
                         "relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#1c1c1e]/80 px-3 py-2 backdrop-blur-xl transition-shadow duration-300 sm:px-4",
                         isElevated
-                            ? "shadow-[0_24px_70px_rgba(0,0,0,0.35)]"
-                            : "shadow-[0_18px_60px_rgba(0,0,0,0.25)]"
+                            ? "shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+                            : "shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
                     )}>
                     <div className="flex min-w-0 items-center">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center">
@@ -115,12 +133,37 @@ const Header = () => {
                     </div>
 
                     <div className="flex items-center justify-end gap-2">
-                        <Link
-                            href="/get-started"
-                            className="hidden rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-sm transition-colors duration-200 hover:bg-white/90 lg:inline-flex"
-                        >
-                            Get started
-                        </Link>
+                        {userEmail ? (
+                            <>
+                                <button
+                                    onClick={handleSignOut}
+                                    className="hidden rounded-full px-4 py-2.5 text-sm font-semibold text-white/70 transition-colors duration-200 hover:text-white lg:inline-flex"
+                                >
+                                    Sign out
+                                </button>
+                                <Link
+                                    href="/my-profile"
+                                    className="hidden rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-sm transition-colors duration-200 hover:bg-white/90 lg:inline-flex"
+                                >
+                                    My Profile
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="hidden rounded-full px-4 py-2.5 text-sm font-semibold text-white/70 transition-colors duration-200 hover:text-white lg:inline-flex"
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    href="/get-started"
+                                    className="hidden rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-sm transition-colors duration-200 hover:bg-white/90 lg:inline-flex"
+                                >
+                                    Get started
+                                </Link>
+                            </>
+                        )}
 
                         <button
                             onClick={toggleMobileMenu}
@@ -194,15 +237,43 @@ const Header = () => {
                             })}
                         </motion.ul>
 
-                        <div className="border-t border-white/10 px-6 py-4">
-                            <Link
-                                href="/get-started"
-                                onClick={() => setMobileOpen(false)}
-                                className="flex items-center justify-between py-2 text-sm font-semibold text-white"
-                            >
-                                Get started
-                                <CaretRight size={16} weight="bold" className="text-white/50" />
-                            </Link>
+                        <div className="flex flex-col border-t border-white/10 px-6 py-4">
+                            {userEmail ? (
+                                <>
+                                    <Link
+                                        href="/my-profile"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex items-center justify-between py-2 text-sm font-semibold text-white"
+                                    >
+                                        My Profile
+                                        <CaretRight size={16} weight="bold" className="text-white/50" />
+                                    </Link>
+                                    <button
+                                        onClick={() => { setMobileOpen(false); handleSignOut() }}
+                                        className="flex items-center justify-between py-2 text-left text-sm font-semibold text-white/70"
+                                    >
+                                        Sign out
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link
+                                        href="/get-started"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex items-center justify-between py-2 text-sm font-semibold text-white"
+                                    >
+                                        Get started
+                                        <CaretRight size={16} weight="bold" className="text-white/50" />
+                                    </Link>
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex items-center justify-between py-2 text-sm font-semibold text-white/70"
+                                    >
+                                        Login
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 )}

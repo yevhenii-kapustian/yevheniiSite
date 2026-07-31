@@ -1,97 +1,63 @@
-import { formMerged } from "@/data/form"
-import { FormType } from "@/types/form"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-
-const REDIRECT_DELAY_MS = 2500
+import { formSteps, PRODUCT_ID_BY_CHOICE } from "@/data/form"
+import { QuizAnswers } from "@/types/form"
+import { useState } from "react"
 
 export default function useFormLogic () {
-        const router = useRouter()
         const [step, setStep] = useState<number>(0)
-        const [answers, setAnswers] = useState<string[]>([])
+        const [answers, setAnswers] = useState<QuizAnswers>({})
         const [input, setInput] = useState<string>('')
         const [loading, setLoading] = useState<boolean>(false)
-        const [submitted, setSubmitted] = useState<boolean>(false)
-        const [honeypot, setHoneypot] = useState<string>('')
+        const [error, setError] = useState<string>('')
 
-        const currentQuestions:FormType = formMerged[step];
+        const currentQuestions = formSteps[step];
+        const isLastStep = step === formSteps.length - 1
 
-        useEffect(() => {
-            if (submitted) {
-                const timer = setTimeout(() => {
-                    router.push("/programs")
-                }, REDIRECT_DELAY_MS)
-                return () => clearTimeout(timer)
-            }
-        }, [submitted, router])
-    
-        const postFormData = async (data: object) => {
-            const response = await fetch("/api/form", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data)
-            })
-            return await response.json()
-        }
-    
-        const handleNext = (value:string): void => {
-            if (currentQuestions.type === "button") {
-                setAnswers(prev => [...prev, value])
-                setStep(prev => prev + 1);
-            }
-    
-            if (currentQuestions.type === "input") {
-                setAnswers([...answers, input])
-                setInput('')
-                setStep(prev => prev + 1);
-            }
-        }
-    
-        const handleSubmit = async (e:React.FormEvent) => {
-            e.preventDefault()
-            if (loading) return
+        const completeQuiz = async (finalAnswers: QuizAnswers) => {
+            const selectedLabels = finalAnswers.productChoice?.split(",").filter(Boolean) ?? []
+            const productIds = selectedLabels.map(label => PRODUCT_ID_BY_CHOICE[label]).filter(Boolean)
 
-            const formKeys = [
-                "goal",
-                "gender",
-                "age",
-                "motivation",
-                "instagramInstalled",
-                "name",
-                "email",
-                "instagram"
-            ]
-
-            const fullAnswer = [...answers]
-            if (input.trim() !== "") {
-                fullAnswer.push(input.trim())
+            if (productIds.length === 0) {
+                setError("Please pick a plan.")
+                return
             }
 
-            const formData: {[key: string]: string} = {}
-
-            for (let i = 0; i < formKeys.length; i++) {
-                formData[formKeys[i]] = fullAnswer[i] || ""
-            }
-
-            formData.website = honeypot
+            setLoading(true)
+            setError('')
 
             try {
-                setLoading(true)
-                const res = await postFormData(formData)
+                const res = await fetch("/api/checkout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ productIds, ...finalAnswers }),
+                })
+                const data = await res.json()
 
-                if (res.message === "Success") {
-                    setSubmitted(true)
-                    setStep(0);
-                    setAnswers([]);
-                    setInput('');
-                    setHoneypot('');
-                } else {
-                    setSubmitted(false)
-                }
-            } catch (error) {
-                console.log(`Form Error: ${error}`);
-            } finally {
+                if (!res.ok || !data.url) throw new Error(data.message || "Checkout failed")
+
+                window.location.href = data.url
+            } catch {
+                setError("Something went wrong — please try again.")
                 setLoading(false)
+            }
+        }
+
+        const handleNext = (values: QuizAnswers): void => {
+            const nextAnswers = { ...answers, ...values }
+            setAnswers(nextAnswers)
+            setInput('')
+
+            if (isLastStep) {
+                completeQuiz(nextAnswers)
+                return
+            }
+
+            setStep(prev => prev + 1)
+        }
+
+        const handleSubmit = (e: React.FormEvent) => {
+            e.preventDefault()
+            if (currentQuestions.type === "input") {
+                handleNext({ [currentQuestions.key]: input })
             }
         }
 
@@ -100,12 +66,11 @@ export default function useFormLogic () {
             currentQuestions,
             input,
             loading,
-            submitted,
-            formMerged,
+            error,
+            answers,
+            formSteps,
             handleNext,
             setInput,
             handleSubmit,
-            honeypot,
-            setHoneypot
         }
 }

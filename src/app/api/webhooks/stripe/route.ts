@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { getResend } from "@/lib/resend";
-import { getProductForFulfillment, getPurchaseBySessionId, upsertPurchase } from "@/supabase/queries";
+import { sendMagicLinkEmail } from "@/lib/email";
+import {
+    getProductForFulfillment,
+    getProductForEntitlement,
+    getPurchaseBySessionId,
+    upsertPurchase,
+    getOrCreateAuthUser,
+    upsertProfile,
+    insertBodyLog,
+    upsertEntitlement,
+    updateEntitlementBySubscriptionId,
+    recalculateNutritionTargetIfActive,
+} from "@/supabase/queries";
 import type Stripe from "stripe";
 
 const sendPurchaseEmail = async (email: string, productName: string, downloadUrl: string) => {
@@ -33,6 +45,90 @@ const sendPurchaseEmail = async (email: string, productName: string, downloadUrl
     })
 }
 
+const fulfillOneTimePurchase = async (session: Stripe.Checkout.Session, productId: string) => {
+    const product = await getProductForFulfillment(productId)
+    if (!product) return
+
+    // Check first so we only email once, even if Stripe retries this webhook.
+    const existing = await getPurchaseBySessionId(session.id)
+
+    await upsertPurchase({
+        session_id: session.id,
+        product_id: product.id,
+        product_name: product.name,
+        email: session.customer_details?.email ?? null,
+        amount: session.amount_total,
+        currency: session.currency,
+        terms_accepted: session.metadata?.termsAccepted === "true",
+    })
+
+    const email = session.customer_details?.email
+    if (!existing && email && product.download_url) {
+        await sendPurchaseEmail(email, product.name, product.download_url)
+    }
+}
+
+const fulfillSubscription = async (session: Stripe.Checkout.Session, productIds: string[]) => {
+    const email = session.customer_details?.email
+    const subscriptionId = session.subscription
+    if (!email || typeof subscriptionId !== "string" || !session.success_url) return
+
+    const products = await Promise.all(productIds.map(id => getProductForEntitlement(id)))
+    const grantedProducts = products.filter((product): product is NonNullable<typeof product> & { grants_module: string } => !!product?.grants_module)
+    if (grantedProducts.length === 0) return
+
+    const stripe = getStripe()
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+    const currentPeriodEnd = new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
+
+    const origin = new URL(session.success_url).origin
+    const { user, properties } = await getOrCreateAuthUser(email, `${origin}/welcome`)
+
+    // Only include fields the quiz actually sent — a second purchase (e.g. adding a module
+    // from the dashboard) has no quiz metadata, and upserting nulls here would wipe the
+    // profile the first purchase already saved.
+    const metadata = session.metadata ?? {}
+    const profileUpdate: Parameters<typeof upsertProfile>[0] = { id: user.id }
+    if (metadata.name) profileUpdate.full_name = metadata.name
+    if (metadata.gender) profileUpdate.gender = metadata.gender
+    if (metadata.height) profileUpdate.height_cm = Number(metadata.height)
+    if (metadata.age) profileUpdate.age = Number(metadata.age)
+    if (metadata.goal) profileUpdate.goal = metadata.goal
+    if (metadata.activityLevel) profileUpdate.activity_level = metadata.activityLevel
+    if (metadata.experience) profileUpdate.experience = metadata.experience
+    if (metadata.daysPerWeek) profileUpdate.days_per_week = metadata.daysPerWeek
+    if (metadata.equipment) profileUpdate.equipment = metadata.equipment
+
+    await upsertProfile(profileUpdate)
+
+    if (metadata.weight) {
+        await insertBodyLog({
+            user_id: user.id,
+            logged_at: new Date().toISOString().slice(0, 10),
+            weight_kg: Number(metadata.weight),
+        })
+    }
+
+    for (const product of grantedProducts) {
+        await upsertEntitlement({
+            user_id: user.id,
+            module: product.grants_module,
+            status: "active",
+            stripe_subscription_id: subscriptionId,
+            current_period_end: currentPeriodEnd,
+        })
+    }
+
+    await recalculateNutritionTargetIfActive(user.id)
+    await sendMagicLinkEmail(email, properties.action_link)
+}
+
+const subscriptionStatusToEntitlementStatus = (status: Stripe.Subscription.Status) => {
+    if (status === "active" || status === "trialing") return "active"
+    if (status === "canceled") return "canceled"
+    return "expired"
+}
+
 export async function POST(req: NextRequest) {
     const stripe = getStripe()
     const signature = req.headers.get("stripe-signature")
@@ -48,31 +144,24 @@ export async function POST(req: NextRequest) {
 
     if (event.type === "checkout.session.completed") {
         const session = event.data.object as Stripe.Checkout.Session
-        const productId = session.metadata?.productId
 
-        if (productId) {
-            const product = await getProductForFulfillment(productId)
-
-            if (product) {
-                // Check first so we only email once, even if Stripe retries this webhook.
-                const existing = await getPurchaseBySessionId(session.id)
-
-                await upsertPurchase({
-                    session_id: session.id,
-                    product_id: product.id,
-                    product_name: product.name,
-                    email: session.customer_details?.email ?? null,
-                    amount: session.amount_total,
-                    currency: session.currency,
-                    terms_accepted: session.metadata?.termsAccepted === "true",
-                })
-
-                const email = session.customer_details?.email
-                if (!existing && email && product.download_url) {
-                    await sendPurchaseEmail(email, product.name, product.download_url)
-                }
-            }
+        if (session.mode === "subscription") {
+            const productIds = session.metadata?.productIds?.split(",").filter(Boolean) ?? []
+            if (productIds.length > 0) await fulfillSubscription(session, productIds)
+        } else {
+            const productId = session.metadata?.productId
+            if (productId) await fulfillOneTimePurchase(session, productId)
         }
+    }
+
+    if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
+        const subscription = event.data.object as Stripe.Subscription
+        const updated = await updateEntitlementBySubscriptionId(
+            subscription.id,
+            subscriptionStatusToEntitlementStatus(subscription.status),
+            new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
+        )
+        if (updated) await recalculateNutritionTargetIfActive(updated.user_id)
     }
 
     return NextResponse.json({ received: true })

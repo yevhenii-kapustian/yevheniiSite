@@ -6,6 +6,5 @@ export type Navigation = {
 export const navigation:Navigation[] = [
     {name: "home", path: "/"},
     {name: "about", path: "/about"},
-    {name: "programs", path: "/programs"},
-    {name: "transform", path: "/transform"}
+    {name: "programs", path: "/programs"}
 ]

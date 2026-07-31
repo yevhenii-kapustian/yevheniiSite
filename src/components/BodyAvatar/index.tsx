@@ -45,7 +45,7 @@ const BodyModel = ({ sliderValue, gender, hasIntroPlayedRef }: BodyModelProps) =
         }
 
         const wireMaterial = new THREE.MeshBasicMaterial({
-            color: "#1a1a1a",
+            color: "#ffffff",
             wireframe: true,
             transparent: true,
             opacity: 1,

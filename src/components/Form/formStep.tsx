@@ -1,18 +1,35 @@
-import { FormType } from "@/types/form";
+import { FormType, QuizAnswers } from "@/types/form";
 import React, {SetStateAction} from "react";
 import Link from "next/link";
 import Button from "@/components/Button";
+import BodyStatsStep from "./BodyStatsStep";
+import MultiSelectStep from "./MultiSelectStep";
 
 type FormStepType = {
     currentQuestions: FormType,
     input: string,
     isLastStep: boolean,
     setInput: React.Dispatch<SetStateAction<string>>
-    onNext: (value: string) => void,
+    onNext: (values: QuizAnswers) => void,
 }
 
 export default function FormStep ({currentQuestions, onNext, setInput, input, isLastStep}:FormStepType) {
-   if (currentQuestions.type === "button" && 'options' in currentQuestions) {
+   if (currentQuestions.type === "visual") {
+    return <BodyStatsStep onNext={onNext} />
+   }
+
+   if (currentQuestions.type === "multiselect") {
+    return (
+        <MultiSelectStep
+            question={currentQuestions.question}
+            options={currentQuestions.options}
+            fieldKey={currentQuestions.key}
+            onNext={onNext}
+        />
+    )
+   }
+
+   if (currentQuestions.type === "button") {
     return(
         <div className="flex flex-col justify-center gap-4">
             <h4 className="text-center text-lg sm:text-xl font-semibold">{currentQuestions.question}</h4>
@@ -21,7 +38,7 @@ export default function FormStep ({currentQuestions, onNext, setInput, input, is
                     <Button
                         variant="solid-light"
                         size="sm"
-                        onClick={() => onNext(`${item}`)}
+                        onClick={() => onNext({ [currentQuestions.key]: item })}
                         key={item}
                     >
                         {item}
@@ -52,12 +69,12 @@ export default function FormStep ({currentQuestions, onNext, setInput, input, is
                 variant="solid-light"
                 size="sm"
                 type={isLastStep ? "submit" : "button"}
-                onClick={!isLastStep ? () => onNext(input) : undefined}
+                onClick={!isLastStep ? () => onNext({ [currentQuestions.key]: input }) : undefined}
                     >
-                {isLastStep ? "Submit" : "Next"}
+                {isLastStep ? "Get Your Plan" : "Next"}
             </Button>
             {isLastStep && <p className="text-xs sm:text-sm text-white/50">
-                                *By clicking <strong>Submit</strong>, you agree to our <Link className="underline" href="/legal/privacy">Privacy Policy</Link>.
+                                *By clicking <strong>Get Your Plan</strong>, you agree to our <Link className="underline" href="/legal/privacy">Privacy Policy</Link>.
                                 Your information will remain confidential and used only for the purpose of this request.
                             </p>
             }

@@ -56,7 +56,7 @@ const TransformTeaserSection = () => {
                     <p className="text-sm sm:text-base text-ink-strong/70">
                         Enter your stats, drag one slider, and watch a 3D model show you exactly what lean, average, or bulky looks like on your frame — plus the calories it takes to get there.
                     </p>
-                    <Button href="/transform" variant="solid" size="sm" className="mt-2 h-12 w-full sm:w-auto">
+                    <Button href="/get-started" variant="solid" size="sm" className="mt-2 h-12 w-full sm:w-auto">
                         Try It Now
                     </Button>
                 </div>

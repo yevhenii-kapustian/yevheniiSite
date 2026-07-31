@@ -67,10 +67,10 @@ body {
   width: 100%;
   height: 3px;
   border-radius: 9999px;
-  background-image: linear-gradient(to right, #1a1a1a, #1a1a1a);
+  background-image: linear-gradient(to right, #ffffff, #ffffff);
   background-repeat: no-repeat;
   background-size: var(--range-progress, 50%) 100%;
-  background-color: rgba(26, 26, 26, 0.12);
+  background-color: rgba(255, 255, 255, 0.15);
   cursor: pointer;
 }
 .transform-slider::-webkit-slider-thumb {
@@ -79,20 +79,20 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 9999px;
-  background: #1a1a1a;
-  box-shadow: 0 0 0 4px rgba(26, 26, 26, 0.08), 0 2px 6px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12), 0 2px 6px rgba(0, 0, 0, 0.4);
   transition: box-shadow 0.2s ease;
 }
 .transform-slider::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 0 6px rgba(26, 26, 26, 0.1), 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.16), 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 .transform-slider::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border: none;
   border-radius: 9999px;
-  background: #1a1a1a;
-  box-shadow: 0 0 0 4px rgba(26, 26, 26, 0.08), 0 2px 6px rgba(0, 0, 0, 0.25);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12), 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 .transform-slider::-moz-range-track {
   height: 3px;

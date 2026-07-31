@@ -3,7 +3,7 @@ import Form from "@/components/Form/form"
 
 export const metadata: Metadata = {
     title: "Get Started - Online Coaching & Fitness Programs",
-    description: "Answer a few quick questions and I'll personally reach out to help you find the right training and nutrition plan for your goals.",
+    description: "Answer a few quick questions and see your personalized training and nutrition plan come together in real time.",
 }
 
 const GetStarted = () => {
