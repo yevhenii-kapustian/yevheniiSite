@@ -39,7 +39,7 @@ const WeeklyWeightBars = ({ data }: { data: WeightPoint[] }) => {
     const range = max - min || 1
 
     return (
-        <div className="flex flex-col gap-3 rounded-xl border border-black/10 p-5">
+        <div className="flex flex-col gap-3">
             <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Weekly average</span>
             <div className="flex items-end justify-between gap-3">
                 {weeks.map(week => {

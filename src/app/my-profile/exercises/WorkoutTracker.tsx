@@ -3,7 +3,9 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
-import { Check, Confetti, Smiley, SmileyMeh, SmileySad } from "@phosphor-icons/react"
+import { Check, Confetti, Info, Smiley, SmileyMeh, SmileySad } from "@phosphor-icons/react"
+import { exerciseGuides } from "@/data/exerciseGuides"
+import Modal from "../Modal"
 
 export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -69,6 +71,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek }: WorkoutTrackerProps
     const router = useRouter()
     const [dayOfWeek, setDayOfWeek] = useState(todayDayOfWeek)
     const [saving, setSaving] = useState<string | null>(null)
+    const [infoExercise, setInfoExercise] = useState<TrainingPlanExercise | null>(null)
 
     const day = days.find(d => d.dayOfWeek === dayOfWeek)
     const exercises = day?.exercises ?? []
@@ -194,29 +197,43 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek }: WorkoutTrackerProps
                                 const doneCount = todayLogs.filter(l => l.plan_exercise_id === exercise.planExerciseId).length
 
                                 return (
-                                    <div key={exercise.planExerciseId} className="rounded-2xl border border-black/10 p-5">
-                                        <div className="flex items-center justify-between gap-3">
+                                    <div
+                                        key={exercise.planExerciseId}
+                                        className="rounded-2xl border border-black/10 p-5 transition-colors duration-200 hover:border-black/20"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
                                             <div>
                                                 <p className="font-semibold text-ink-strong">{exercise.name}</p>
-                                                <p className="text-sm text-ink-strong/40">
-                                                    {exercise.muscleGroup} · {exercise.sets}×{exercise.reps} · {exercise.weightKg}kg
+                                                <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-strong/40">
+                                                    <span className="rounded-full bg-black/[0.04] px-2 py-0.5 text-xs font-medium text-ink-strong/50">{exercise.muscleGroup}</span>
+                                                    {exercise.sets}×{exercise.reps} · {exercise.weightKg}kg
                                                 </p>
                                             </div>
-                                            {isToday && (
-                                                <div className="flex shrink-0 gap-1">
-                                                    {Array.from({ length: exercise.sets }, (_, i) => (
-                                                        <span
-                                                            key={i}
-                                                            className={`h-2 w-2 rounded-full transition-colors duration-200 ${
-                                                                i < doneCount ? "bg-black" : "bg-black/10"
-                                                            }`}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            )}
+                                            <div className="flex shrink-0 flex-col items-end gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setInfoExercise(exercise)}
+                                                    aria-label={`View info for ${exercise.name}`}
+                                                    className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-ink-strong/50 transition-colors duration-200 hover:border-black hover:bg-black hover:text-white"
+                                                >
+                                                    <Info size={14} weight="bold"/>
+                                                </button>
+                                                {isToday && (
+                                                    <div className="flex gap-1">
+                                                        {Array.from({ length: exercise.sets }, (_, i) => (
+                                                            <span
+                                                                key={i}
+                                                                className={`h-2 w-2 rounded-full transition-colors duration-200 ${
+                                                                    i < doneCount ? "bg-black" : "bg-black/10"
+                                                                }`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
 
-                                        <div className="mt-4 flex flex-col gap-2">
+                                        <div className="mt-4 flex flex-col gap-2 border-t border-black/[0.06] pt-4">
                                             {Array.from({ length: exercise.sets }, (_, setIndex) => {
                                                 const setNumber = setIndex + 1
                                                 const log = logFor(exercise.planExerciseId, setNumber)
@@ -226,7 +243,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek }: WorkoutTrackerProps
 
                                                 return (
                                                     <div key={setIndex} className="flex flex-col gap-2">
-                                                        <div className="flex items-center gap-3 text-sm">
+                                                        <div onClick={e => e.stopPropagation()} className="flex items-center gap-3 text-sm">
                                                             <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium transition-colors duration-200 ${
                                                                 isDone ? "bg-black text-white" : "bg-black/[0.04] text-ink-strong/40"
                                                             }`}>
@@ -281,7 +298,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek }: WorkoutTrackerProps
                                                                     transition={{ duration: 0.2 }}
                                                                     className="overflow-hidden"
                                                                 >
-                                                                    <div className="ml-9 mt-2 flex flex-wrap gap-1.5">
+                                                                    <div onClick={e => e.stopPropagation()} className="ml-9 mt-2 flex flex-wrap gap-1.5">
                                                                         {DIFFICULTY_OPTIONS.map(option => {
                                                                             const Icon = option.icon
                                                                             return (
@@ -312,6 +329,17 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek }: WorkoutTrackerProps
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <Modal open={infoExercise !== null} title={infoExercise?.name ?? ""} onClose={() => setInfoExercise(null)}>
+                {infoExercise && (
+                    <div className="flex flex-col gap-3">
+                        <p className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">{infoExercise.muscleGroup}</p>
+                        <p className="text-sm leading-relaxed text-ink-strong/70">
+                            {exerciseGuides[infoExercise.name] ?? "No description available for this exercise yet."}
+                        </p>
+                    </div>
+                )}
+            </Modal>
         </div>
     )
 }

@@ -46,7 +46,7 @@ const Modal = ({ open, title, onClose, children }: ModalProps) => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 12, scale: 0.98 }}
                         transition={{ duration: 0.25, ease: "easeOut" }}
-                        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl sm:p-8"
+                        className="h-[80vh] w-[80vw] max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl sm:p-8"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="mb-6 flex items-center justify-between">

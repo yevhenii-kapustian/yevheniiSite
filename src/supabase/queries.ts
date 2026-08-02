@@ -241,7 +241,7 @@ export const getIntakeHistory = async (userId: string) => {
     const supabase = getServerClient()
     const { data, error } = await supabase
         .from("daily_intake_logs")
-        .select("logged_date, calories")
+        .select("logged_date, calories, name, meal_type, protein_g, fat_g, carbs_g")
         .eq("user_id", userId)
         .order("logged_date", { ascending: false })
 
@@ -435,4 +435,34 @@ export const insertWorkoutSetLog = async (log: WorkoutSetLogInsert) => {
     const supabase = getServerClient()
     const { error } = await supabase.from("workout_set_logs").insert(log)
     if (error) throw error
+}
+
+export type WorkoutHistoryRow = {
+    performedAt: string
+    exerciseName: string
+    actualReps: number
+    actualWeightKg: number
+}
+
+export const getWorkoutHistory = async (userId: string): Promise<WorkoutHistoryRow[]> => {
+    const supabase = getServerClient()
+    const { data, error } = await supabase
+        .from("workout_set_logs")
+        .select("performed_at, actual_reps, actual_weight_kg, plan_exercises(exercises(name))")
+        .eq("user_id", userId)
+        .order("performed_at", { ascending: true })
+
+    if (error) throw error
+
+    return data.map(row => {
+        const planExercise = Array.isArray(row.plan_exercises) ? row.plan_exercises[0] : row.plan_exercises
+        const exercise = planExercise ? (Array.isArray(planExercise.exercises) ? planExercise.exercises[0] : planExercise.exercises) : null
+
+        return {
+            performedAt: row.performed_at,
+            exerciseName: exercise?.name ?? "Exercise",
+            actualReps: row.actual_reps,
+            actualWeightKg: row.actual_weight_kg,
+        }
+    })
 }
