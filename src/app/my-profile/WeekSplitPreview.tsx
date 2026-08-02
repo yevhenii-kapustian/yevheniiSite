@@ -1,9 +1,14 @@
 import Link from "next/link"
 import { CalendarBlank } from "@phosphor-icons/react"
-import { WEEKLY_SPLIT, DAY_LABELS } from "./exercises/WorkoutDemo"
 
-const WeekSplitPreview = () => {
-    const todayIndex = (new Date().getDay() + 6) % 7 // Monday = 0
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+type WeekSplitPreviewProps = {
+    days: { dayOfWeek: number, muscleGroups: string[] }[]
+}
+
+const WeekSplitPreview = ({ days }: WeekSplitPreviewProps) => {
+    const todayDayOfWeek = ((new Date().getDay() + 6) % 7) + 1 // Monday = 1
 
     return (
         <div className="flex flex-col gap-3 rounded-xl border border-black/10 p-5 transition-shadow duration-200 hover:shadow-sm">
@@ -15,20 +20,20 @@ const WeekSplitPreview = () => {
             </div>
 
             <div className="flex flex-wrap gap-2">
-                {WEEKLY_SPLIT.map((day, index) => {
-                    const isRest = day.exercises.length === 0
-                    const isToday = index === todayIndex
+                {days.map(day => {
+                    const isRest = day.muscleGroups.length === 0
+                    const isToday = day.dayOfWeek === todayDayOfWeek
 
                     return (
                         <div
-                            key={day.label}
+                            key={day.dayOfWeek}
                             className={`flex flex-1 min-w-[70px] flex-col items-center gap-1 rounded-lg border px-2 py-2 text-center ${
                                 isToday ? "border-black" : "border-black/10"
                             }`}
                         >
-                            <span className="text-xs font-medium text-ink-strong/40">{DAY_LABELS[index]}</span>
+                            <span className="text-xs font-medium text-ink-strong/40">{DAY_LABELS[day.dayOfWeek - 1]}</span>
                             <span className={`text-xs font-semibold ${isRest ? "text-ink-strong/30" : "text-ink-strong"}`}>
-                                {isRest ? "Rest" : day.focus}
+                                {isRest ? "Rest" : day.muscleGroups[0]}
                             </span>
                         </div>
                     )

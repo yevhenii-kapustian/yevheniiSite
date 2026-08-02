@@ -3,7 +3,6 @@ import React, {SetStateAction} from "react";
 import Link from "next/link";
 import Button from "@/components/Button";
 import BodyStatsStep from "./BodyStatsStep";
-import MultiSelectStep from "./MultiSelectStep";
 
 type FormStepType = {
     currentQuestions: FormType,
@@ -16,17 +15,6 @@ type FormStepType = {
 export default function FormStep ({currentQuestions, onNext, setInput, input, isLastStep}:FormStepType) {
    if (currentQuestions.type === "visual") {
     return <BodyStatsStep onNext={onNext} />
-   }
-
-   if (currentQuestions.type === "multiselect") {
-    return (
-        <MultiSelectStep
-            question={currentQuestions.question}
-            options={currentQuestions.options}
-            fieldKey={currentQuestions.key}
-            onNext={onNext}
-        />
-    )
    }
 
    if (currentQuestions.type === "button") {

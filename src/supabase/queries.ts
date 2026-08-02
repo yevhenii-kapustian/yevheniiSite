@@ -9,6 +9,8 @@ type EntitlementInsert = Database["public"]["Tables"]["entitlements"]["Insert"]
 type EntitlementStatus = Database["public"]["Tables"]["entitlements"]["Row"]["status"]
 type BodyLogInsert = Database["public"]["Tables"]["body_logs"]["Insert"]
 type NutritionTargetInsert = Database["public"]["Tables"]["nutrition_targets"]["Insert"]
+type DailyIntakeInsert = Database["public"]["Tables"]["daily_intake_logs"]["Insert"]
+type WorkoutSetLogInsert = Database["public"]["Tables"]["workout_set_logs"]["Insert"]
 
 export const getActiveProducts = async () => {
     const supabase = getServerClient()
@@ -230,6 +232,11 @@ export const getTodayMeals = async (userId: string) => {
     return getMealsForDate(userId, today)
 }
 
+export const insertMeal = async (meal: DailyIntakeInsert) => {
+    const supabase = getServerClient()
+    await supabase.from("daily_intake_logs").insert(meal)
+}
+
 export const getIntakeHistory = async (userId: string) => {
     const supabase = getServerClient()
     const { data, error } = await supabase
@@ -295,4 +302,137 @@ export const recalculateNutritionTargetIfActive = async (userId: string) => {
         carbs_g: result.carbsG,
         accounts_for_training: accountsForTraining,
     })
+}
+
+// Training engine
+//
+// day_of_week follows ISO weekday numbering: 1 = Monday ... 7 = Sunday.
+// Days with no rows in this template are rest days.
+const DEFAULT_SPLIT_TEMPLATE: {
+    dayOfWeek: number
+    exerciseName: string
+    sets: number
+    reps: number
+    weightKg: number
+}[] = [
+    { dayOfWeek: 1, exerciseName: "Barbell Bench Press", sets: 4, reps: 8, weightKg: 60 },
+    { dayOfWeek: 1, exerciseName: "Seated Dumbbell Press", sets: 3, reps: 12, weightKg: 18 },
+    { dayOfWeek: 1, exerciseName: "Triceps Pushdown", sets: 3, reps: 12, weightKg: 20 },
+    { dayOfWeek: 2, exerciseName: "Deadlift", sets: 4, reps: 6, weightKg: 100 },
+    { dayOfWeek: 2, exerciseName: "Barbell Row", sets: 4, reps: 10, weightKg: 50 },
+    { dayOfWeek: 2, exerciseName: "Barbell Curl", sets: 3, reps: 12, weightKg: 15 },
+    { dayOfWeek: 3, exerciseName: "Back Squat", sets: 4, reps: 8, weightKg: 70 },
+    { dayOfWeek: 3, exerciseName: "Leg Press", sets: 3, reps: 12, weightKg: 100 },
+    { dayOfWeek: 3, exerciseName: "Standing Calf Raise", sets: 4, reps: 15, weightKg: 40 },
+    { dayOfWeek: 5, exerciseName: "Incline Bench Press", sets: 4, reps: 8, weightKg: 50 },
+    { dayOfWeek: 5, exerciseName: "Lat Pulldown", sets: 4, reps: 10, weightKg: 45 },
+    { dayOfWeek: 5, exerciseName: "Lateral Raise", sets: 3, reps: 15, weightKg: 8 },
+    { dayOfWeek: 6, exerciseName: "Front Squat", sets: 4, reps: 6, weightKg: 50 },
+    { dayOfWeek: 6, exerciseName: "Romanian Deadlift", sets: 3, reps: 10, weightKg: 60 },
+    { dayOfWeek: 6, exerciseName: "Leg Curl", sets: 3, reps: 12, weightKg: 30 },
+]
+
+export const getOrCreateTrainingPlan = async (userId: string) => {
+    const supabase = getServerClient()
+
+    const { data: existing } = await supabase
+        .from("training_plans")
+        .select("id")
+        .eq("user_id", userId)
+        .order("week_number", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+    if (existing) return existing.id
+
+    const { data: plan, error: planError } = await supabase
+        .from("training_plans")
+        .insert({ user_id: userId, week_number: 0, template_name: "Default split" })
+        .select("id")
+        .single()
+
+    if (planError) throw planError
+
+    const { data: exerciseRows, error: exerciseError } = await supabase
+        .from("exercises")
+        .select("id, name")
+
+    if (exerciseError) throw exerciseError
+
+    const exerciseIdByName = new Map(exerciseRows.map(e => [e.name, e.id]))
+
+    const planExercises = DEFAULT_SPLIT_TEMPLATE.map((item, index) => ({
+        training_plan_id: plan.id,
+        exercise_id: exerciseIdByName.get(item.exerciseName)!,
+        day_of_week: item.dayOfWeek,
+        target_sets: item.sets,
+        target_reps: item.reps,
+        target_weight_kg: item.weightKg,
+        order_index: index,
+    })).filter(row => row.exercise_id)
+
+    const { error: insertError } = await supabase.from("plan_exercises").insert(planExercises)
+    if (insertError) throw insertError
+
+    return plan.id
+}
+
+export type TrainingPlanExercise = {
+    planExerciseId: number
+    name: string
+    muscleGroup: string
+    sets: number
+    reps: number
+    weightKg: number | null
+}
+
+export const getTrainingPlanWithExercises = async (userId: string) => {
+    const planId = await getOrCreateTrainingPlan(userId)
+    const supabase = getServerClient()
+
+    const { data, error } = await supabase
+        .from("plan_exercises")
+        .select("id, day_of_week, target_sets, target_reps, target_weight_kg, order_index, exercises(name, muscle_group)")
+        .eq("training_plan_id", planId)
+        .order("day_of_week", { ascending: true })
+        .order("order_index", { ascending: true })
+
+    if (error) throw error
+
+    const byDay = new Map<number, TrainingPlanExercise[]>()
+    for (const row of data) {
+        const exercise = Array.isArray(row.exercises) ? row.exercises[0] : row.exercises
+        if (!exercise) continue
+        const list = byDay.get(row.day_of_week) ?? []
+        list.push({
+            planExerciseId: row.id,
+            name: exercise.name,
+            muscleGroup: exercise.muscle_group,
+            sets: row.target_sets,
+            reps: row.target_reps,
+            weightKg: row.target_weight_kg,
+        })
+        byDay.set(row.day_of_week, list)
+    }
+
+    return byDay
+}
+
+export const getWorkoutLogsForDate = async (userId: string, date: string) => {
+    const supabase = getServerClient()
+    const { data, error } = await supabase
+        .from("workout_set_logs")
+        .select("plan_exercise_id, set_number, actual_reps, actual_weight_kg, effort")
+        .eq("user_id", userId)
+        .gte("performed_at", `${date}T00:00:00.000Z`)
+        .lt("performed_at", `${date}T23:59:59.999Z`)
+
+    if (error) throw error
+    return data
+}
+
+export const insertWorkoutSetLog = async (log: WorkoutSetLogInsert) => {
+    const supabase = getServerClient()
+    const { error } = await supabase.from("workout_set_logs").insert(log)
+    if (error) throw error
 }

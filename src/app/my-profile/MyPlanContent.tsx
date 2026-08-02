@@ -11,8 +11,7 @@ import Modal from "./Modal"
 import WeightSparkline from "./WeightSparkline"
 import WeekSplitPreview from "./WeekSplitPreview"
 
-const NUTRITION_PRODUCT_ID = "6"
-const TRAINING_PRODUCT_ID = "7"
+const BUNDLE_PRODUCT_ID = "8"
 
 type NutritionTarget = {
     calories: number
@@ -49,6 +48,7 @@ type MyPlanContentProps = {
     weightSummary: string | null
     weightHistory: WeightPoint[]
     checkInCount: number
+    weekDays: { dayOfWeek: number, muscleGroups: string[] }[]
 }
 
 const CardIcon = ({ children }: { children: React.ReactNode }) => (
@@ -88,6 +88,7 @@ const MyPlanContent = ({
     weightSummary,
     weightHistory,
     checkInCount,
+    weekDays,
 }: MyPlanContentProps) => {
     const router = useRouter()
     const [checkInOpen, setCheckInOpen] = useState(false)
@@ -138,7 +139,7 @@ const MyPlanContent = ({
                         ) : (
                             <>
                                 <p className="text-sm text-ink-strong/60">No training plan yet.</p>
-                                <AddModuleButton productId={TRAINING_PRODUCT_ID} email={email} label="Add Training Plan — $25/mo"/>
+                                <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label="Get full access — $45/mo"/>
                             </>
                         )}
                     </div>
@@ -174,7 +175,7 @@ const MyPlanContent = ({
                         ) : (
                             <>
                                 <p className="text-sm text-ink-strong/60">You&apos;ll need to track your own calories for now.</p>
-                                <AddModuleButton productId={NUTRITION_PRODUCT_ID} email={email} label="Add Nutrition Plan — $25/mo"/>
+                                <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label="Get full access — $45/mo"/>
                             </>
                         )}
                     </div>
@@ -206,7 +207,7 @@ const MyPlanContent = ({
                     </div>
                 </div>
 
-                <WeekSplitPreview/>
+                {hasTraining && <WeekSplitPreview days={weekDays}/>}
 
                 <Modal open={checkInOpen} title="Weekly check-in" onClose={() => setCheckInOpen(false)}>
                     <div className="flex flex-col gap-6">

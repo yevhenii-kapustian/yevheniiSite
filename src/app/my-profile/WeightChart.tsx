@@ -95,7 +95,7 @@ const WeightChart = ({ data }: WeightChartProps) => {
                 ref={svgRef}
                 viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
                 preserveAspectRatio="none"
-                className="h-56 w-full touch-none"
+                className="h-72 w-full touch-none"
                 onPointerMove={handlePointerMove}
                 onPointerLeave={() => setHoverIndex(null)}
             >

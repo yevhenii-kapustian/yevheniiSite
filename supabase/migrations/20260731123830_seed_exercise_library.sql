@@ -1,0 +1,16 @@
+insert into exercises (name, muscle_group, equipment) values
+    ('Barbell Bench Press', 'Chest', 'Barbell'),
+    ('Seated Dumbbell Press', 'Shoulders', 'Dumbbell'),
+    ('Triceps Pushdown', 'Triceps', 'Cable'),
+    ('Deadlift', 'Back', 'Barbell'),
+    ('Barbell Row', 'Back', 'Barbell'),
+    ('Barbell Curl', 'Biceps', 'Barbell'),
+    ('Back Squat', 'Quads', 'Barbell'),
+    ('Leg Press', 'Quads', 'Machine'),
+    ('Standing Calf Raise', 'Calves', 'Machine'),
+    ('Incline Bench Press', 'Chest', 'Barbell'),
+    ('Lat Pulldown', 'Back', 'Cable'),
+    ('Lateral Raise', 'Shoulders', 'Dumbbell'),
+    ('Front Squat', 'Quads', 'Barbell'),
+    ('Romanian Deadlift', 'Hamstrings', 'Barbell'),
+    ('Leg Curl', 'Hamstrings', 'Machine');

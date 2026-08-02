@@ -17,14 +17,7 @@ type VisualType = {
     type: "visual"
 }
 
-type MultiSelectType = {
-    key: string
-    question: string
-    type: "multiselect"
-    options: string[]
-}
-
-export type FormType = ButtonType | InputType | VisualType | MultiSelectType
+export type FormType = ButtonType | InputType | VisualType
 
 export type QuizAnswers = Partial<{
     gender: string
@@ -36,7 +29,6 @@ export type QuizAnswers = Partial<{
     experience: string
     daysPerWeek: string
     equipment: string
-    productChoice: string
     name: string
     email: string
 }>

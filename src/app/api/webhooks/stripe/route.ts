@@ -109,10 +109,14 @@ const fulfillSubscription = async (session: Stripe.Checkout.Session, productIds:
         })
     }
 
-    for (const product of grantedProducts) {
+    const modules = grantedProducts.flatMap(product =>
+        product.grants_module === "all" ? ["nutrition", "training"] : [product.grants_module]
+    )
+
+    for (const module of modules) {
         await upsertEntitlement({
             user_id: user.id,
-            module: product.grants_module,
+            module,
             status: "active",
             stripe_subscription_id: subscriptionId,
             current_period_end: currentPeriodEnd,

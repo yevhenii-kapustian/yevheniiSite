@@ -1,4 +1,4 @@
-import { formSteps, PRODUCT_ID_BY_CHOICE } from "@/data/form"
+import { formSteps, BUNDLE_PRODUCT_ID } from "@/data/form"
 import { QuizAnswers } from "@/types/form"
 import { useState } from "react"
 
@@ -13,14 +13,6 @@ export default function useFormLogic () {
         const isLastStep = step === formSteps.length - 1
 
         const completeQuiz = async (finalAnswers: QuizAnswers) => {
-            const selectedLabels = finalAnswers.productChoice?.split(",").filter(Boolean) ?? []
-            const productIds = selectedLabels.map(label => PRODUCT_ID_BY_CHOICE[label]).filter(Boolean)
-
-            if (productIds.length === 0) {
-                setError("Please pick a plan.")
-                return
-            }
-
             setLoading(true)
             setError('')
 
@@ -28,7 +20,7 @@ export default function useFormLogic () {
                 const res = await fetch("/api/checkout", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ productIds, ...finalAnswers }),
+                    body: JSON.stringify({ productIds: [BUNDLE_PRODUCT_ID], ...finalAnswers }),
                 })
                 const data = await res.json()
 

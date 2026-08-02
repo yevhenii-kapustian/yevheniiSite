@@ -30,12 +30,6 @@ export const formSteps: FormType[] = [
         type: "button",
     },
     {
-        key: "productChoice",
-        question: "Which plan do you want?",
-        options: ["Nutrition Plan — $25/mo", "Training Plan — $25/mo"],
-        type: "multiselect",
-    },
-    {
         key: "name",
         question: "Your name",
         type: "input",
@@ -48,7 +42,4 @@ export const formSteps: FormType[] = [
     },
 ]
 
-export const PRODUCT_ID_BY_CHOICE: Record<string, string> = {
-    "Nutrition Plan — $25/mo": "6",
-    "Training Plan — $25/mo": "7",
-}
+export const BUNDLE_PRODUCT_ID = "8"

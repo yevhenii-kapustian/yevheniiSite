@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProfile, getLatestNutritionTarget, getLatestBodyWeight, getTodayMeals, getBodyLogHistory } from "@/supabase/queries"
+import { getEntitlementsForUser, getProfile, getLatestNutritionTarget, getLatestBodyWeight, getTodayMeals, getBodyLogHistory, getTrainingPlanWithExercises, type TrainingPlanExercise } from "@/supabase/queries"
 import { weightReportShort } from "@/utils/weightReport"
 import MyPlanContent from "./MyPlanContent"
 
@@ -43,6 +43,12 @@ export default async function MyProfile () {
     }
     const weightHistory = bodyLogHistory.map(w => ({ loggedAt: w.logged_at, weightKg: w.weight_kg }))
 
+    const planByDay = hasTraining ? await getTrainingPlanWithExercises(user.id) : new Map<number, TrainingPlanExercise[]>()
+    const weekDays = Array.from({ length: 7 }, (_, i) => ({
+        dayOfWeek: i + 1,
+        muscleGroups: Array.from(new Set((planByDay.get(i + 1) ?? []).map(e => e.muscleGroup))),
+    }))
+
     return (
         <MyPlanContent
             email={user.email!}
@@ -71,6 +77,7 @@ export default async function MyProfile () {
             weightSummary={weightReportShort(weightHistory)}
             weightHistory={weightHistory.slice(-8)}
             checkInCount={weightHistory.length}
+            weekDays={weekDays}
         />
     )
 }
