@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import { Check, Confetti, Info, Smiley, SmileyMeh, SmileySad } from "@phosphor-icons/react"
-import { exerciseGuides } from "@/data/exerciseGuides"
 import Modal from "../Modal"
 
 export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -31,6 +30,7 @@ export type TrainingPlanExercise = {
     planExerciseId: number
     name: string
     muscleGroup: string
+    description: string | null
     sets: number
     reps: number
     weightKg: number | null
@@ -56,6 +56,7 @@ type WorkoutTrackerProps = {
     days: { dayOfWeek: number, exercises: TrainingPlanExercise[] }[]
     todayLogs: WorkoutLog[]
     todayDayOfWeek: number
+    initialDayOfWeek?: number
 }
 
 type SetInput = { reps: number, weightKg: number, revealDifficulty: boolean }
@@ -67,9 +68,9 @@ const buildInitialInputs = (exercises: TrainingPlanExercise[]): SetInput[][] =>
         revealDifficulty: false,
     })))
 
-const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek }: WorkoutTrackerProps) => {
+const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: WorkoutTrackerProps) => {
     const router = useRouter()
-    const [dayOfWeek, setDayOfWeek] = useState(todayDayOfWeek)
+    const [dayOfWeek, setDayOfWeek] = useState(initialDayOfWeek ?? todayDayOfWeek)
     const [saving, setSaving] = useState<string | null>(null)
     const [infoExercise, setInfoExercise] = useState<TrainingPlanExercise | null>(null)
 
@@ -335,7 +336,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek }: WorkoutTrackerProps
                     <div className="flex flex-col gap-3">
                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">{infoExercise.muscleGroup}</p>
                         <p className="text-sm leading-relaxed text-ink-strong/70">
-                            {exerciseGuides[infoExercise.name] ?? "No description available for this exercise yet."}
+                            {infoExercise.description ?? "No description available for this exercise yet."}
                         </p>
                     </div>
                 )}

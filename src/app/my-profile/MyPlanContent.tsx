@@ -10,8 +10,7 @@ import CheckIn, { type CheckInValues } from "./CheckIn"
 import Modal from "./Modal"
 import WeightSparkline from "./WeightSparkline"
 import WeekSplitPreview from "./WeekSplitPreview"
-
-const BUNDLE_PRODUCT_ID = "8"
+import { BUNDLE_PRODUCT_ID } from "@/data/products"
 
 type NutritionTarget = {
     calories: number

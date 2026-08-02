@@ -25,9 +25,10 @@ const WeekSplitPreview = ({ days }: WeekSplitPreviewProps) => {
                     const isToday = day.dayOfWeek === todayDayOfWeek
 
                     return (
-                        <div
+                        <Link
                             key={day.dayOfWeek}
-                            className={`flex flex-1 min-w-[70px] flex-col items-center gap-1 rounded-lg border px-2 py-2 text-center ${
+                            href={`/my-profile/exercises?day=${day.dayOfWeek}`}
+                            className={`flex flex-1 min-w-[70px] flex-col items-center gap-1 rounded-lg border px-2 py-2 text-center transition-colors duration-200 hover:border-black/40 ${
                                 isToday ? "border-black" : "border-black/10"
                             }`}
                         >
@@ -35,7 +36,7 @@ const WeekSplitPreview = ({ days }: WeekSplitPreviewProps) => {
                             <span className={`text-xs font-semibold ${isRest ? "text-ink-strong/30" : "text-ink-strong"}`}>
                                 {isRest ? "Rest" : day.muscleGroups[0]}
                             </span>
-                        </div>
+                        </Link>
                     )
                 })}
             </div>

@@ -1,4 +1,5 @@
 import { FormType } from "@/types/form"
+export { BUNDLE_PRODUCT_ID } from "@/data/products"
 
 export const formSteps: FormType[] = [
     {
@@ -41,5 +42,3 @@ export const formSteps: FormType[] = [
         subtype: "email",
     },
 ]
-
-export const BUNDLE_PRODUCT_ID = "8"

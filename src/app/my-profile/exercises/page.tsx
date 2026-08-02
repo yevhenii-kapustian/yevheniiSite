@@ -4,14 +4,17 @@ import { getServerAuthClient } from "@/supabase/server-client"
 import { getEntitlementsForUser, getTrainingPlanWithExercises, getWorkoutLogsForDate } from "@/supabase/queries"
 import AddModuleButton from "../AddModuleButton"
 import WorkoutTracker from "./WorkoutTracker"
+import { BUNDLE_PRODUCT_ID } from "@/data/products"
 
 export const metadata: Metadata = {
     title: "Exercises - Yevhenii Fit",
 }
 
-const BUNDLE_PRODUCT_ID = "8"
+type PageProps = {
+    searchParams: Promise<{ day?: string }>
+}
 
-export default async function ExercisesPage () {
+export default async function ExercisesPage ({ searchParams }: PageProps) {
     const supabase = await getServerAuthClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -27,6 +30,10 @@ export default async function ExercisesPage () {
         const today = new Date().toISOString().slice(0, 10)
         const todayDayOfWeek = ((new Date(`${today}T00:00:00`).getDay() + 6) % 7) + 1 // Monday = 1
 
+        const { day } = await searchParams
+        const requestedDayOfWeek = Number(day)
+        const initialDayOfWeek = requestedDayOfWeek >= 1 && requestedDayOfWeek <= 7 ? requestedDayOfWeek : todayDayOfWeek
+
         const [planByDay, todayLogs] = await Promise.all([
             getTrainingPlanWithExercises(user.id),
             getWorkoutLogsForDate(user.id, today),
@@ -37,7 +44,7 @@ export default async function ExercisesPage () {
             exercises: planByDay.get(i + 1) ?? [],
         }))
 
-        content = <WorkoutTracker days={days} todayLogs={todayLogs} todayDayOfWeek={todayDayOfWeek}/>
+        content = <WorkoutTracker days={days} todayLogs={todayLogs} todayDayOfWeek={todayDayOfWeek} initialDayOfWeek={initialDayOfWeek}/>
     }
 
     return (

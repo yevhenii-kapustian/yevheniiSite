@@ -5,12 +5,11 @@ import { getEntitlementsForUser, getLatestNutritionTarget, getMealsForDate } fro
 import WeekDatePicker from "../WeekDatePicker"
 import AddModuleButton from "../AddModuleButton"
 import NutritionContent from "./NutritionContent"
+import { BUNDLE_PRODUCT_ID } from "@/data/products"
 
 export const metadata: Metadata = {
     title: "Nutrition - Yevhenii Fit",
 }
-
-const BUNDLE_PRODUCT_ID = "8"
 
 type PageProps = {
     searchParams: Promise<{ date?: string }>
