@@ -219,7 +219,7 @@ export const getMealsForDate = async (userId: string, date: string) => {
     const supabase = getServerClient()
     const { data, error } = await supabase
         .from("daily_intake_logs")
-        .select("id, meal_type, name, calories, protein_g, fat_g, carbs_g")
+        .select("id, meal_type, name, calories, protein_g, fat_g, carbs_g, created_at")
         .eq("user_id", userId)
         .eq("logged_date", date)
         .order("created_at", { ascending: true })

@@ -1,8 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProfile, getLatestNutritionTarget, getLatestBodyWeight, getTodayMeals, getBodyLogHistory, getTrainingPlanWithExercises, type TrainingPlanExercise } from "@/supabase/queries"
-import { weightReportShort } from "@/utils/weightReport"
+import { getEntitlementsForUser, getProfile, getLatestNutritionTarget, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, type TrainingPlanExercise } from "@/supabase/queries"
 import MyPlanContent from "./MyPlanContent"
 
 export const metadata: Metadata = {
@@ -16,7 +15,11 @@ const getGreeting = () => {
     return "Good evening"
 }
 
-export default async function MyProfile () {
+type PageProps = {
+    searchParams: Promise<{ date?: string }>
+}
+
+export default async function MyProfile ({ searchParams }: PageProps) {
     const supabase = await getServerAuthClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -24,24 +27,27 @@ export default async function MyProfile () {
         redirect("/get-started")
     }
 
-    const [entitlements, profile, nutritionTarget, weight, todayMeals, bodyLogHistory] = await Promise.all([
+    const today = new Date().toISOString().slice(0, 10)
+    const { date } = await searchParams
+    const selectedDate = date && date <= today ? date : today
+    const isToday = selectedDate === today
+
+    const [entitlements, profile, nutritionTarget, weight, meals] = await Promise.all([
         getEntitlementsForUser(user.id),
         getProfile(user.id),
         getLatestNutritionTarget(user.id),
         getLatestBodyWeight(user.id),
-        getTodayMeals(user.id),
-        getBodyLogHistory(user.id),
+        getMealsForDate(user.id, selectedDate),
     ])
 
     const activeModules = entitlements.filter(e => e.status === "active").map(e => e.module)
     const hasTraining = activeModules.includes("training")
-    const eatenToday = {
-        calories: todayMeals.reduce((sum, meal) => sum + meal.calories, 0),
-        proteinG: todayMeals.reduce((sum, meal) => sum + (meal.protein_g ?? 0), 0),
-        fatG: todayMeals.reduce((sum, meal) => sum + (meal.fat_g ?? 0), 0),
-        carbsG: todayMeals.reduce((sum, meal) => sum + (meal.carbs_g ?? 0), 0),
+    const eatenSelected = {
+        calories: meals.reduce((sum, meal) => sum + meal.calories, 0),
+        proteinG: meals.reduce((sum, meal) => sum + (meal.protein_g ?? 0), 0),
+        fatG: meals.reduce((sum, meal) => sum + (meal.fat_g ?? 0), 0),
+        carbsG: meals.reduce((sum, meal) => sum + (meal.carbs_g ?? 0), 0),
     }
-    const weightHistory = bodyLogHistory.map(w => ({ loggedAt: w.logged_at, weightKg: w.weight_kg }))
 
     const planByDay = hasTraining ? await getTrainingPlanWithExercises(user.id) : new Map<number, TrainingPlanExercise[]>()
     const weekDays = Array.from({ length: 7 }, (_, i) => ({
@@ -73,10 +79,11 @@ export default async function MyProfile () {
                 fatG: nutritionTarget.fat_g,
                 carbsG: nutritionTarget.carbs_g,
             } : null}
-            eatenToday={eatenToday}
-            weightSummary={weightReportShort(weightHistory)}
-            weightHistory={weightHistory.slice(-8)}
-            checkInCount={weightHistory.length}
+            selectedDate={selectedDate}
+            isToday={isToday}
+            todayMaxDate={today}
+            eatenSelected={eatenSelected}
+            meals={meals.map(m => ({ id: m.id, name: m.name, mealType: m.meal_type, calories: m.calories, createdAt: m.created_at }))}
             weekDays={weekDays}
         />
     )

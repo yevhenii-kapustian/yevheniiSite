@@ -128,7 +128,7 @@ const BodyModel = ({ sliderValue, gender, hasIntroPlayedRef }: BodyModelProps) =
 
     return (
         <group ref={groupRef}>
-            <Center>
+            <Center cacheKey={gender}>
                 <primitive object={scene} />
             </Center>
         </group>
@@ -149,7 +149,7 @@ const BodyAvatar = ({ sliderValue, gender }: Omit<BodyModelProps, "hasIntroPlaye
             <directionalLight position={[0, -2, 3]} intensity={0.2} />
             <pointLight position={[-2.5, 2, -2.5]} intensity={4} color="#ffffff" />
             <Suspense fallback={null}>
-                <Bounds fit clip margin={0.9} maxDuration={0.001}>
+                <Bounds fit clip margin={1.05} maxDuration={0.001}>
                     <BodyModel sliderValue={sliderValue} gender={gender} hasIntroPlayedRef={hasIntroPlayedRef} />
                 </Bounds>
             </Suspense>

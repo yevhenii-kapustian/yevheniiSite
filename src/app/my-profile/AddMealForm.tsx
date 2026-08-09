@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { MagnifyingGlass, Plus } from "@phosphor-icons/react"
+import { Plus } from "@phosphor-icons/react"
 
 const MEAL_TYPES = [
     { value: "breakfast", label: "Breakfast" },
@@ -13,14 +13,6 @@ const MEAL_TYPES = [
 
 type MealType = typeof MEAL_TYPES[number]["value"]
 
-type FoodResult = {
-    name: string
-    calories: number
-    proteinG: number
-    fatG: number
-    carbsG: number
-}
-
 const AddMealForm = () => {
     const router = useRouter()
     const [mealType, setMealType] = useState<MealType>("breakfast")
@@ -30,54 +22,6 @@ const AddMealForm = () => {
     const [fat, setFat] = useState("")
     const [carbs, setCarbs] = useState("")
     const [saving, setSaving] = useState(false)
-
-    const [query, setQuery] = useState("")
-    const [results, setResults] = useState<FoodResult[]>([])
-    const [searching, setSearching] = useState(false)
-    const [showResults, setShowResults] = useState(false)
-    const searchBoxRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        if (!query.trim()) {
-            setResults([])
-            return
-        }
-
-        setSearching(true)
-        const timeout = setTimeout(async () => {
-            try {
-                const res = await fetch(`/api/food-search?q=${encodeURIComponent(query)}`)
-                const data = await res.json()
-                setResults(data.results ?? [])
-                setShowResults(true)
-            } finally {
-                setSearching(false)
-            }
-        }, 400)
-
-        return () => clearTimeout(timeout)
-    }, [query])
-
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
-                setShowResults(false)
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside)
-        return () => document.removeEventListener("mousedown", handleClickOutside)
-    }, [])
-
-    const applyResult = (result: FoodResult) => {
-        setName(result.name)
-        setCalories(String(result.calories))
-        setProtein(String(result.proteinG))
-        setFat(String(result.fatG))
-        setCarbs(String(result.carbsG))
-        setQuery("")
-        setResults([])
-        setShowResults(false)
-    }
 
     const handleAdd = async () => {
         if (!calories) return
@@ -134,42 +78,6 @@ const AddMealForm = () => {
             {mealType === "snack" && (
                 <span className="text-xs text-ink-strong/40">Extra meal</span>
             )}
-
-            <div ref={searchBoxRef} className="relative">
-                <div className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-1.5 focus-within:border-black/30">
-                    <MagnifyingGlass size={14} className="shrink-0 text-ink-strong/40"/>
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={e => setQuery(e.target.value)}
-                        onFocus={() => results.length > 0 && setShowResults(true)}
-                        placeholder="e.g. 200g grilled chicken breast"
-                        className="w-full text-sm text-ink-strong outline-none placeholder:text-ink-strong/40"
-                    />
-                </div>
-
-                {showResults && (searching || results.length > 0) && (
-                    <div className="absolute z-10 mt-1 w-full rounded-lg border border-black/10 bg-white shadow-sm">
-                        {searching ? (
-                            <p className="px-3 py-2 text-xs text-ink-strong/40">Searching…</p>
-                        ) : (
-                            results.map((result, i) => (
-                                <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => applyResult(result)}
-                                    className="flex w-full flex-col items-start gap-0.5 border-b border-black/[0.06] px-3 py-2 text-left text-sm last:border-0 hover:bg-black/[0.03]"
-                                >
-                                    <span className="text-ink-strong">{result.name}</span>
-                                    <span className="text-xs text-ink-strong/40">
-                                        {result.calories} kcal · {result.proteinG}g protein · {result.fatG}g fat · {result.carbsG}g carbs
-                                    </span>
-                                </button>
-                            ))
-                        )}
-                    </div>
-                )}
-            </div>
 
             <input
                 type="text"

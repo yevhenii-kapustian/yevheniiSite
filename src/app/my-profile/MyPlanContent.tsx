@@ -3,14 +3,27 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { SlidersHorizontal, Barbell, ForkKnife, ChartLineUp, Flame } from "@phosphor-icons/react"
+import { SlidersHorizontal, Barbell, ForkKnife } from "@phosphor-icons/react"
 import AddModuleButton from "./AddModuleButton"
 import TrainsToggle from "./TrainsToggle"
 import CheckIn, { type CheckInValues } from "./CheckIn"
 import Modal from "./Modal"
-import WeightSparkline from "./WeightSparkline"
-import WeekSplitPreview from "./WeekSplitPreview"
+import NutritionCalendarStrip from "./NutritionCalendarStrip"
 import { BUNDLE_PRODUCT_ID } from "@/data/products"
+import { getWorkoutLabel } from "@/utils/workoutLabel"
+
+const MEAL_TYPE_LABELS: Record<string, string> = {
+    breakfast: "Breakfast",
+    lunch: "Lunch",
+    dinner: "Dinner",
+    snack: "Extra meal",
+}
+
+const MACRO_COLORS = {
+    protein: "#2a78d6",
+    carbs: "#eb6834",
+    fat: "#1baf7a",
+}
 
 type NutritionTarget = {
     calories: number
@@ -19,16 +32,19 @@ type NutritionTarget = {
     carbsG: number
 }
 
-type EatenToday = {
+type EatenSelected = {
     calories: number
     proteinG: number
     fatG: number
     carbsG: number
 }
 
-type WeightPoint = {
-    loggedAt: string
-    weightKg: number
+type Meal = {
+    id: number
+    name: string | null
+    mealType: string | null
+    calories: number
+    createdAt: string
 }
 
 type MyPlanContentProps = {
@@ -43,29 +59,51 @@ type MyPlanContentProps = {
     accountsForTraining: boolean
     checkIn: CheckInValues
     nutritionTarget: NutritionTarget | null
-    eatenToday: EatenToday
-    weightSummary: string | null
-    weightHistory: WeightPoint[]
-    checkInCount: number
+    selectedDate: string
+    isToday: boolean
+    todayMaxDate: string
+    eatenSelected: EatenSelected
+    meals: Meal[]
     weekDays: { dayOfWeek: number, muscleGroups: string[] }[]
 }
 
-const CardIcon = ({ children }: { children: React.ReactNode }) => (
-    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.04] text-ink-strong/60">
-        {children}
-    </span>
-)
+const CalorieRing = ({ percent }: { percent: number }) => {
+    const clamped = Math.min(Math.max(percent, 0), 100)
+    const radius = 42
+    const circumference = 2 * Math.PI * radius
+    const offset = circumference * (1 - clamped / 100)
 
-const MacroBar = ({ label, eaten, goal }: { label: string, eaten: number, goal: number }) => (
-    <div className="flex flex-col gap-1">
+    return (
+        <div className="relative flex h-24 w-24 shrink-0 items-center justify-center sm:h-28 sm:w-28">
+            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                <circle cx="50" cy="50" r={radius} fill="none" strokeWidth="8" className="stroke-black/[0.06]"/>
+                <circle
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    className="stroke-black transition-[stroke-dashoffset] duration-500 ease-out"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                />
+            </svg>
+            <span className="absolute text-base font-semibold text-ink-strong sm:text-lg">{Math.round(clamped)}%</span>
+        </div>
+    )
+}
+
+const MacroBar = ({ label, eaten, goal, color }: { label: string, eaten: number, goal: number, color: string }) => (
+    <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between text-xs text-ink-strong/40">
             <span>{label}</span>
-            <span>{Math.round(eaten)} / {goal}g</span>
+            <span>{Math.round(eaten)}/{goal}g</span>
         </div>
-        <div className="h-1 w-full overflow-hidden rounded-full bg-black/5">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/5">
             <div
-                className="h-full rounded-full bg-black transition-all duration-300"
-                style={{ width: `${Math.min((eaten / goal) * 100, 100)}%` }}
+                className="h-full rounded-full transition-all duration-300"
+                style={{ width: `${Math.min((eaten / goal) * 100, 100)}%`, backgroundColor: color }}
             />
         </div>
     </div>
@@ -83,10 +121,11 @@ const MyPlanContent = ({
     accountsForTraining,
     checkIn,
     nutritionTarget,
-    eatenToday,
-    weightSummary,
-    weightHistory,
-    checkInCount,
+    selectedDate,
+    isToday,
+    todayMaxDate,
+    eatenSelected,
+    meals,
     weekDays,
 }: MyPlanContentProps) => {
     const router = useRouter()
@@ -101,6 +140,14 @@ const MyPlanContent = ({
         router.refresh()
         setCheckInOpen(false)
     }
+
+    const remaining = nutritionTarget ? Math.max(nutritionTarget.calories - eatenSelected.calories, 0) : 0
+    const percentEaten = nutritionTarget ? (eatenSelected.calories / nutritionTarget.calories) * 100 : 0
+
+    const selectedDayOfWeek = ((new Date(`${selectedDate}T00:00:00`).getDay() + 6) % 7) + 1 // Monday = 1
+    const selectedMuscleGroups = weekDays.find(d => d.dayOfWeek === selectedDayOfWeek)?.muscleGroups ?? []
+    const selectedWorkoutLabel = getWorkoutLabel(selectedMuscleGroups)
+    const selectedDayName = isToday ? "Today" : new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "long" })
 
     return (
         <section className="px-5 py-16 sm:px-10 lg:px-20">
@@ -122,91 +169,96 @@ const MyPlanContent = ({
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="flex flex-col gap-3 rounded-xl border border-black/10 p-5 transition-shadow duration-200 hover:shadow-sm">
-                        <div className="flex items-center gap-2">
-                            <CardIcon><Barbell size={14} weight="bold"/></CardIcon>
-                            <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Today&apos;s workout</span>
-                        </div>
+                <div className="flex flex-col gap-6 rounded-2xl border border-black/10 p-5 sm:p-7">
+                    {hasNutrition && nutritionTarget && (
+                        <NutritionCalendarStrip date={selectedDate} maxDate={todayMaxDate}/>
+                    )}
+
+                    <div className={`flex flex-wrap items-center justify-between gap-3 ${hasNutrition && nutritionTarget ? "border-t border-black/[0.06] pt-6" : ""}`}>
+                        <span className="flex items-center gap-2 text-sm font-medium text-ink-strong">
+                            <Barbell size={14} weight="bold" className="text-ink-strong/35"/>
+                            {hasTraining
+                                ? `${selectedDayName} · ${selectedWorkoutLabel === "Rest day" ? "Rest day" : `${selectedWorkoutLabel} day`}`
+                                : "No training plan yet"}
+                        </span>
                         {hasTraining ? (
-                            <>
-                                <p className="text-sm font-semibold text-ink-strong">No workout scheduled yet</p>
-                                <Link href="/my-profile/exercises" className="text-sm font-medium text-ink-strong hover:underline">
-                                    View exercises →
-                                </Link>
-                            </>
+                            <Link href="/my-profile/exercises" className="text-sm font-medium text-ink-strong hover:underline">
+                                View exercises →
+                            </Link>
                         ) : (
-                            <>
-                                <p className="text-sm text-ink-strong/60">No training plan yet.</p>
-                                <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label="Get full access — $45/mo"/>
-                            </>
+                            <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label="Get full access — $45/mo"/>
                         )}
                     </div>
 
-                    <div className="flex flex-col gap-3 rounded-xl border border-black/10 p-5 transition-shadow duration-200 hover:shadow-sm">
-                        <div className="flex items-center gap-2">
-                            <CardIcon><ForkKnife size={14} weight="bold"/></CardIcon>
-                            <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Nutrition today</span>
-                        </div>
-                        {hasNutrition && nutritionTarget ? (
-                            <>
-                                <p className="text-2xl font-semibold text-ink-strong">
-                                    {eatenToday.calories.toLocaleString("en-US")}
-                                    <span className="text-sm font-normal text-ink-strong/40"> / {nutritionTarget.calories.toLocaleString("en-US")} kcal</span>
-                                </p>
-                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/5">
-                                    <div
-                                        className="h-full rounded-full bg-black transition-all duration-300"
-                                        style={{ width: `${Math.min((eatenToday.calories / nutritionTarget.calories) * 100, 100)}%` }}
-                                    />
+                    {hasNutrition && nutritionTarget ? (
+                        <>
+                            <div className="flex flex-col items-start justify-between gap-6 border-t border-black/[0.06] pt-6 sm:flex-row sm:items-center">
+                                <div className="flex flex-col gap-3">
+                                    <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">
+                                        {isToday ? "Remaining" : "Logged"}
+                                    </span>
+                                    <p className="text-4xl font-semibold leading-none text-ink-strong">
+                                        {remaining.toLocaleString("en-US")}
+                                        <span className="ml-1.5 text-base font-normal text-ink-strong/40">kcal</span>
+                                    </p>
+                                    <div className="flex items-center gap-4 text-xs text-ink-strong/45">
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="h-1.5 w-1.5 rounded-full bg-black/20"/>
+                                            Goal {nutritionTarget.calories.toLocaleString("en-US")}
+                                        </span>
+                                        <span className="flex items-center gap-1.5">
+                                            <span className="h-1.5 w-1.5 rounded-full bg-black"/>
+                                            Eaten {Math.round(eatenSelected.calories).toLocaleString("en-US")}
+                                        </span>
+                                    </div>
                                 </div>
 
-                                <div className="flex flex-col gap-2 border-t border-black/[0.06] pt-3">
-                                    <MacroBar label="Protein" eaten={eatenToday.proteinG} goal={nutritionTarget.proteinG}/>
-                                    <MacroBar label="Fat" eaten={eatenToday.fatG} goal={nutritionTarget.fatG}/>
-                                    <MacroBar label="Carbs" eaten={eatenToday.carbsG} goal={nutritionTarget.carbsG}/>
+                                <CalorieRing percent={percentEaten}/>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 border-t border-black/[0.06] pt-6 sm:grid-cols-3">
+                                <MacroBar label="Protein" eaten={eatenSelected.proteinG} goal={nutritionTarget.proteinG} color={MACRO_COLORS.protein}/>
+                                <MacroBar label="Carbs" eaten={eatenSelected.carbsG} goal={nutritionTarget.carbsG} color={MACRO_COLORS.carbs}/>
+                                <MacroBar label="Fat" eaten={eatenSelected.fatG} goal={nutritionTarget.fatG} color={MACRO_COLORS.fat}/>
+                            </div>
+
+                            <div className="flex flex-col gap-3 border-t border-black/[0.06] pt-6">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Recently added</span>
+                                    <Link href="/my-profile/nutrition" className="text-sm font-medium text-ink-strong hover:underline">
+                                        Open nutrition →
+                                    </Link>
                                 </div>
 
-                                <Link href="/my-profile/nutrition" className="text-sm font-medium text-ink-strong hover:underline">
-                                    Open nutrition →
-                                </Link>
-                            </>
-                        ) : (
-                            <>
-                                <p className="text-sm text-ink-strong/60">You&apos;ll need to track your own calories for now.</p>
-                                <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label="Get full access — $45/mo"/>
-                            </>
-                        )}
-                    </div>
-
-                    <div className="flex flex-col gap-3 rounded-xl border border-black/10 p-5 transition-shadow duration-200 hover:shadow-sm">
-                        <div className="flex items-center gap-2">
-                            <CardIcon><ChartLineUp size={14} weight="bold"/></CardIcon>
-                            <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Progress</span>
+                                {meals.length > 0 ? (
+                                    <div className="flex flex-col divide-y divide-black/[0.06]">
+                                        {meals.map(meal => (
+                                            <div key={meal.id} className="flex items-center gap-3 py-3">
+                                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/[0.04] text-ink-strong/60">
+                                                    <ForkKnife size={16} weight="bold"/>
+                                                </span>
+                                                <div className="flex min-w-0 flex-1 flex-col">
+                                                    <span className="truncate text-sm text-ink-strong">{meal.name || MEAL_TYPE_LABELS[meal.mealType ?? ""] || "Meal"}</span>
+                                                    <span className="text-xs text-ink-strong/40">
+                                                        {MEAL_TYPE_LABELS[meal.mealType ?? ""] || "Meal"} · {new Date(meal.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                                                    </span>
+                                                </div>
+                                                <span className="shrink-0 text-sm font-medium text-ink-strong">{meal.calories} kcal</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-ink-strong/50">Nothing logged {isToday ? "yet today" : "for this day"}.</p>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex flex-col gap-3 border-t border-black/[0.06] pt-6">
+                            <p className="text-sm text-ink-strong/60">You&apos;ll need to track your own calories for now.</p>
+                            <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label="Get full access — $45/mo"/>
                         </div>
-
-                        {weightHistory.length >= 2 && <WeightSparkline data={weightHistory}/>}
-
-                        {weightSummary ? (
-                            <p className="text-2xl font-semibold text-ink-strong">{weightSummary}</p>
-                        ) : (
-                            <p className="text-sm text-ink-strong/60">Check in a couple more times to see your trend.</p>
-                        )}
-
-                        {checkInCount > 0 && (
-                            <p className="flex items-center gap-1.5 text-xs text-ink-strong/40">
-                                <Flame size={14} weight="fill" className="text-ink-strong/60"/>
-                                {checkInCount} check-in{checkInCount === 1 ? "" : "s"} logged
-                            </p>
-                        )}
-
-                        <Link href="/my-profile/progress" className="text-sm font-medium text-ink-strong hover:underline">
-                            View chart →
-                        </Link>
-                    </div>
+                    )}
                 </div>
-
-                {hasTraining && <WeekSplitPreview days={weekDays}/>}
 
                 <Modal open={checkInOpen} title="Weekly check-in" onClose={() => setCheckInOpen(false)}>
                     <div className="flex flex-col gap-6">
