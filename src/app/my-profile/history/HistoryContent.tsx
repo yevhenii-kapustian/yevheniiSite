@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from "react"
+import { Barbell, ForkKnife } from "@phosphor-icons/react"
 import Modal from "../Modal"
 import Card from "../Card"
 import type { WorkoutHistoryRow } from "@/supabase/queries"
@@ -60,7 +61,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
     return (
         <>
             <Card className="flex flex-col divide-y divide-black/[0.05] p-6 sm:p-7">
-                <div className="flex items-center gap-4 pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-ink-strong/35">
+                <div className="hidden items-center gap-4 pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-ink-strong/35 sm:flex">
                     <span className="w-28 shrink-0">Date</span>
                     <span className="flex-1">Weight</span>
                     <span className="flex-1">Nutrition</span>
@@ -69,39 +70,71 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                 {dates.map(date => {
                     const hasMeals = Boolean(mealsByDate[date]?.length)
                     const hasWorkout = Boolean(workoutsByDate[date]?.length)
+                    const exerciseCount = hasWorkout ? new Set(workoutsByDate[date].map(w => w.exerciseName)).size : 0
+
+                    const nutritionCell = hasMeals ? (
+                        <button
+                            type="button"
+                            onClick={() => openModal(date, "nutrition")}
+                            className="font-medium text-ink-strong hover:underline"
+                        >
+                            {caloriesByDate[date].toLocaleString("en-US")} kcal
+                        </button>
+                    ) : (
+                        <span className="text-ink-strong/30">—</span>
+                    )
+
+                    const trainingCell = hasWorkout ? (
+                        <button
+                            type="button"
+                            onClick={() => openModal(date, "training")}
+                            className="font-medium text-ink-strong hover:underline"
+                        >
+                            {exerciseCount} exercise{exerciseCount === 1 ? "" : "s"} logged
+                        </button>
+                    ) : (
+                        <span className="text-ink-strong/30">No workout logged</span>
+                    )
 
                     return (
-                        <div key={date} className="flex items-center justify-between gap-4 py-4">
-                            <span className="w-28 shrink-0 text-sm font-medium text-ink-strong">{formatDate(date)}</span>
-                            <span className="flex-1 text-sm text-ink-strong/60">
-                                {weightByDate[date] ? `${weightByDate[date]} kg` : "—"}
-                            </span>
-                            <span className="flex-1 text-sm">
-                                {hasMeals ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => openModal(date, "nutrition")}
-                                        className="font-medium text-ink-strong hover:underline"
-                                    >
-                                        {caloriesByDate[date].toLocaleString("en-US")} kcal
-                                    </button>
-                                ) : (
-                                    <span className="text-ink-strong/30">—</span>
-                                )}
-                            </span>
-                            <span className="flex-1 text-sm">
-                                {hasWorkout ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => openModal(date, "training")}
-                                        className="font-medium text-ink-strong hover:underline"
-                                    >
-                                        {new Set(workoutsByDate[date].map(w => w.exerciseName)).size} exercise{new Set(workoutsByDate[date].map(w => w.exerciseName)).size === 1 ? "" : "s"} logged
-                                    </button>
-                                ) : (
-                                    <span className="text-ink-strong/30">No workout logged</span>
-                                )}
-                            </span>
+                        <div key={date} className="py-4">
+                            <div className="flex flex-col gap-3 sm:hidden">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-semibold text-ink-strong">{formatDate(date)}</span>
+                                    <span className="text-xs text-ink-strong/40">
+                                        {weightByDate[date] ? `${weightByDate[date]} kg` : "No check-in"}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.04] text-ink-strong/60">
+                                        <ForkKnife size={15} weight="bold"/>
+                                    </span>
+                                    <div className="flex flex-1 items-center justify-between text-sm">
+                                        <span className="text-ink-strong/40">Nutrition</span>
+                                        {nutritionCell}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-black/[0.04] text-ink-strong/60">
+                                        <Barbell size={15} weight="bold"/>
+                                    </span>
+                                    <div className="flex flex-1 items-center justify-between text-sm">
+                                        <span className="text-ink-strong/40">Training</span>
+                                        {trainingCell}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="hidden items-center justify-between gap-4 sm:flex">
+                                <span className="w-28 shrink-0 text-sm font-medium text-ink-strong">{formatDate(date)}</span>
+                                <span className="flex-1 text-sm text-ink-strong/60">
+                                    {weightByDate[date] ? `${weightByDate[date]} kg` : "—"}
+                                </span>
+                                <span className="flex-1 text-sm">{nutritionCell}</span>
+                                <span className="flex-1 text-sm">{trainingCell}</span>
+                            </div>
                         </div>
                     )
                 })}

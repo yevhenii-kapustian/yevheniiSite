@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
 import { getEntitlementsForUser, getNutritionTargetForDate, getMealsForDate } from "@/supabase/queries"
-import WeekDatePicker from "../WeekDatePicker"
+import NutritionCalendarStrip from "../NutritionCalendarStrip"
 import AddModuleButton from "../AddModuleButton"
 import NutritionContent from "./NutritionContent"
 import { BUNDLE_PRODUCT_ID } from "@/data/products"
@@ -71,7 +71,7 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
                     {isToday ? "Today" : new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
                     {target && ` · ${Math.round(eaten.calories).toLocaleString("en-US")} / ${target.calories.toLocaleString("en-US")} kcal logged`}
                 </p>
-                <WeekDatePicker date={selectedDate} maxDate={today}/>
+                <NutritionCalendarStrip date={selectedDate} maxDate={today}/>
             </div>
 
             <NutritionContent selectedDate={selectedDate} isToday={isToday} macroCards={macroCards} meals={meals}/>

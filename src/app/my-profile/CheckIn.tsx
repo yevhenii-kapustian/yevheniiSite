@@ -92,22 +92,22 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
     }
 
     return (
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 sm:gap-6">
             <div className="flex flex-col items-center gap-1 text-center">
-                <h1 className="text-2xl font-semibold tracking-tight text-ink-strong">Your stats & goal</h1>
+                <h1 className="text-xl font-semibold tracking-tight text-ink-strong sm:text-2xl">Your stats & goal</h1>
             </div>
 
-            <div className="relative grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-10">
+            <div className="relative grid gap-4 sm:gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-10">
                 <div className="relative">
-                    <div className="relative h-[300px] w-full sm:h-[380px] lg:h-[440px]">
+                    <div className="relative h-[400px] w-full sm:h-[320px] lg:h-[440px]">
                         <BodyAvatarErrorBoundary>
                             <BodyAvatar sliderValue={GOAL_SLIDER_VALUE[goal]} gender={gender}/>
                         </BodyAvatarErrorBoundary>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4 sm:gap-6">
+                    <div className="flex flex-col gap-2 sm:gap-3">
                         <span className="text-xs font-semibold uppercase tracking-[0.25em] text-ink-strong/35">Gender</span>
                         <div className="relative flex w-fit rounded-full bg-black/[0.045] p-1">
                             <motion.div
@@ -132,7 +132,7 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 border-t border-black/[0.05] pt-5">
+                    <div className="grid grid-cols-3 gap-2 border-t border-black/[0.05] pt-4 sm:gap-3 sm:pt-5">
                         {statFields.map(field => (
                             <div key={field.key} className="flex flex-col gap-1.5 rounded-2xl bg-black/[0.03] px-3 py-2.5">
                                 <label className="text-[11px] font-medium uppercase tracking-[0.1em] text-ink-strong/35">{field.label}</label>
@@ -148,7 +148,7 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                         ))}
                     </div>
 
-                    <div className="flex flex-col gap-3 border-t border-black/[0.05] pt-5">
+                    <div className="flex flex-col gap-2 border-t border-black/[0.05] pt-4 sm:gap-3 sm:pt-5">
                         <label className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Goal</label>
                         <div className="flex flex-wrap gap-2">
                             {GOALS.map(g => (
@@ -164,8 +164,8 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-1 border-t border-black/[0.05] pt-5">
-                        <p className="text-4xl font-semibold tracking-tight text-ink-strong">
+                    <div className="flex flex-col gap-1 border-t border-black/[0.05] pt-4 sm:pt-5">
+                        <p className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">
                             <AnimatedNumber value={result.calories}/>
                             <span className="ml-2 text-base font-normal text-ink-strong/40">kcal / day</span>
                         </p>
@@ -177,7 +177,7 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                             type="button"
                             onClick={handleContinue}
                             disabled={saving}
-                            className="mt-3 w-full rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
+                            className="mt-2 w-full rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40 sm:mt-3"
                         >
                             {saving ? "Saving…" : "Save"}
                         </button>

@@ -38,7 +38,7 @@ const Modal = ({ open, title, onClose, children }: ModalProps) => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="nav-blur fixed inset-0 z-[100] flex items-center justify-center bg-black/20 px-5"
+                    className="nav-blur fixed inset-0 z-[100] flex items-center justify-center bg-black/20 px-4 sm:px-5"
                     onClick={onClose}
                 >
                     <motion.div
@@ -46,10 +46,10 @@ const Modal = ({ open, title, onClose, children }: ModalProps) => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 16, scale: 0.97 }}
                         transition={{ type: "spring", stiffness: 340, damping: 30 }}
-                        className="card-shadow max-h-[80vh] w-[80vw] max-w-6xl overflow-y-auto rounded-[32px] border border-black/[0.05] bg-white p-6 sm:p-8"
+                        className="card-shadow max-h-[88vh] w-[92vw] sm:w-[80vw] max-w-6xl overflow-y-auto rounded-[32px] border border-black/[0.05] bg-white p-5 sm:p-8"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="mb-6 flex items-center justify-between">
+                        <div className="mb-4 flex items-center justify-between sm:mb-6">
                             <h2 className="text-lg font-semibold tracking-tight text-ink-strong">{title}</h2>
                             <button
                                 type="button"

@@ -46,7 +46,7 @@ const TransformTeaserSection = () => {
             initial={{ y: 32, opacity: 0 }}
             animate={isInView ? { y: 0, opacity: 1 } : {}}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="border-t border-black/[0.06]"
+            className="overflow-hidden border-t border-black/[0.06]"
         >
             <div className="py-10 px-5 lg:px-20 flex flex-col items-center gap-5 sm:flex-row sm:justify-evenly bg-white">
                 <div className="flex w-full flex-col items-start gap-3 text-left sm:w-[40%] lg:w-[50%]">

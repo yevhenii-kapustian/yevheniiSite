@@ -2,11 +2,15 @@
 
 import Logo from "../Logo"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { InstagramLogo, EnvelopeSimple } from "@phosphor-icons/react"
 import { navigation, Navigation } from "@/data/navigation"
 
 const Footer = () => {
+    const pathname = usePathname()
     const currentYear = new Date().getFullYear()
+
+    if (pathname.startsWith("/my-profile")) return null
 
     return(
         <footer className="bg-surface-strong text-white">

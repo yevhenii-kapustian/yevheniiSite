@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
-import { Check, Confetti, Info, Smiley, SmileyMeh, SmileySad } from "@phosphor-icons/react"
+import { CaretLeft, CaretRight, Check, Confetti, Info, Smiley, SmileyMeh, SmileySad } from "@phosphor-icons/react"
 import Modal from "../Modal"
 import Card from "../Card"
 import { getWorkoutLabel } from "@/utils/workoutLabel"
@@ -55,13 +55,14 @@ const buildInitialInputs = (exercises: TrainingPlanExercise[]): SetInput[][] =>
 const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: WorkoutTrackerProps) => {
     const router = useRouter()
     const [dayOfWeek, setDayOfWeek] = useState(initialDayOfWeek ?? todayDayOfWeek)
+    const [weekOffset, setWeekOffset] = useState(0)
     const [saving, setSaving] = useState<string | null>(null)
     const [infoExercise, setInfoExercise] = useState<TrainingPlanExercise | null>(null)
 
     const day = days.find(d => d.dayOfWeek === dayOfWeek)
     const exercises = day?.exercises ?? []
     const isRestDay = exercises.length === 0
-    const isToday = dayOfWeek === todayDayOfWeek
+    const isToday = weekOffset === 0 && dayOfWeek === todayDayOfWeek
 
     const [inputsByExercise, setInputsByExercise] = useState<SetInput[][]>(() => buildInitialInputs(exercises))
 
@@ -111,31 +112,70 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
     const dayMuscles = Array.from(new Set(exercises.map(e => e.muscleGroup)))
     const workoutLabel = getWorkoutLabel(dayMuscles)
 
+    const weekDates = useMemo(() => {
+        const monday = new Date()
+        const weekday = (monday.getDay() + 6) % 7 // Monday = 0
+        monday.setDate(monday.getDate() - weekday + weekOffset * 7)
+        return Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(monday)
+            d.setDate(d.getDate() + i)
+            return d
+        })
+    }, [weekOffset])
+    const monthLabel = weekDates[0].toLocaleDateString("en-US", { month: "long", year: "numeric" })
+
     return (
         <div className="flex flex-col gap-8">
-            <div>
+            <div className="flex flex-col gap-4">
                 <p className="text-sm text-ink-strong/50">
                     {isToday ? "Today" : DAY_LABELS[dayOfWeek - 1]}
                     {` · ${workoutLabel}`}
                     {isToday && !isRestDay && ` · ${doneSets}/${totalSets} sets done`}
                 </p>
-            </div>
 
-            <div className="flex gap-2">
-                {DAY_LABELS.map((label, index) => (
-                    <button
-                        key={label}
-                        type="button"
-                        onClick={() => selectDay(index + 1)}
-                        className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors duration-200 ${
-                            index + 1 === dayOfWeek
-                                ? "bg-black text-white"
-                                : "bg-black/[0.045] text-ink-strong/60 hover:bg-black/[0.08]"
-                        }`}
-                    >
-                        {label}
-                    </button>
-                ))}
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">{monthLabel}</span>
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                type="button"
+                                onClick={() => setWeekOffset(prev => prev - 1)}
+                                aria-label="Previous week"
+                                className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08]"
+                            >
+                                <CaretLeft size={12} weight="bold"/>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setWeekOffset(prev => Math.min(prev + 1, 0))}
+                                disabled={weekOffset >= 0}
+                                aria-label="Next week"
+                                className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08] disabled:opacity-30"
+                            >
+                                <CaretRight size={12} weight="bold"/>
+                            </button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-7 gap-2">
+                        {weekDates.map((d, index) => {
+                            const dow = index + 1
+                            const isSelected = dow === dayOfWeek
+                            return (
+                                <button
+                                    key={dow}
+                                    type="button"
+                                    onClick={() => selectDay(dow)}
+                                    className={`flex flex-col items-center gap-1.5 rounded-2xl py-2.5 transition-colors duration-200 ${
+                                        isSelected ? "bg-black text-white" : "text-ink-strong/60 hover:bg-black/[0.045]"
+                                    }`}
+                                >
+                                    <span className="text-[10px] font-medium tracking-wide opacity-60">{DAY_LABELS[index].toUpperCase()}</span>
+                                    <span className="text-sm font-semibold">{d.getDate()}</span>
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
             </div>
 
             <AnimatePresence mode="wait">

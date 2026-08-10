@@ -18,6 +18,15 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
+.mobile-tab-bar {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-tab-label {
+  font-size: 10px;
+  line-height: 1;
+}
+
 * {
   box-sizing: border-box;
 }
