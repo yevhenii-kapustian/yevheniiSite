@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
 import { Check, Confetti, Info, Smiley, SmileyMeh, SmileySad } from "@phosphor-icons/react"
 import Modal from "../Modal"
+import Card from "../Card"
 import { getWorkoutLabel } from "@/utils/workoutLabel"
 
 export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -126,10 +127,10 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                         key={label}
                         type="button"
                         onClick={() => selectDay(index + 1)}
-                        className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium transition-colors duration-200 ${
+                        className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors duration-200 ${
                             index + 1 === dayOfWeek
-                                ? "border-black bg-black text-white"
-                                : "border-black/10 text-ink-strong/60 hover:bg-black/5"
+                                ? "bg-black text-white"
+                                : "bg-black/[0.045] text-ink-strong/60 hover:bg-black/[0.08]"
                         }`}
                     >
                         {label}
@@ -145,10 +146,11 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.2 }}
-                        className="flex flex-col items-center gap-1 rounded-2xl border border-black/10 py-16 text-center"
                     >
-                        <p className="text-sm font-semibold text-ink-strong">Rest day</p>
-                        <p className="text-sm text-ink-strong/50">No exercises scheduled — recover for the next session.</p>
+                        <Card className="flex flex-col items-center gap-1 px-6 py-16 text-center">
+                            <p className="text-sm font-semibold text-ink-strong">Rest day</p>
+                            <p className="text-sm text-ink-strong/50">No exercises scheduled — recover for the next session.</p>
+                        </Card>
                     </motion.div>
                 ) : (
                     <motion.div
@@ -165,12 +167,12 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="flex items-center gap-3 rounded-2xl border border-black bg-black p-5 text-white"
+                                    className="card-shadow flex items-center gap-3 rounded-[28px] bg-black p-5 text-white"
                                 >
                                     <Confetti size={24} weight="fill"/>
                                     <div>
                                         <p className="font-semibold">Workout complete!</p>
-                                        <p className="text-sm text-white/60">Every set logged — nice work.</p>
+                                        <p className="text-sm text-white/70">Every set logged — nice work.</p>
                                     </div>
                                 </motion.div>
                             )}
@@ -181,15 +183,12 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                 const doneCount = todayLogs.filter(l => l.plan_exercise_id === exercise.planExerciseId).length
 
                                 return (
-                                    <div
-                                        key={exercise.planExerciseId}
-                                        className="rounded-2xl border border-black/10 p-5 transition-colors duration-200 hover:border-black/20"
-                                    >
+                                    <Card key={exercise.planExerciseId} className="p-5">
                                         <div className="flex items-start justify-between gap-3">
                                             <div>
                                                 <p className="font-semibold text-ink-strong">{exercise.name}</p>
                                                 <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-strong/40">
-                                                    <span className="rounded-full bg-black/[0.04] px-2 py-0.5 text-xs font-medium text-ink-strong/50">{exercise.muscleGroup}</span>
+                                                    <span className="rounded-full bg-black/[0.04] px-2 py-0.5 text-xs font-medium text-ink-strong/60">{exercise.muscleGroup}</span>
                                                     {exercise.sets}×{exercise.reps} · {exercise.weightKg}kg
                                                 </p>
                                             </div>
@@ -198,7 +197,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                                     type="button"
                                                     onClick={() => setInfoExercise(exercise)}
                                                     aria-label={`View info for ${exercise.name}`}
-                                                    className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-ink-strong/50 transition-colors duration-200 hover:border-black hover:bg-black hover:text-white"
+                                                    className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong/50 transition-colors duration-200 hover:bg-black hover:text-white"
                                                 >
                                                     <Info size={14} weight="bold"/>
                                                 </button>
@@ -217,7 +216,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 flex flex-col gap-2 border-t border-black/[0.06] pt-4">
+                                        <div className="mt-4 flex flex-col gap-2 border-t border-black/[0.05] pt-4">
                                             {Array.from({ length: exercise.sets }, (_, setIndex) => {
                                                 const setNumber = setIndex + 1
                                                 const log = logFor(exercise.planExerciseId, setNumber)
@@ -240,16 +239,18 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                                                 <>
                                                                     <input
                                                                         type="number"
+                                                                        min="0"
                                                                         value={input?.weightKg ?? 0}
                                                                         onChange={e => updateInput(exerciseIndex, setIndex, { weightKg: Number(e.target.value) })}
-                                                                        className="w-16 rounded-lg border border-black/10 px-2 py-1.5 text-center text-ink-strong outline-none focus:border-black/30"
+                                                                        className="w-16 rounded-xl bg-black/[0.03] px-2 py-1.5 text-center text-ink-strong outline-none transition-colors duration-200 focus:bg-black/[0.06]"
                                                                     />
                                                                     <span className="text-ink-strong/40">kg ×</span>
                                                                     <input
                                                                         type="number"
+                                                                        min="0"
                                                                         value={input?.reps ?? 0}
                                                                         onChange={e => updateInput(exerciseIndex, setIndex, { reps: Number(e.target.value) })}
-                                                                        className="w-16 rounded-lg border border-black/10 px-2 py-1.5 text-center text-ink-strong outline-none focus:border-black/30"
+                                                                        className="w-16 rounded-xl bg-black/[0.03] px-2 py-1.5 text-center text-ink-strong outline-none transition-colors duration-200 focus:bg-black/[0.06]"
                                                                     />
                                                                     <span className="text-ink-strong/40">reps</span>
                                                                 </>
@@ -264,8 +265,8 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                                                     onClick={() => updateInput(exerciseIndex, setIndex, { revealDifficulty: !input?.revealDifficulty })}
                                                                     aria-label="Log this set"
                                                                     disabled={saving === key}
-                                                                    className={`ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors duration-200 ${
-                                                                        input?.revealDifficulty ? "border-black bg-black text-white" : "border-black/20 text-transparent hover:bg-black/5"
+                                                                    className={`ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${
+                                                                        input?.revealDifficulty ? "bg-black text-white" : "bg-black/[0.045] text-transparent hover:bg-black/[0.08]"
                                                                     }`}
                                                                 >
                                                                     <Check size={14} weight="bold"/>
@@ -291,7 +292,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                                                                     type="button"
                                                                                     disabled={saving === key}
                                                                                     onClick={() => submitSet(exerciseIndex, setIndex, exercise.planExerciseId, option.value)}
-                                                                                    className="flex items-center gap-1.5 rounded-full border border-black/10 px-3 py-1 text-xs font-medium text-ink-strong/50 transition-colors duration-200 hover:border-black hover:bg-black hover:text-white disabled:opacity-40"
+                                                                                    className="flex items-center gap-1.5 rounded-full bg-black/[0.045] px-3 py-1 text-xs font-medium text-ink-strong/50 transition-colors duration-200 hover:bg-black hover:text-white disabled:opacity-40"
                                                                                 >
                                                                                     <Icon size={13}/>
                                                                                     {option.label}
@@ -306,7 +307,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                                 )
                                             })}
                                         </div>
-                                    </div>
+                                    </Card>
                                 )
                             })}
                         </div>

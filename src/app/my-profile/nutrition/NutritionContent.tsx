@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion"
 import AddMealForm from "../AddMealForm"
+import Card from "../Card"
 
 const MEAL_TYPE_LABELS: Record<string, string> = {
     breakfast: "Breakfast",
@@ -45,19 +46,19 @@ const NutritionContent = ({ selectedDate, isToday, macroCards, meals }: Nutritio
                 {macroCards.length > 0 && (
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                         {macroCards.map(macro => (
-                            <div key={macro.label} className="flex flex-col gap-2 rounded-2xl border border-black/10 p-5">
-                                <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">{macro.label}</span>
-                                <span className="text-xl font-semibold text-ink-strong">
+                            <Card key={macro.label} className="flex flex-col gap-2 p-5">
+                                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">{macro.label}</span>
+                                <span className="text-xl font-semibold tracking-tight text-ink-strong">
                                     {Math.round(macro.eaten).toLocaleString("en-US")}{macro.unit}
                                     <span className="text-sm font-normal text-ink-strong/40"> / {macro.goal.toLocaleString("en-US")}{macro.unit}</span>
                                 </span>
-                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/5">
+                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/[0.05]">
                                     <div
-                                        className={`h-full rounded-full transition-all duration-300 ${macro.eaten > macro.goal ? "bg-red-500" : "bg-black"}`}
+                                        className="h-full rounded-full bg-black transition-all duration-300"
                                         style={{ width: `${Math.min((macro.eaten / macro.goal) * 100, 100)}%` }}
                                     />
                                 </div>
-                            </div>
+                            </Card>
                         ))}
                     </div>
                 )}
@@ -65,9 +66,9 @@ const NutritionContent = ({ selectedDate, isToday, macroCards, meals }: Nutritio
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <div className="flex flex-col gap-3">
                         {meals.length > 0 ? (
-                            <div className="flex flex-col divide-y divide-black/[0.06] rounded-2xl border border-black/10">
+                            <div className="card-shadow flex flex-col divide-y divide-black/[0.05] rounded-[28px] border border-black/[0.05] bg-white">
                                 {meals.map(meal => (
-                                    <div key={meal.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                                    <div key={meal.id} className="flex items-center justify-between gap-3 px-5 py-3.5 text-sm">
                                         <div className="flex flex-col">
                                             <span className="text-ink-strong">{meal.name || MEAL_TYPE_LABELS[meal.meal_type ?? ""] || "Meal"}</span>
                                             <span className="text-xs text-ink-strong/40">{MEAL_TYPE_LABELS[meal.meal_type ?? ""] || "Meal"}</span>

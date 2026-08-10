@@ -50,13 +50,13 @@ const NutritionCalendarStrip = ({ date, maxDate }: NutritionCalendarStripProps) 
     return (
         <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-                <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">{monthLabel}</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">{monthLabel}</span>
                 <div className="flex items-center gap-1.5">
                     <button
                         type="button"
                         onClick={() => goTo(shiftDate(weekDates[0], -7))}
                         aria-label="Previous week"
-                        className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-ink-strong transition-colors duration-200 hover:bg-black/5"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08]"
                     >
                         <CaretLeft size={12} weight="bold"/>
                     </button>
@@ -65,7 +65,7 @@ const NutritionCalendarStrip = ({ date, maxDate }: NutritionCalendarStripProps) 
                         onClick={() => goTo(shiftDate(weekDates[0], 7))}
                         disabled={isNextWeekDisabled}
                         aria-label="Next week"
-                        className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-ink-strong transition-colors duration-200 hover:bg-black/5 disabled:opacity-30"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08] disabled:opacity-30"
                     >
                         <CaretRight size={12} weight="bold"/>
                     </button>
@@ -84,12 +84,12 @@ const NutritionCalendarStrip = ({ date, maxDate }: NutritionCalendarStripProps) 
                             type="button"
                             disabled={isDisabled}
                             onClick={() => goTo(iso)}
-                            className={`flex flex-col items-center gap-1.5 rounded-xl border py-2.5 transition-colors duration-200 ${
+                            className={`flex flex-col items-center gap-1.5 rounded-2xl py-2.5 transition-colors duration-200 ${
                                 isSelected
-                                    ? "border-black bg-black text-white"
+                                    ? "bg-black text-white"
                                     : isDisabled
-                                        ? "border-black/5 text-ink-strong/20"
-                                        : "border-black/10 text-ink-strong/60 hover:bg-black/5"
+                                        ? "text-ink-strong/20"
+                                        : "text-ink-strong/60 hover:bg-black/[0.045]"
                             }`}
                         >
                             <span className="text-[10px] font-medium tracking-wide opacity-60">{DAY_LABELS[i]}</span>

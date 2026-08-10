@@ -47,16 +47,16 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
     return (
         <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.04] text-ink-strong/60">
+                <div className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-ink-strong/60">
                         <Trophy size={14} weight="bold"/>
                     </span>
-                    <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Personal records</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Personal records</span>
                 </div>
                 <button
                     type="button"
                     onClick={() => setOpen(true)}
-                    className="flex items-center gap-1 rounded-full border border-black/10 py-1 pl-2 pr-3 text-xs font-medium text-ink-strong/60 transition-colors duration-200 hover:border-black hover:bg-black hover:text-white"
+                    className="flex items-center gap-1 rounded-full bg-black/[0.045] py-1 pl-2 pr-3 text-xs font-medium text-ink-strong/60 transition-colors duration-200 hover:bg-black hover:text-white"
                 >
                     <Plus size={12} weight="bold"/> Add record
                 </button>
@@ -83,7 +83,7 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
                     <select
                         value={planExerciseId}
                         onChange={e => setPlanExerciseId(Number(e.target.value))}
-                        className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm text-ink-strong outline-none focus:border-black/30"
+                        className="w-full rounded-2xl bg-black/[0.03] px-3.5 py-2.5 text-sm text-ink-strong outline-none transition-colors duration-200 focus:bg-black/[0.05]"
                     >
                         {exerciseOptions.map(option => (
                             <option key={option.planExerciseId} value={option.planExerciseId}>{option.name}</option>
@@ -93,17 +93,19 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
                     <div className="grid grid-cols-2 gap-2">
                         <input
                             type="number"
+                            min="0"
                             value={weightKg}
                             onChange={e => setWeightKg(e.target.value)}
                             placeholder="Weight, kg"
-                            className="w-full rounded-lg border border-black/10 px-3 py-2 text-center text-sm text-ink-strong outline-none focus:border-black/30"
+                            className="w-full rounded-2xl bg-black/[0.03] px-3.5 py-2.5 text-center text-sm text-ink-strong outline-none transition-colors duration-200 focus:bg-black/[0.05]"
                         />
                         <input
                             type="number"
+                            min="0"
                             value={reps}
                             onChange={e => setReps(e.target.value)}
                             placeholder="Reps"
-                            className="w-full rounded-lg border border-black/10 px-3 py-2 text-center text-sm text-ink-strong outline-none focus:border-black/30"
+                            className="w-full rounded-2xl bg-black/[0.03] px-3.5 py-2.5 text-center text-sm text-ink-strong outline-none transition-colors duration-200 focus:bg-black/[0.05]"
                         />
                     </div>
 
@@ -111,7 +113,7 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
                         type="button"
                         onClick={handleSubmit}
                         disabled={saving || !weightKg || !reps}
-                        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+                        className="rounded-full bg-black px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
                     >
                         {saving ? "Saving…" : "Save record"}
                     </button>

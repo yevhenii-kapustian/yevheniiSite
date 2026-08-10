@@ -20,16 +20,28 @@ export async function POST(req: NextRequest) {
 
     const { planExerciseId, setNumber, actualReps, actualWeightKg, effort } = await req.json()
 
-    if (!planExerciseId || !setNumber || !actualReps || !actualWeightKg || !VALID_EFFORTS.includes(effort)) {
+    const planExerciseIdNum = Number(planExerciseId)
+    const setNumberNum = Number(setNumber)
+    const actualRepsNum = Number(actualReps)
+    const actualWeightKgNum = Number(actualWeightKg)
+
+    if (
+        planExerciseId == null || setNumber == null || actualReps == null || actualWeightKg == null
+        || !Number.isInteger(planExerciseIdNum) || planExerciseIdNum <= 0
+        || !Number.isInteger(setNumberNum) || setNumberNum <= 0
+        || !Number.isFinite(actualRepsNum) || actualRepsNum < 0
+        || !Number.isFinite(actualWeightKgNum) || actualWeightKgNum < 0
+        || !VALID_EFFORTS.includes(effort)
+    ) {
         return NextResponse.json({ message: "Missing or invalid fields" }, { status: 400 })
     }
 
     await insertWorkoutSetLog({
         user_id: user.id,
-        plan_exercise_id: Number(planExerciseId),
-        set_number: Number(setNumber),
-        actual_reps: Number(actualReps),
-        actual_weight_kg: Number(actualWeightKg),
+        plan_exercise_id: planExerciseIdNum,
+        set_number: setNumberNum,
+        actual_reps: actualRepsNum,
+        actual_weight_kg: actualWeightKgNum,
         effort,
     })
 
@@ -37,8 +49,8 @@ export async function POST(req: NextRequest) {
     // to progress (or hold, or deload) the target for next time — otherwise the plan
     // would target the exact same weight/reps forever.
     const today = new Date().toISOString().slice(0, 10)
-    const planExercise = await getPlanExerciseForProgression(Number(planExerciseId))
-    const todaysEfforts = await getTodaysEffortsForPlanExercise(user.id, Number(planExerciseId), today)
+    const planExercise = await getPlanExerciseForProgression(planExerciseIdNum)
+    const todaysEfforts = await getTodaysEffortsForPlanExercise(user.id, planExerciseIdNum, today)
 
     if (todaysEfforts.length === planExercise.targetSets) {
         const next = computeProgression(
@@ -48,7 +60,7 @@ export async function POST(req: NextRequest) {
         )
 
         if (next.weightKg !== planExercise.targetWeightKg || next.reps !== planExercise.targetReps) {
-            await updatePlanExerciseTargets(Number(planExerciseId), next)
+            await updatePlanExerciseTargets(planExerciseIdNum, next)
         }
     }
 

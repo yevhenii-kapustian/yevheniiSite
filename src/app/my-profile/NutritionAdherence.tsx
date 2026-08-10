@@ -39,8 +39,8 @@ const NutritionAdherence = ({ intakeHistory, targetCalories }: { intakeHistory: 
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-baseline justify-between">
-                <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">On-target rate</span>
-                <span className="text-2xl font-semibold text-ink-strong">{rate}%</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">On-target rate</span>
+                <span className="text-2xl font-semibold tracking-tight text-ink-strong">{rate}%</span>
             </div>
 
             <p className="text-sm text-ink-strong/50">
@@ -55,7 +55,7 @@ const NutritionAdherence = ({ intakeHistory, targetCalories }: { intakeHistory: 
                         type="button"
                         onClick={() => shiftMonth(-1)}
                         aria-label="Previous month"
-                        className="flex h-6 w-6 items-center justify-center rounded-full border border-black/10 text-ink-strong transition-colors duration-200 hover:bg-black/5"
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08]"
                     >
                         <CaretLeft size={12} weight="bold"/>
                     </button>
@@ -64,7 +64,7 @@ const NutritionAdherence = ({ intakeHistory, targetCalories }: { intakeHistory: 
                         type="button"
                         onClick={() => shiftMonth(1)}
                         aria-label="Next month"
-                        className="flex h-6 w-6 items-center justify-center rounded-full border border-black/10 text-ink-strong transition-colors duration-200 hover:bg-black/5"
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08]"
                     >
                         <CaretRight size={12} weight="bold"/>
                     </button>
@@ -90,7 +90,7 @@ const NutritionAdherence = ({ intakeHistory, targetCalories }: { intakeHistory: 
                                             ? isToday ? "border border-black/20 text-ink-strong/40" : "text-ink-strong/30"
                                             : onTarget
                                                 ? "bg-black font-semibold text-white"
-                                                : "bg-black/15 font-medium text-ink-strong/70"
+                                                : "bg-black/[0.08] font-medium text-ink-strong/70"
                                     }`}
                                 >
                                     {date.getDate()}
@@ -102,7 +102,7 @@ const NutritionAdherence = ({ intakeHistory, targetCalories }: { intakeHistory: 
 
                 <div className="flex items-center gap-4 text-[11px] text-ink-strong/40">
                     <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-black"/> On target</span>
-                    <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-black/15"/> Off target</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-black/[0.08]"/> Off target</span>
                     <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border border-black/20"/> Not logged</span>
                 </div>
             </div>

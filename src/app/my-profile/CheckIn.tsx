@@ -22,9 +22,9 @@ const GOALS: { value: Goal, label: string }[] = [
 ]
 
 const statFields = [
-    { key: "age", label: "Age" },
-    { key: "height", label: "Height, cm" },
-    { key: "weight", label: "Weight, kg" },
+    { key: "age", label: "Age", min: 13, max: 100 },
+    { key: "height", label: "Height, cm", min: 100, max: 250 },
+    { key: "weight", label: "Weight, kg", min: 30, max: 300 },
 ] as const
 
 const AnimatedNumber = ({ value }: { value: number }) => {
@@ -94,8 +94,7 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
             <div className="flex flex-col items-center gap-1 text-center">
-                <span className="text-xs font-medium uppercase tracking-[0.25em] text-ink-strong/35">Weekly check-in</span>
-                <h1 className="text-2xl font-semibold text-ink-strong">How are things today?</h1>
+                <h1 className="text-2xl font-semibold tracking-tight text-ink-strong">Your stats & goal</h1>
             </div>
 
             <div className="relative grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-10">
@@ -109,8 +108,8 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
 
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-3">
-                        <span className="text-xs font-medium uppercase tracking-[0.25em] text-ink-strong/35">Gender</span>
-                        <div className="relative flex w-fit rounded-full border border-black/10 p-1">
+                        <span className="text-xs font-semibold uppercase tracking-[0.25em] text-ink-strong/35">Gender</span>
+                        <div className="relative flex w-fit rounded-full bg-black/[0.045] p-1">
                             <motion.div
                                 className="absolute inset-y-1 left-1 w-[84px] rounded-full bg-black"
                                 animate={{ x: gender === "male" ? 0 : 84 }}
@@ -133,29 +132,31 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-5 border-t border-black/10 pt-5">
+                    <div className="grid grid-cols-3 gap-3 border-t border-black/[0.05] pt-5">
                         {statFields.map(field => (
-                            <div key={field.key} className="flex flex-col gap-1">
-                                <label className="text-xs uppercase tracking-[0.15em] text-ink-strong/35">{field.label}</label>
+                            <div key={field.key} className="flex flex-col gap-1.5 rounded-2xl bg-black/[0.03] px-3 py-2.5">
+                                <label className="text-[11px] font-medium uppercase tracking-[0.1em] text-ink-strong/35">{field.label}</label>
                                 <input
                                     type="number"
+                                    min={field.min}
+                                    max={field.max}
                                     value={statValues[field.key]}
                                     onChange={e => statSetters[field.key](Number(e.target.value))}
-                                    className="border-b border-black/10 bg-transparent pb-1.5 text-lg text-ink-strong outline-none transition-colors duration-200 focus:border-black/40"
+                                    className="w-full bg-transparent text-lg font-semibold text-ink-strong outline-none"
                                 />
                             </div>
                         ))}
                     </div>
 
-                    <div className="flex flex-col gap-3 border-t border-black/10 pt-5">
-                        <label className="text-xs uppercase tracking-[0.15em] text-ink-strong/35">Goal</label>
+                    <div className="flex flex-col gap-3 border-t border-black/[0.05] pt-5">
+                        <label className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Goal</label>
                         <div className="flex flex-wrap gap-2">
                             {GOALS.map(g => (
                                 <button
                                     key={g.value}
                                     type="button"
                                     onClick={() => setGoal(g.value)}
-                                    className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-200 ${goal === g.value ? "border-black bg-black text-white" : "border-black/10 text-ink-strong/60"}`}
+                                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ${goal === g.value ? "bg-black text-white" : "bg-black/[0.045] text-ink-strong/60 hover:bg-black/[0.08]"}`}
                                 >
                                     {g.label}
                                 </button>
@@ -163,8 +164,8 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-1 border-t border-black/10 pt-5">
-                        <p className="text-4xl font-semibold leading-none text-ink-strong">
+                    <div className="flex flex-col gap-1 border-t border-black/[0.05] pt-5">
+                        <p className="text-4xl font-semibold tracking-tight text-ink-strong">
                             <AnimatedNumber value={result.calories}/>
                             <span className="ml-2 text-base font-normal text-ink-strong/40">kcal / day</span>
                         </p>
@@ -176,9 +177,9 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                             type="button"
                             onClick={handleContinue}
                             disabled={saving}
-                            className="mt-3 w-fit rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+                            className="mt-3 w-full rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
                         >
-                            {saving ? "Saving…" : "Continue"}
+                            {saving ? "Saving…" : "Save"}
                         </button>
                     </div>
                 </div>

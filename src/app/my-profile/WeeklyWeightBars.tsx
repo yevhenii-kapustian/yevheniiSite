@@ -40,7 +40,7 @@ const WeeklyWeightBars = ({ data }: { data: WeightPoint[] }) => {
 
     return (
         <div className="flex flex-col gap-3">
-            <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Weekly average</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Weekly average</span>
             <div className="flex items-end justify-between gap-3">
                 {weeks.map(week => {
                     const barHeight = MIN_BAR_HEIGHT + ((week.avg - min) / range) * (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT)
@@ -49,7 +49,7 @@ const WeeklyWeightBars = ({ data }: { data: WeightPoint[] }) => {
                             <span className="text-xs font-medium text-ink-strong/60">{week.avg.toFixed(1)}</span>
                             <div className="flex w-full items-end justify-center" style={{ height: MAX_BAR_HEIGHT }}>
                                 <div
-                                    className="w-full max-w-8 rounded-t-md bg-black transition-all duration-300"
+                                    className="w-full max-w-8 rounded-t-lg bg-black transition-all duration-300"
                                     style={{ height: barHeight }}
                                 />
                             </div>

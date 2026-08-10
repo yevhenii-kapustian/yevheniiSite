@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProfile, getLatestNutritionTarget, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, type TrainingPlanExercise } from "@/supabase/queries"
+import { getEntitlementsForUser, getProfile, getNutritionTargetForDate, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, type TrainingPlanExercise } from "@/supabase/queries"
 import MyPlanContent from "./MyPlanContent"
 
 export const metadata: Metadata = {
-    title: "My Plan - Yevhenii Fit",
+    title: "My Profile - Yevhenii Fit",
 }
 
 const getGreeting = () => {
@@ -35,7 +35,7 @@ export default async function MyProfile ({ searchParams }: PageProps) {
     const [entitlements, profile, nutritionTarget, weight, meals] = await Promise.all([
         getEntitlementsForUser(user.id),
         getProfile(user.id),
-        getLatestNutritionTarget(user.id),
+        getNutritionTargetForDate(user.id, selectedDate),
         getLatestBodyWeight(user.id),
         getMealsForDate(user.id, selectedDate),
     ])

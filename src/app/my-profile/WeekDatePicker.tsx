@@ -52,7 +52,7 @@ const WeekDatePicker = ({ date, maxDate }: WeekDatePickerProps) => {
                 type="button"
                 onClick={() => goTo(shiftDate(weekDates[0], -7))}
                 aria-label="Previous week"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/10 text-ink-strong transition-colors duration-200 hover:bg-black/5"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08]"
             >
                 <CaretLeft size={14} weight="bold"/>
             </button>
@@ -68,12 +68,12 @@ const WeekDatePicker = ({ date, maxDate }: WeekDatePickerProps) => {
                             type="button"
                             disabled={isDisabled}
                             onClick={() => goTo(iso)}
-                            className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-medium transition-colors duration-200 ${
+                            className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors duration-200 ${
                                 isSelected
-                                    ? "border-black bg-black text-white"
+                                    ? "bg-black text-white"
                                     : isDisabled
-                                        ? "border-black/5 text-ink-strong/20"
-                                        : "border-black/10 text-ink-strong/60 hover:bg-black/5"
+                                        ? "text-ink-strong/20"
+                                        : "text-ink-strong/60 hover:bg-black/[0.045]"
                             }`}
                         >
                             {DAY_LABELS[i]}
@@ -87,7 +87,7 @@ const WeekDatePicker = ({ date, maxDate }: WeekDatePickerProps) => {
                 onClick={() => goTo(shiftDate(weekDates[0], 7))}
                 disabled={isNextWeekDisabled}
                 aria-label="Next week"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/10 text-ink-strong transition-colors duration-200 hover:bg-black/5 disabled:opacity-30"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08] disabled:opacity-30"
             >
                 <CaretRight size={14} weight="bold"/>
             </button>

@@ -48,14 +48,10 @@ const LoginContent = () => {
                     </p>
                 ) : (
                     <>
-                        <button
-                            type="button"
-                            onClick={handleGoogleLogin}
-                            className="flex w-full items-center justify-center gap-2 rounded-lg border border-black/10 py-2.5 text-sm font-medium text-ink-strong transition-colors duration-200 hover:bg-black/5"
-                        >
+                        <Button type="button" variant="outline-dark" size="sm" onClick={handleGoogleLogin} className="w-full gap-2">
                             <GoogleLogo size={18} weight="bold"/>
                             Continue with Google
-                        </button>
+                        </Button>
 
                         <div className="flex w-full items-center gap-3">
                             <span className="h-px flex-1 bg-black/10"/>
@@ -72,7 +68,7 @@ const LoginContent = () => {
                                 placeholder="you@example.com"
                                 className="w-full rounded-lg border border-black/10 px-4 py-2.5 text-sm text-ink-strong outline-none focus:border-black/30"
                             />
-                            <Button type="submit" variant="solid" size="md" className="w-full" disabled={loading}>
+                            <Button type="submit" variant="solid" size="sm" className="w-full" disabled={loading}>
                                 {loading ? "Sending…" : "Send login link"}
                             </Button>
                         </form>

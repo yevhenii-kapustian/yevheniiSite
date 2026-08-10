@@ -12,8 +12,15 @@ export async function POST(req: NextRequest) {
 
     const { mealType, name, calories, proteinG, fatG, carbsG } = await req.json()
 
-    if (!calories) {
-        return NextResponse.json({ message: "Missing calories" }, { status: 400 })
+    const caloriesNum = Number(calories)
+    if (!Number.isFinite(caloriesNum) || caloriesNum <= 0 || caloriesNum > 20000) {
+        return NextResponse.json({ message: "Invalid calories" }, { status: 400 })
+    }
+
+    for (const [field, value] of [["proteinG", proteinG], ["fatG", fatG], ["carbsG", carbsG]] as const) {
+        if (value !== undefined && value !== "" && (!Number.isFinite(Number(value)) || Number(value) < 0)) {
+            return NextResponse.json({ message: `Invalid ${field}` }, { status: 400 })
+        }
     }
 
     await insertMeal({
@@ -21,7 +28,7 @@ export async function POST(req: NextRequest) {
         logged_date: new Date().toISOString().slice(0, 10),
         meal_type: mealType || null,
         name: name || null,
-        calories: Number(calories),
+        calories: caloriesNum,
         protein_g: proteinG ? Number(proteinG) : null,
         fat_g: fatG ? Number(fatG) : null,
         carbs_g: carbsG ? Number(carbsG) : null,

@@ -48,17 +48,15 @@ export default async function ExercisesPage ({ searchParams }: PageProps) {
     }
 
     return (
-        <section className="px-5 py-16 sm:px-10 lg:px-20">
-            <div className="mx-auto flex max-w-6xl flex-col gap-8">
-                <h1 className="text-3xl font-semibold text-ink-strong sm:text-4xl">Exercises</h1>
+        <div className="flex flex-col gap-8">
+            <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Exercises</h1>
 
-                {hasTraining ? content : (
-                    <div className="flex flex-col items-start gap-3">
-                        <p className="text-sm text-ink-strong/60">You don&apos;t have a training plan yet.</p>
-                        <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={user.email!} label="Get full access — $45/mo"/>
-                    </div>
-                )}
-            </div>
-        </section>
+            {hasTraining ? content : (
+                <div className="flex flex-col items-start gap-3">
+                    <p className="text-sm text-ink-strong/60">You don&apos;t have a training plan yet.</p>
+                    <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={user.email!} label="Get full access — $45/mo"/>
+                </div>
+            )}
+        </div>
     )
 }

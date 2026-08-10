@@ -52,26 +52,24 @@ export default async function ProgressPage () {
         .map(exercise => ({ planExerciseId: exercise.planExerciseId, name: exercise.name }))
 
     return (
-        <section className="px-5 py-16 sm:px-10 lg:px-20">
-            <div className="mx-auto flex max-w-6xl flex-col gap-8">
-                <h1 className="text-3xl font-semibold text-ink-strong sm:text-4xl">Your progress</h1>
+        <div className="flex flex-col gap-8">
+            <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Your progress</h1>
 
-                <ProgressContent
-                    hasTraining={hasTraining}
-                    hasNutrition={hasNutrition}
-                    weightHistory={weightHistory}
-                    weightDelta={delta}
-                    weightReport={weightReportSentence(weightHistory)}
-                    weeklyVolume={weeklyVolume}
-                    volumeTrend={getVolumeTrendSentence(weeklyVolume)}
-                    personalRecords={personalRecords}
-                    exerciseOptions={exerciseOptions}
-                    workoutDaysThisWeek={workoutDaysThisWeek}
-                    plannedDaysThisWeek={plannedDaysThisWeek}
-                    intakeHistory={intakeHistory}
-                    nutritionTargetCalories={nutritionTargetCalories}
-                />
-            </div>
-        </section>
+            <ProgressContent
+                hasTraining={hasTraining}
+                hasNutrition={hasNutrition}
+                weightHistory={weightHistory}
+                weightDelta={delta}
+                weightReport={weightReportSentence(weightHistory)}
+                weeklyVolume={weeklyVolume}
+                volumeTrend={getVolumeTrendSentence(weeklyVolume)}
+                personalRecords={personalRecords}
+                exerciseOptions={exerciseOptions}
+                workoutDaysThisWeek={workoutDaysThisWeek}
+                plannedDaysThisWeek={plannedDaysThisWeek}
+                intakeHistory={intakeHistory}
+                nutritionTargetCalories={nutritionTargetCalories}
+            />
+        </div>
     )
 }

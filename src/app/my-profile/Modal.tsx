@@ -38,24 +38,24 @@ const Modal = ({ open, title, onClose, children }: ModalProps) => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 px-5"
+                    className="nav-blur fixed inset-0 z-[100] flex items-center justify-center bg-black/20 px-5"
                     onClick={onClose}
                 >
                     <motion.div
-                        initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                        initial={{ opacity: 0, y: 16, scale: 0.97 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 12, scale: 0.98 }}
-                        transition={{ duration: 0.25, ease: "easeOut" }}
-                        className="h-[80vh] w-[80vw] max-w-6xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl sm:p-8"
+                        exit={{ opacity: 0, y: 16, scale: 0.97 }}
+                        transition={{ type: "spring", stiffness: 340, damping: 30 }}
+                        className="card-shadow max-h-[80vh] w-[80vw] max-w-6xl overflow-y-auto rounded-[32px] border border-black/[0.05] bg-white p-6 sm:p-8"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="mb-6 flex items-center justify-between">
-                            <h2 className="text-lg font-semibold text-ink-strong">{title}</h2>
+                            <h2 className="text-lg font-semibold tracking-tight text-ink-strong">{title}</h2>
                             <button
                                 type="button"
                                 onClick={onClose}
                                 aria-label="Close"
-                                className="flex h-8 w-8 items-center justify-center rounded-full text-ink-strong/50 transition-colors duration-200 hover:bg-black/5"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.04] text-ink-strong/50 transition-colors duration-200 hover:bg-black/[0.08]"
                             >
                                 <X size={16} weight="bold"/>
                             </button>

@@ -1,6 +1,7 @@
 'use client'
 
 import { Barbell, ChartLineUp, ForkKnife } from "@phosphor-icons/react"
+import Card, { CardIcon } from "../Card"
 import WeeklyWeightBars from "../WeeklyWeightBars"
 import TrainingVolumeChart from "../TrainingVolumeChart"
 import PersonalRecords from "../PersonalRecords"
@@ -26,17 +27,11 @@ type ProgressContentProps = {
     nutritionTargetCalories: number
 }
 
-const CardIcon = ({ children }: { children: React.ReactNode }) => (
-    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.04] text-ink-strong/60">
-        {children}
-    </span>
-)
-
 const CardHeader = ({ icon, label, value }: { icon: React.ReactNode, label: string, value?: string }) => (
     <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
             <CardIcon>{icon}</CardIcon>
-            <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">{label}</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">{label}</span>
         </div>
         {value && <span className="text-sm font-semibold text-ink-strong">{value}</span>}
     </div>
@@ -60,8 +55,8 @@ const ProgressContent = ({
     const hasWeightTrend = weightHistory.length >= 2 && weightDelta
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-4 rounded-xl border border-black/10 p-5 sm:p-6">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <Card className={`flex flex-col gap-4 p-5 sm:p-7 ${!hasTraining ? "lg:col-span-2" : ""}`}>
                 <CardHeader
                     icon={<ChartLineUp size={14} weight="bold"/>}
                     label="Weight"
@@ -75,10 +70,10 @@ const ProgressContent = ({
                 ) : (
                     <p className="text-sm text-ink-strong/50">Check in a couple more times to see your weight trend.</p>
                 )}
-            </div>
+            </Card>
 
             {hasTraining && (
-                <div className="flex flex-col gap-4 rounded-xl border border-black/10 p-5 sm:p-6">
+                <Card className="flex flex-col gap-4 p-5 sm:p-7">
                     <CardHeader
                         icon={<Barbell size={14} weight="bold"/>}
                         label="Training"
@@ -89,20 +84,20 @@ const ProgressContent = ({
                     ) : (
                         <p className="text-sm text-ink-strong/50">Log a couple more workouts to see your volume trend.</p>
                     )}
-                </div>
+                </Card>
             )}
 
             {hasTraining && (
-                <div className="rounded-xl border border-black/10 p-5 sm:p-6">
+                <Card className={`p-5 sm:p-7 ${!hasNutrition ? "lg:col-span-2" : ""}`}>
                     <PersonalRecords records={personalRecords} exerciseOptions={exerciseOptions}/>
-                </div>
+                </Card>
             )}
 
             {hasNutrition && (
-                <div className="flex flex-col gap-4 rounded-xl border border-black/10 p-5 sm:p-6">
+                <Card className={`flex flex-col gap-4 p-5 sm:p-7 ${!hasTraining ? "lg:col-span-2" : ""}`}>
                     <CardHeader icon={<ForkKnife size={14} weight="bold"/>} label="Nutrition"/>
                     <NutritionAdherence intakeHistory={intakeHistory} targetCalories={nutritionTargetCalories}/>
-                </div>
+                </Card>
             )}
         </div>
     )

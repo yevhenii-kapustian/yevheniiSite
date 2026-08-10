@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getLatestNutritionTarget, getMealsForDate } from "@/supabase/queries"
+import { getEntitlementsForUser, getNutritionTargetForDate, getMealsForDate } from "@/supabase/queries"
 import WeekDatePicker from "../WeekDatePicker"
 import AddModuleButton from "../AddModuleButton"
 import NutritionContent from "./NutritionContent"
@@ -33,20 +33,18 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
 
     if (!hasNutrition) {
         return (
-            <section className="px-5 py-16 sm:px-10 lg:px-20">
-                <div className="mx-auto flex max-w-6xl flex-col gap-8">
-                    <h1 className="text-3xl font-semibold text-ink-strong sm:text-4xl">Nutrition</h1>
-                    <div className="flex flex-col items-start gap-3">
-                        <p className="text-sm text-ink-strong/60">You don&apos;t have a nutrition plan yet.</p>
-                        <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={user.email!} label="Get full access — $45/mo"/>
-                    </div>
+            <div className="flex flex-col gap-8">
+                <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Nutrition</h1>
+                <div className="flex flex-col items-start gap-3">
+                    <p className="text-sm text-ink-strong/60">You don&apos;t have a nutrition plan yet.</p>
+                    <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={user.email!} label="Get full access — $45/mo"/>
                 </div>
-            </section>
+            </div>
         )
     }
 
     const [target, meals] = await Promise.all([
-        getLatestNutritionTarget(user.id),
+        getNutritionTargetForDate(user.id, selectedDate),
         getMealsForDate(user.id, selectedDate),
     ])
 
@@ -65,20 +63,18 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
     ] : []
 
     return (
-        <section className="px-5 py-16 sm:px-10 lg:px-20">
-            <div className="mx-auto flex max-w-6xl flex-col gap-8">
-                <h1 className="text-3xl font-semibold text-ink-strong sm:text-4xl">Nutrition</h1>
+        <div className="flex flex-col gap-8">
+            <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Nutrition</h1>
 
-                <div className="flex flex-col gap-4">
-                    <p className="text-sm text-ink-strong/50">
-                        {isToday ? "Today" : new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
-                        {target && ` · ${Math.round(eaten.calories).toLocaleString("en-US")} / ${target.calories.toLocaleString("en-US")} kcal logged`}
-                    </p>
-                    <WeekDatePicker date={selectedDate} maxDate={today}/>
-                </div>
-
-                <NutritionContent selectedDate={selectedDate} isToday={isToday} macroCards={macroCards} meals={meals}/>
+            <div className="flex flex-col gap-4">
+                <p className="text-sm text-ink-strong/50">
+                    {isToday ? "Today" : new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+                    {target && ` · ${Math.round(eaten.calories).toLocaleString("en-US")} / ${target.calories.toLocaleString("en-US")} kcal logged`}
+                </p>
+                <WeekDatePicker date={selectedDate} maxDate={today}/>
             </div>
-        </section>
+
+            <NutritionContent selectedDate={selectedDate} isToday={isToday} macroCards={macroCards} meals={meals}/>
+        </div>
     )
 }

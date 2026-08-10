@@ -45,22 +45,20 @@ export default async function HistoryPage () {
     ])).sort().reverse()
 
     return (
-        <section className="px-5 py-16 sm:px-10 lg:px-20">
-            <div className="mx-auto flex max-w-6xl flex-col gap-8">
-                <h1 className="text-3xl font-semibold text-ink-strong sm:text-4xl">History</h1>
+        <div className="flex flex-col gap-8">
+            <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">History</h1>
 
-                {dates.length === 0 ? (
-                    <p className="text-sm text-ink-strong/50">Nothing logged yet — check in or log a meal to start building your history.</p>
-                ) : (
-                    <HistoryContent
-                        dates={dates}
-                        weightByDate={weightByDate}
-                        caloriesByDate={caloriesByDate}
-                        mealsByDate={mealsByDate}
-                        workoutsByDate={workoutsByDate}
-                    />
-                )}
-            </div>
-        </section>
+            {dates.length === 0 ? (
+                <p className="text-sm text-ink-strong/50">Nothing logged yet — check in or log a meal to start building your history.</p>
+            ) : (
+                <HistoryContent
+                    dates={dates}
+                    weightByDate={weightByDate}
+                    caloriesByDate={caloriesByDate}
+                    mealsByDate={mealsByDate}
+                    workoutsByDate={workoutsByDate}
+                />
+            )}
+        </div>
     )
 }

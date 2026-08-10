@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Modal from "../Modal"
+import Card from "../Card"
 import type { WorkoutHistoryRow } from "@/supabase/queries"
 
 type MealRow = {
@@ -58,8 +59,8 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
 
     return (
         <>
-            <div className="flex flex-col divide-y divide-black/[0.06]">
-                <div className="flex items-center gap-4 pb-2 text-xs font-medium uppercase tracking-[0.1em] text-ink-strong/35">
+            <Card className="flex flex-col divide-y divide-black/[0.05] p-6 sm:p-7">
+                <div className="flex items-center gap-4 pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-ink-strong/35">
                     <span className="w-28 shrink-0">Date</span>
                     <span className="flex-1">Weight</span>
                     <span className="flex-1">Nutrition</span>
@@ -80,7 +81,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                                     <button
                                         type="button"
                                         onClick={() => openModal(date, "nutrition")}
-                                        className="text-ink-strong underline decoration-black/20 underline-offset-4 transition-colors duration-200 hover:decoration-black"
+                                        className="font-medium text-ink-strong hover:underline"
                                     >
                                         {caloriesByDate[date].toLocaleString("en-US")} kcal
                                     </button>
@@ -93,7 +94,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                                     <button
                                         type="button"
                                         onClick={() => openModal(date, "training")}
-                                        className="text-ink-strong underline decoration-black/20 underline-offset-4 transition-colors duration-200 hover:decoration-black"
+                                        className="font-medium text-ink-strong hover:underline"
                                     >
                                         {new Set(workoutsByDate[date].map(w => w.exerciseName)).size} exercise{new Set(workoutsByDate[date].map(w => w.exerciseName)).size === 1 ? "" : "s"} logged
                                     </button>
@@ -104,7 +105,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                         </div>
                     )
                 })}
-            </div>
+            </Card>
 
             <Modal
                 open={openType === "nutrition"}

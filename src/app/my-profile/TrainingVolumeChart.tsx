@@ -15,7 +15,7 @@ const TrainingVolumeChart = ({ points, trend }: { points: WeeklyVolumePoint[], t
 
     return (
         <div className="flex flex-col gap-3">
-            <span className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">Weekly volume (kg lifted)</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Weekly volume (kg lifted)</span>
             <div className="flex items-end justify-between gap-2 overflow-x-auto">
                 {points.map(point => {
                     const barHeight = MIN_BAR_HEIGHT + ((point.volumeKg - min) / range) * (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT)
@@ -24,7 +24,7 @@ const TrainingVolumeChart = ({ points, trend }: { points: WeeklyVolumePoint[], t
                             <span className="text-[11px] font-medium text-ink-strong/60">{point.volumeKg.toLocaleString("en-US")}</span>
                             <div className="flex w-full items-end justify-center" style={{ height: MAX_BAR_HEIGHT }}>
                                 <div
-                                    className="w-full max-w-8 rounded-t-md bg-black transition-all duration-300"
+                                    className="w-full max-w-8 rounded-t-lg bg-black transition-all duration-300"
                                     style={{ height: barHeight }}
                                 />
                             </div>

@@ -263,6 +263,24 @@ export const getLatestNutritionTarget = async (userId: string) => {
     return data
 }
 
+// The target that was actually in effect on a given calendar date — i.e. the most
+// recent check-in at or before that date. Goals change over time (fat_loss one week,
+// muscle_gain the next), so viewing a past day must show that day's real target
+// instead of always falling back to today's.
+export const getNutritionTargetForDate = async (userId: string, date: string) => {
+    const supabase = getServerClient()
+    const { data } = await supabase
+        .from("nutrition_targets")
+        .select("*")
+        .eq("user_id", userId)
+        .lte("created_at", `${date}T23:59:59.999Z`)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+    return data
+}
+
 const insertNutritionTarget = async (target: NutritionTargetInsert) => {
     const supabase = getServerClient()
     await supabase.from("nutrition_targets").insert(target)
