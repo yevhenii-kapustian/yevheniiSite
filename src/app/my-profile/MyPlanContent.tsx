@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { SlidersHorizontal, Barbell, ForkKnife, ArrowUpRight } from "@phosphor-icons/react"
+import { SlidersHorizontal, Barbell, ForkKnife, ArrowUpRight, Bell, Trash } from "@phosphor-icons/react"
 import AddModuleButton from "./AddModuleButton"
 import TrainsToggle from "./TrainsToggle"
 import CheckIn, { type CheckInValues } from "./CheckIn"
@@ -12,6 +12,7 @@ import Card from "./Card"
 import NutritionCalendarStrip from "./NutritionCalendarStrip"
 import { BUNDLE_PRODUCT_ID } from "@/data/products"
 import { getWorkoutLabel } from "@/utils/workoutLabel"
+import { upsellCopy, type ModuleState } from "@/utils/entitlements"
 
 const MEAL_TYPE_LABELS: Record<string, string> = {
     breakfast: "Breakfast",
@@ -49,6 +50,11 @@ type MyPlanContentProps = {
     greeting: string
     hasNutrition: boolean
     hasTraining: boolean
+    nutritionState: ModuleState
+    trainingState: ModuleState
+    nutritionPeriodEnd: string | null
+    trainingPeriodEnd: string | null
+    loggedWorkoutToday: boolean
     trainsWithProgram: boolean
     activityLevel: string | null
     accountsForTraining: boolean
@@ -111,6 +117,11 @@ const MyPlanContent = ({
     greeting,
     hasNutrition,
     hasTraining,
+    nutritionState,
+    trainingState,
+    nutritionPeriodEnd,
+    trainingPeriodEnd,
+    loggedWorkoutToday,
     trainsWithProgram,
     activityLevel,
     accountsForTraining,
@@ -125,6 +136,7 @@ const MyPlanContent = ({
 }: MyPlanContentProps) => {
     const router = useRouter()
     const [checkInOpen, setCheckInOpen] = useState(false)
+    const [deletingMealId, setDeletingMealId] = useState<number | null>(null)
 
     const handleCheckInContinue = async (values: CheckInValues) => {
         await fetch("/api/checkin", {
@@ -136,6 +148,20 @@ const MyPlanContent = ({
         setCheckInOpen(false)
     }
 
+    const handleDeleteMeal = async (mealId: number) => {
+        setDeletingMealId(mealId)
+        try {
+            await fetch("/api/intake", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mealId }),
+            })
+            router.refresh()
+        } finally {
+            setDeletingMealId(null)
+        }
+    }
+
     const remaining = nutritionTarget ? Math.max(nutritionTarget.calories - eatenSelected.calories, 0) : 0
     const percentEaten = nutritionTarget ? (eatenSelected.calories / nutritionTarget.calories) * 100 : 0
 
@@ -145,6 +171,15 @@ const MyPlanContent = ({
     const selectedDayName = isToday ? "Today" : new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "long" })
 
     const showNutrition = hasNutrition && nutritionTarget
+
+    const missingNutritionToday = isToday && hasNutrition && meals.length === 0
+    const missingWorkoutToday = isToday && hasTraining && !loggedWorkoutToday
+    const showNudge = missingNutritionToday || missingWorkoutToday
+    const nudgeMessage = missingNutritionToday && missingWorkoutToday
+        ? "You haven't logged any meals or workouts today yet."
+        : missingNutritionToday
+            ? "You haven't logged any meals today yet."
+            : "You haven't logged a workout today yet."
 
     return (
         <div className="flex flex-col gap-5">
@@ -164,6 +199,15 @@ const MyPlanContent = ({
                     Update stats
                 </button>
             </div>
+
+            {showNudge && (
+                <Card className="flex items-center gap-3 px-5 py-3.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/[0.04] text-ink-strong/60">
+                        <Bell size={14} weight="bold"/>
+                    </span>
+                    <p className="text-sm text-ink-strong/70">{nudgeMessage}</p>
+                </Card>
+            )}
 
             {showNutrition && (
                 <Card className="p-5 sm:p-6">
@@ -210,8 +254,15 @@ const MyPlanContent = ({
                             </span>
                             <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Nutrition</span>
                         </div>
-                        <p className="text-sm text-ink-strong/60">You&apos;ll need to track your own calories for now.</p>
-                        <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label="Get full access — $45/mo"/>
+                        {(() => {
+                            const { message, buttonLabel } = upsellCopy(nutritionState, nutritionPeriodEnd, "You'll need to track your own calories for now.")
+                            return (
+                                <>
+                                    <p className="text-sm text-ink-strong/60">{message}</p>
+                                    <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label={buttonLabel}/>
+                                </>
+                            )
+                        })()}
                     </Card>
                 )}
 
@@ -223,19 +274,24 @@ const MyPlanContent = ({
                         <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">{selectedDayName}</span>
                     </div>
 
-                    <p className="text-2xl font-semibold tracking-tight text-ink-strong">
-                        {hasTraining
-                            ? (selectedWorkoutLabel === "Rest day" ? "Rest day" : `${selectedWorkoutLabel} day`)
-                            : "No plan yet"}
-                    </p>
-
                     {hasTraining ? (
-                        <Link href="/my-profile/exercises" className="flex w-fit items-center gap-1 text-sm font-medium text-ink-strong hover:underline">
-                            View exercises <ArrowUpRight size={14} weight="bold"/>
-                        </Link>
-                    ) : (
-                        <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label="Get full access — $45/mo"/>
-                    )}
+                        <>
+                            <p className="text-2xl font-semibold tracking-tight text-ink-strong">
+                                {selectedWorkoutLabel === "Rest day" ? "Rest day" : `${selectedWorkoutLabel} day`}
+                            </p>
+                            <Link href="/my-profile/exercises" className="flex w-fit items-center gap-1 text-sm font-medium text-ink-strong hover:underline">
+                                View exercises <ArrowUpRight size={14} weight="bold"/>
+                            </Link>
+                        </>
+                    ) : (() => {
+                        const { message, buttonLabel } = upsellCopy(trainingState, trainingPeriodEnd, "No training plan yet.")
+                        return (
+                            <>
+                                <p className="text-sm text-ink-strong/60">{message}</p>
+                                <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label={buttonLabel}/>
+                            </>
+                        )
+                    })()}
                 </Card>
             </div>
 
@@ -256,7 +312,7 @@ const MyPlanContent = ({
                         {meals.length > 0 ? (
                             <div className="flex flex-col divide-y divide-black/[0.05]">
                                 {meals.map(meal => (
-                                    <div key={meal.id} className="flex items-center gap-3 py-3 first:pt-1">
+                                    <div key={meal.id} className="group flex items-center gap-3 py-3 first:pt-1">
                                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-black/[0.04] text-ink-strong/60">
                                             <ForkKnife size={16} weight="bold"/>
                                         </span>
@@ -267,6 +323,15 @@ const MyPlanContent = ({
                                             </span>
                                         </div>
                                         <span className="shrink-0 text-sm font-medium text-ink-strong">{meal.calories} kcal</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeleteMeal(meal.id)}
+                                            disabled={deletingMealId === meal.id}
+                                            aria-label={`Delete ${meal.name || "meal"}`}
+                                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-strong/30 opacity-0 transition-all duration-200 hover:bg-black/[0.045] hover:text-ink-strong group-hover:opacity-100 disabled:opacity-40"
+                                        >
+                                            <Trash size={14} weight="bold"/>
+                                        </button>
                                     </div>
                                 ))}
                             </div>

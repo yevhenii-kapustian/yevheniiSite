@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthClient } from "@/supabase/server-client";
-import { insertMeal } from "@/supabase/queries";
+import { insertMeal, deleteMeal } from "@/supabase/queries";
 
 export async function POST(req: NextRequest) {
     const supabase = await getServerAuthClient()
@@ -33,6 +33,25 @@ export async function POST(req: NextRequest) {
         fat_g: fatG ? Number(fatG) : null,
         carbs_g: carbsG ? Number(carbsG) : null,
     })
+
+    return NextResponse.json({ message: "Success" })
+}
+
+export async function DELETE(req: NextRequest) {
+    const supabase = await getServerAuthClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
+    const { mealId } = await req.json()
+    const mealIdNum = Number(mealId)
+    if (!Number.isInteger(mealIdNum) || mealIdNum <= 0) {
+        return NextResponse.json({ message: "Invalid mealId" }, { status: 400 })
+    }
+
+    await deleteMeal(user.id, mealIdNum)
 
     return NextResponse.json({ message: "Success" })
 }

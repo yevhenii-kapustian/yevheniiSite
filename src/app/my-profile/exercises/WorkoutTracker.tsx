@@ -1,9 +1,9 @@
 'use client'
 
-import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
-import { CaretLeft, CaretRight, Check, Confetti, Info, Smiley, SmileyMeh, SmileySad } from "@phosphor-icons/react"
+import { CaretLeft, CaretRight, Check, Confetti, Info, Smiley, SmileyMeh, SmileySad, Trash } from "@phosphor-icons/react"
 import Modal from "../Modal"
 import Card from "../Card"
 import { getWorkoutLabel } from "@/utils/workoutLabel"
@@ -21,6 +21,7 @@ export type TrainingPlanExercise = {
 }
 
 type WorkoutLog = {
+    id: number
     plan_exercise_id: number
     set_number: number
     actual_reps: number
@@ -41,6 +42,9 @@ type WorkoutTrackerProps = {
     todayLogs: WorkoutLog[]
     todayDayOfWeek: number
     initialDayOfWeek?: number
+    weekOffset: number
+    weekDates: string[]
+    hasPlanForWeek: boolean
 }
 
 type SetInput = { reps: number, weightKg: number, revealDifficulty: boolean }
@@ -52,11 +56,12 @@ const buildInitialInputs = (exercises: TrainingPlanExercise[]): SetInput[][] =>
         revealDifficulty: false,
     })))
 
-const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: WorkoutTrackerProps) => {
+const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, weekOffset, weekDates, hasPlanForWeek }: WorkoutTrackerProps) => {
     const router = useRouter()
+    const pathname = usePathname()
     const [dayOfWeek, setDayOfWeek] = useState(initialDayOfWeek ?? todayDayOfWeek)
-    const [weekOffset, setWeekOffset] = useState(0)
     const [saving, setSaving] = useState<string | null>(null)
+    const [deletingLogId, setDeletingLogId] = useState<number | null>(null)
     const [infoExercise, setInfoExercise] = useState<TrainingPlanExercise | null>(null)
 
     const day = days.find(d => d.dayOfWeek === dayOfWeek)
@@ -66,11 +71,15 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
 
     const [inputsByExercise, setInputsByExercise] = useState<SetInput[][]>(() => buildInitialInputs(exercises))
 
-    const selectDay = (nextDayOfWeek: number) => {
-        setDayOfWeek(nextDayOfWeek)
-        const nextExercises = days.find(d => d.dayOfWeek === nextDayOfWeek)?.exercises ?? []
-        setInputsByExercise(buildInitialInputs(nextExercises))
-    }
+    // Re-syncs whenever the selected day OR the underlying week's data changes (e.g.
+    // navigating weeks while staying on the same day-of-week column) — a plain click
+    // handler alone would miss that second case since `days` changes without a click.
+    useEffect(() => {
+        setInputsByExercise(buildInitialInputs(exercises))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [days, dayOfWeek])
+
+    const goToWeek = (nextOffset: number) => router.push(`${pathname}?day=${dayOfWeek}&week=${Math.min(nextOffset, 0)}`)
 
     const updateInput = (exerciseIndex: number, setIndex: number, patch: Partial<SetInput>) => {
         setInputsByExercise(prev => prev.map((sets, ei) => ei === exerciseIndex
@@ -103,6 +112,20 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
         }
     }
 
+    const deleteSet = async (logId: number) => {
+        setDeletingLogId(logId)
+        try {
+            await fetch("/api/workout-sets", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ logId }),
+            })
+            router.refresh()
+        } finally {
+            setDeletingLogId(null)
+        }
+    }
+
     const totalSets = exercises.reduce((sum, ex) => sum + ex.sets, 0)
     const doneSets = isToday
         ? exercises.reduce((sum, ex) => sum + todayLogs.filter(l => l.plan_exercise_id === ex.planExerciseId).length, 0)
@@ -112,17 +135,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
     const dayMuscles = Array.from(new Set(exercises.map(e => e.muscleGroup)))
     const workoutLabel = getWorkoutLabel(dayMuscles)
 
-    const weekDates = useMemo(() => {
-        const monday = new Date()
-        const weekday = (monday.getDay() + 6) % 7 // Monday = 0
-        monday.setDate(monday.getDate() - weekday + weekOffset * 7)
-        return Array.from({ length: 7 }, (_, i) => {
-            const d = new Date(monday)
-            d.setDate(d.getDate() + i)
-            return d
-        })
-    }, [weekOffset])
-    const monthLabel = weekDates[0].toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    const monthLabel = new Date(`${weekDates[0]}T00:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
     return (
         <div className="flex flex-col gap-8">
@@ -139,7 +152,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                         <div className="flex items-center gap-1.5">
                             <button
                                 type="button"
-                                onClick={() => setWeekOffset(prev => prev - 1)}
+                                onClick={() => goToWeek(weekOffset - 1)}
                                 aria-label="Previous week"
                                 className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08]"
                             >
@@ -147,7 +160,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setWeekOffset(prev => Math.min(prev + 1, 0))}
+                                onClick={() => goToWeek(weekOffset + 1)}
                                 disabled={weekOffset >= 0}
                                 aria-label="Next week"
                                 className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08] disabled:opacity-30"
@@ -157,20 +170,20 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                         </div>
                     </div>
                     <div className="grid grid-cols-7 gap-2">
-                        {weekDates.map((d, index) => {
+                        {weekDates.map((iso, index) => {
                             const dow = index + 1
                             const isSelected = dow === dayOfWeek
                             return (
                                 <button
-                                    key={dow}
+                                    key={iso}
                                     type="button"
-                                    onClick={() => selectDay(dow)}
+                                    onClick={() => setDayOfWeek(dow)}
                                     className={`flex flex-col items-center gap-1.5 rounded-2xl py-2.5 transition-colors duration-200 ${
                                         isSelected ? "bg-black text-white" : "text-ink-strong/60 hover:bg-black/[0.045]"
                                     }`}
                                 >
                                     <span className="text-[10px] font-medium tracking-wide opacity-60">{DAY_LABELS[index].toUpperCase()}</span>
-                                    <span className="text-sm font-semibold">{d.getDate()}</span>
+                                    <span className="text-sm font-semibold">{Number(iso.slice(8, 10))}</span>
                                 </button>
                             )
                         })}
@@ -188,8 +201,12 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                         transition={{ duration: 0.2 }}
                     >
                         <Card className="flex flex-col items-center gap-1 px-6 py-16 text-center">
-                            <p className="text-sm font-semibold text-ink-strong">Rest day</p>
-                            <p className="text-sm text-ink-strong/50">No exercises scheduled — recover for the next session.</p>
+                            <p className="text-sm font-semibold text-ink-strong">{hasPlanForWeek ? "Rest day" : "No plan recorded for this week"}</p>
+                            <p className="text-sm text-ink-strong/50">
+                                {hasPlanForWeek
+                                    ? "No exercises scheduled — recover for the next session."
+                                    : "This week predates your current training plan, so there's nothing logged here."}
+                            </p>
                         </Card>
                     </motion.div>
                 ) : (
@@ -274,7 +291,18 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek }: W
                                                             </span>
 
                                                             {isDone ? (
-                                                                <span className="text-ink-strong">{log!.actual_weight_kg}kg × {log!.actual_reps} reps</span>
+                                                                <>
+                                                                    <span className="text-ink-strong">{log!.actual_weight_kg}kg × {log!.actual_reps} reps</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => deleteSet(log!.id)}
+                                                                        disabled={deletingLogId === log!.id}
+                                                                        aria-label="Delete this set"
+                                                                        className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-ink-strong/30 transition-colors duration-200 hover:bg-black/[0.045] hover:text-ink-strong disabled:opacity-40"
+                                                                    >
+                                                                        <Trash size={13} weight="bold"/>
+                                                                    </button>
+                                                                </>
                                                             ) : isToday ? (
                                                                 <>
                                                                     <input

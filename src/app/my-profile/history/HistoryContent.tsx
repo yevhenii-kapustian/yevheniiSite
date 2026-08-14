@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from "react"
-import { Barbell, ForkKnife } from "@phosphor-icons/react"
+import { useRouter } from "next/navigation"
+import { Barbell, ForkKnife, Trash } from "@phosphor-icons/react"
 import Modal from "../Modal"
 import Card from "../Card"
 import type { WorkoutHistoryRow } from "@/supabase/queries"
@@ -36,8 +37,10 @@ const formatDate = (dateStr: string) => new Date(`${dateStr}T00:00:00`).toLocale
 })
 
 const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, workoutsByDate }: HistoryContentProps) => {
+    const router = useRouter()
     const [openDate, setOpenDate] = useState<string | null>(null)
     const [openType, setOpenType] = useState<"nutrition" | "training" | null>(null)
+    const [deletingWeightDate, setDeletingWeightDate] = useState<string | null>(null)
 
     const openModal = (date: string, type: "nutrition" | "training") => {
         setOpenDate(date)
@@ -46,6 +49,20 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
     const closeModal = () => {
         setOpenDate(null)
         setOpenType(null)
+    }
+
+    const handleDeleteWeight = async (loggedAt: string) => {
+        setDeletingWeightDate(loggedAt)
+        try {
+            await fetch("/api/body-log", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ loggedAt }),
+            })
+            router.refresh()
+        } finally {
+            setDeletingWeightDate(null)
+        }
     }
 
     const meals = openDate ? (mealsByDate[openDate] ?? []) : []
@@ -70,7 +87,23 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                 {dates.map(date => {
                     const hasMeals = Boolean(mealsByDate[date]?.length)
                     const hasWorkout = Boolean(workoutsByDate[date]?.length)
+                    const hasWeight = Boolean(weightByDate[date])
                     const exerciseCount = hasWorkout ? new Set(workoutsByDate[date].map(w => w.exerciseName)).size : 0
+
+                    const weightCell = hasWeight ? (
+                        <span className="group/weight inline-flex items-center gap-1.5">
+                            {weightByDate[date]} kg
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteWeight(date)}
+                                disabled={deletingWeightDate === date}
+                                aria-label="Delete this check-in"
+                                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-ink-strong/30 opacity-0 transition-all duration-200 hover:bg-black/[0.045] hover:text-ink-strong group-hover/weight:opacity-100 disabled:opacity-40"
+                            >
+                                <Trash size={12} weight="bold"/>
+                            </button>
+                        </span>
+                    ) : null
 
                     const nutritionCell = hasMeals ? (
                         <button
@@ -102,7 +135,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-semibold text-ink-strong">{formatDate(date)}</span>
                                     <span className="text-xs text-ink-strong/40">
-                                        {weightByDate[date] ? `${weightByDate[date]} kg` : "No check-in"}
+                                        {hasWeight ? weightCell : "No check-in"}
                                     </span>
                                 </div>
 
@@ -130,7 +163,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                             <div className="hidden items-center justify-between gap-4 sm:flex">
                                 <span className="w-28 shrink-0 text-sm font-medium text-ink-strong">{formatDate(date)}</span>
                                 <span className="flex-1 text-sm text-ink-strong/60">
-                                    {weightByDate[date] ? `${weightByDate[date]} kg` : "—"}
+                                    {hasWeight ? weightCell : "—"}
                                 </span>
                                 <span className="flex-1 text-sm">{nutritionCell}</span>
                                 <span className="flex-1 text-sm">{trainingCell}</span>

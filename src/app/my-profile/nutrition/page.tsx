@@ -6,6 +6,7 @@ import NutritionCalendarStrip from "../NutritionCalendarStrip"
 import AddModuleButton from "../AddModuleButton"
 import NutritionContent from "./NutritionContent"
 import { BUNDLE_PRODUCT_ID } from "@/data/products"
+import { getModuleState, upsellCopy } from "@/utils/entitlements"
 
 export const metadata: Metadata = {
     title: "Nutrition - Yevhenii Fit",
@@ -32,12 +33,16 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
     const hasNutrition = entitlements.some(e => e.module === "nutrition" && e.status === "active")
 
     if (!hasNutrition) {
+        const nutritionState = getModuleState(entitlements, "nutrition")
+        const nutritionPeriodEnd = entitlements.find(e => e.module === "nutrition")?.current_period_end ?? null
+        const { message, buttonLabel } = upsellCopy(nutritionState, nutritionPeriodEnd, "You don't have a nutrition plan yet.")
+
         return (
             <div className="flex flex-col gap-8">
                 <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Nutrition</h1>
                 <div className="flex flex-col items-start gap-3">
-                    <p className="text-sm text-ink-strong/60">You don&apos;t have a nutrition plan yet.</p>
-                    <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={user.email!} label="Get full access — $45/mo"/>
+                    <p className="text-sm text-ink-strong/60">{message}</p>
+                    <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={user.email!} label={buttonLabel}/>
                 </div>
             </div>
         )

@@ -3,7 +3,6 @@ import { calculateNutritionTargets, type Goal } from "@/utils/nutritionEngine"
 import { generateTrainingPlan, getISOWeekKey, getSplitLabel, type PreviousTarget } from "@/utils/planGenerator"
 import type { Database } from "./database.types"
 
-type LeadInsert = Database["public"]["Tables"]["leads"]["Insert"]
 type PurchaseInsert = Database["public"]["Tables"]["purchases"]["Insert"]
 type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"]
 type EntitlementInsert = Database["public"]["Tables"]["entitlements"]["Insert"]
@@ -67,24 +66,6 @@ export const getProductForEntitlement = async (id: string) => {
     return error ? null : data
 }
 
-export const countRecentLeadSubmissions = async (ip: string, windowStart: string) => {
-    const supabase = getServerClient()
-    const { count, error } = await supabase
-        .from("leads")
-        .select("*", { count: "exact", head: true })
-        .eq("ip", ip)
-        .gte("created_at", windowStart)
-
-    if (error) throw error
-    return count ?? 0
-}
-
-export const insertLead = async (lead: LeadInsert) => {
-    const supabase = getServerClient()
-    const { error } = await supabase.from("leads").insert(lead)
-    if (error) throw error
-}
-
 export const getPurchaseBySessionId = async (sessionId: string) => {
     const supabase = getServerClient()
     const { data } = await supabase
@@ -138,16 +119,53 @@ export const upsertProfile = async (profile: ProfileInsert) => {
     await supabase.from("profiles").upsert(profile)
 }
 
+// Full account deletion (GDPR right-to-erasure). Purchase records are kept for
+// accounting/tax purposes but disconnected from the person by nulling user_id — every
+// other table is fully wiped before the auth user itself is deleted last.
+export const deleteUserAccount = async (userId: string) => {
+    const supabase = getServerClient()
+
+    const { data: plans } = await supabase.from("training_plans").select("id").eq("user_id", userId)
+    const planIds = (plans ?? []).map(p => p.id)
+    if (planIds.length > 0) {
+        await supabase.from("plan_exercises").delete().in("training_plan_id", planIds)
+    }
+    await supabase.from("training_plans").delete().eq("user_id", userId)
+
+    await supabase.from("workout_set_logs").delete().eq("user_id", userId)
+    await supabase.from("daily_intake_logs").delete().eq("user_id", userId)
+    await supabase.from("body_logs").delete().eq("user_id", userId)
+    await supabase.from("nutrition_targets").delete().eq("user_id", userId)
+    await supabase.from("entitlements").delete().eq("user_id", userId)
+    await supabase.from("progress_photos").delete().eq("user_id", userId)
+    await supabase.from("purchases").update({ user_id: null }).eq("user_id", userId)
+    await supabase.from("profiles").delete().eq("id", userId)
+
+    const { error } = await supabase.auth.admin.deleteUser(userId)
+    if (error) throw error
+}
+
 export const insertBodyLog = async (log: BodyLogInsert) => {
     const supabase = getServerClient()
     await supabase.from("body_logs").upsert(log, { onConflict: "user_id,logged_at" })
+}
+
+export const deleteBodyLog = async (userId: string, loggedAt: string) => {
+    const supabase = getServerClient()
+    const { error } = await supabase
+        .from("body_logs")
+        .delete()
+        .eq("user_id", userId)
+        .eq("logged_at", loggedAt)
+
+    if (error) throw error
 }
 
 export const getEntitlementsForUser = async (userId: string) => {
     const supabase = getServerClient()
     const { data, error } = await supabase
         .from("entitlements")
-        .select("module, status")
+        .select("module, status, stripe_subscription_id, current_period_end")
         .eq("user_id", userId)
 
     if (error) throw error
@@ -236,6 +254,17 @@ export const getTodayMeals = async (userId: string) => {
 export const insertMeal = async (meal: DailyIntakeInsert) => {
     const supabase = getServerClient()
     await supabase.from("daily_intake_logs").insert(meal)
+}
+
+export const deleteMeal = async (userId: string, mealId: number) => {
+    const supabase = getServerClient()
+    const { error } = await supabase
+        .from("daily_intake_logs")
+        .delete()
+        .eq("id", mealId)
+        .eq("user_id", userId)
+
+    if (error) throw error
 }
 
 export const getIntakeHistory = async (userId: string) => {
@@ -406,6 +435,26 @@ export const getOrCreateTrainingPlan = async (userId: string) => {
     return plan.id
 }
 
+// Called after the user changes experience/daysPerWeek/equipment mid-week — without this,
+// getOrCreateTrainingPlan would keep serving the plan already generated for the current
+// ISO week and the new preferences wouldn't take effect until next Monday.
+export const regenerateTrainingPlanForCurrentWeek = async (userId: string) => {
+    const supabase = getServerClient()
+    const weekKey = getISOWeekKey(new Date())
+
+    const { data: existing } = await supabase
+        .from("training_plans")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("week_number", weekKey)
+        .maybeSingle()
+
+    if (!existing) return
+
+    await supabase.from("plan_exercises").delete().eq("training_plan_id", existing.id)
+    await supabase.from("training_plans").delete().eq("id", existing.id)
+}
+
 export type TrainingPlanExercise = {
     planExerciseId: number
     name: string
@@ -416,8 +465,7 @@ export type TrainingPlanExercise = {
     weightKg: number | null
 }
 
-export const getTrainingPlanWithExercises = async (userId: string) => {
-    const planId = await getOrCreateTrainingPlan(userId)
+const getPlanExercisesByDay = async (planId: number) => {
     const supabase = getServerClient()
 
     const { data, error } = await supabase
@@ -449,11 +497,34 @@ export const getTrainingPlanWithExercises = async (userId: string) => {
     return byDay
 }
 
+export const getTrainingPlanWithExercises = async (userId: string) => {
+    const planId = await getOrCreateTrainingPlan(userId)
+    return getPlanExercisesByDay(planId)
+}
+
+// Read-only lookup for a specific past ISO week — unlike getTrainingPlanWithExercises,
+// this never creates a plan. A past week the user never actually opened (e.g. before
+// they signed up, or before a given training preference took effect) legitimately has
+// no plan, and fabricating one after the fact would misrepresent history.
+export const getTrainingPlanForWeek = async (userId: string, weekKey: number) => {
+    const supabase = getServerClient()
+    const { data: plan } = await supabase
+        .from("training_plans")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("week_number", weekKey)
+        .maybeSingle()
+
+    if (!plan) return null
+
+    return getPlanExercisesByDay(plan.id)
+}
+
 export const getWorkoutLogsForDate = async (userId: string, date: string) => {
     const supabase = getServerClient()
     const { data, error } = await supabase
         .from("workout_set_logs")
-        .select("plan_exercise_id, set_number, actual_reps, actual_weight_kg, effort")
+        .select("id, plan_exercise_id, set_number, actual_reps, actual_weight_kg, effort")
         .eq("user_id", userId)
         .gte("performed_at", `${date}T00:00:00.000Z`)
         .lt("performed_at", `${date}T23:59:59.999Z`)
@@ -465,6 +536,17 @@ export const getWorkoutLogsForDate = async (userId: string, date: string) => {
 export const insertWorkoutSetLog = async (log: WorkoutSetLogInsert) => {
     const supabase = getServerClient()
     const { error } = await supabase.from("workout_set_logs").insert(log)
+    if (error) throw error
+}
+
+export const deleteWorkoutSetLog = async (userId: string, logId: number) => {
+    const supabase = getServerClient()
+    const { error } = await supabase
+        .from("workout_set_logs")
+        .delete()
+        .eq("id", logId)
+        .eq("user_id", userId)
+
     if (error) throw error
 }
 

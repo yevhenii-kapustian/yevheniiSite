@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProfile, getNutritionTargetForDate, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, type TrainingPlanExercise } from "@/supabase/queries"
+import { getEntitlementsForUser, getProfile, getNutritionTargetForDate, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, getWorkoutLogsForDate, type TrainingPlanExercise } from "@/supabase/queries"
+import { getModuleState } from "@/utils/entitlements"
 import MyPlanContent from "./MyPlanContent"
 
 export const metadata: Metadata = {
@@ -42,6 +43,12 @@ export default async function MyProfile ({ searchParams }: PageProps) {
 
     const activeModules = entitlements.filter(e => e.status === "active").map(e => e.module)
     const hasTraining = activeModules.includes("training")
+    const nutritionState = getModuleState(entitlements, "nutrition")
+    const trainingState = getModuleState(entitlements, "training")
+    const nutritionPeriodEnd = entitlements.find(e => e.module === "nutrition")?.current_period_end ?? null
+    const trainingPeriodEnd = entitlements.find(e => e.module === "training")?.current_period_end ?? null
+    const todayLogs = hasTraining ? await getWorkoutLogsForDate(user.id, today) : []
+    const loggedWorkoutToday = todayLogs.length > 0
     const eatenSelected = {
         calories: meals.reduce((sum, meal) => sum + meal.calories, 0),
         proteinG: meals.reduce((sum, meal) => sum + (meal.protein_g ?? 0), 0),
@@ -63,6 +70,11 @@ export default async function MyProfile ({ searchParams }: PageProps) {
             greeting={getGreeting()}
             hasNutrition={activeModules.includes("nutrition")}
             hasTraining={hasTraining}
+            nutritionState={nutritionState}
+            trainingState={trainingState}
+            nutritionPeriodEnd={nutritionPeriodEnd}
+            trainingPeriodEnd={trainingPeriodEnd}
+            loggedWorkoutToday={loggedWorkoutToday}
             trainsWithProgram={profile?.trains_with_program ?? false}
             activityLevel={profile?.activity_level ?? null}
             accountsForTraining={hasTraining || (profile?.trains_with_program ?? false)}

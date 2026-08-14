@@ -5,6 +5,7 @@ import {
     getTodaysEffortsForPlanExercise,
     insertWorkoutSetLog,
     updatePlanExerciseTargets,
+    deleteWorkoutSetLog,
 } from "@/supabase/queries";
 import { computeProgression, type Effort } from "@/utils/progression";
 
@@ -63,6 +64,25 @@ export async function POST(req: NextRequest) {
             await updatePlanExerciseTargets(planExerciseIdNum, next)
         }
     }
+
+    return NextResponse.json({ message: "Success" })
+}
+
+export async function DELETE(req: NextRequest) {
+    const supabase = await getServerAuthClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
+    const { logId } = await req.json()
+    const logIdNum = Number(logId)
+    if (!Number.isInteger(logIdNum) || logIdNum <= 0) {
+        return NextResponse.json({ message: "Invalid logId" }, { status: 400 })
+    }
+
+    await deleteWorkoutSetLog(user.id, logIdNum)
 
     return NextResponse.json({ message: "Success" })
 }

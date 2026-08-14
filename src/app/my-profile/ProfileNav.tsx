@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { House, Barbell, ForkKnife, ChartLineUp, ClockCounterClockwise } from "@phosphor-icons/react"
+import { House, Barbell, ForkKnife, ChartLineUp, ClockCounterClockwise, Gear } from "@phosphor-icons/react"
 
 const TABS = [
     { href: "/my-profile", label: "My Profile", icon: House },
@@ -10,6 +10,7 @@ const TABS = [
     { href: "/my-profile/nutrition", label: "Nutrition", icon: ForkKnife },
     { href: "/my-profile/progress", label: "Progress", icon: ChartLineUp },
     { href: "/my-profile/history", label: "History", icon: ClockCounterClockwise },
+    { href: "/my-profile/settings", label: "Settings", icon: Gear },
 ]
 
 const ProfileNav = () => {
@@ -45,7 +46,7 @@ const ProfileNav = () => {
 
             <nav className="mobile-tab-bar fixed inset-x-0 bottom-0 z-[70] lg:hidden">
                 <div className="nav-blur absolute inset-0 border-t border-black/[0.06] bg-white/95 shadow-[0_-10px_30px_rgba(0,0,0,0.06)]"/>
-                <div className="relative grid min-h-14 grid-cols-5">
+                <div className="relative grid min-h-14 grid-cols-6">
                     {TABS.map(tab => {
                         const active = isActive(tab.href)
                         const Icon = tab.icon
