@@ -44,6 +44,17 @@ export const getProductForCheckout = async (id: string) => {
     return error ? null : data
 }
 
+export const getProductPrice = async (id: string) => {
+    const supabase = getServerClient()
+    const { data, error } = await supabase
+        .from("products")
+        .select("price")
+        .eq("id", Number(id))
+        .single()
+
+    return error ? null : data.price
+}
+
 export const getProductForFulfillment = async (id: string) => {
     const supabase = getServerClient()
     const { data, error } = await supabase
@@ -165,7 +176,7 @@ export const getEntitlementsForUser = async (userId: string) => {
     const supabase = getServerClient()
     const { data, error } = await supabase
         .from("entitlements")
-        .select("module, status, stripe_subscription_id, current_period_end")
+        .select("module, status, stripe_subscription_id, current_period_end, cancel_at_period_end")
         .eq("user_id", userId)
 
     if (error) throw error
@@ -193,18 +204,20 @@ export const upsertEntitlement = async (entitlement: EntitlementInsert) => {
 export const updateEntitlementBySubscriptionId = async (
     subscriptionId: string,
     status: EntitlementStatus,
-    currentPeriodEnd: string
+    currentPeriodEnd: string,
+    cancelAtPeriodEnd: boolean
 ) => {
     const supabase = getServerClient()
     // A bundle purchase shares one stripe_subscription_id across multiple entitlement
     // rows (one per module), so this can update more than one row — don't assume a
     // single row back.
-    const { data } = await supabase
+    const { data, error } = await supabase
         .from("entitlements")
-        .update({ status, current_period_end: currentPeriodEnd })
+        .update({ status, current_period_end: currentPeriodEnd, cancel_at_period_end: cancelAtPeriodEnd })
         .eq("stripe_subscription_id", subscriptionId)
         .select("user_id")
 
+    if (error) throw error
     return data?.[0] ?? null
 }
 
@@ -595,6 +608,7 @@ export const updatePlanExerciseTargets = async (planExerciseId: number, targets:
 }
 
 export type WorkoutHistoryRow = {
+    logId: number
     performedAt: string
     exerciseName: string
     actualReps: number
@@ -605,7 +619,7 @@ export const getWorkoutHistory = async (userId: string): Promise<WorkoutHistoryR
     const supabase = getServerClient()
     const { data, error } = await supabase
         .from("workout_set_logs")
-        .select("performed_at, actual_reps, actual_weight_kg, plan_exercises(exercises(name))")
+        .select("id, performed_at, actual_reps, actual_weight_kg, plan_exercises(exercises(name))")
         .eq("user_id", userId)
         .order("performed_at", { ascending: true })
 
@@ -616,6 +630,7 @@ export const getWorkoutHistory = async (userId: string): Promise<WorkoutHistoryR
         const exercise = planExercise ? (Array.isArray(planExercise.exercises) ? planExercise.exercises[0] : planExercise.exercises) : null
 
         return {
+            logId: row.id,
             performedAt: row.performed_at,
             exerciseName: exercise?.name ?? "Exercise",
             actualReps: row.actual_reps,
@@ -623,3 +638,4 @@ export const getWorkoutHistory = async (userId: string): Promise<WorkoutHistoryR
         }
     })
 }
+

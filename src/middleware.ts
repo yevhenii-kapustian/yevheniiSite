@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user && request.nextUrl.pathname.startsWith("/my-profile")) {
+    if (!user && (request.nextUrl.pathname.startsWith("/my-profile") || request.nextUrl.pathname.startsWith("/setup"))) {
         return NextResponse.redirect(new URL("/get-started", request.url))
     }
 
@@ -33,5 +33,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/my-profile/:path*", "/get-started"],
+    matcher: ["/my-profile/:path*", "/get-started", "/setup"],
 }

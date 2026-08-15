@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight } from "@phosphor-icons/react"
+import Spinner from "@/components/Spinner"
 
 type AddModuleButtonProps = {
     productId: string
@@ -19,7 +20,7 @@ const AddModuleButton = ({ productId, email, label }: AddModuleButtonProps) => {
             const res = await fetch("/api/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ productId, email }),
+                body: JSON.stringify({ productId, email, successPath: "/setup", cancelPath: "/my-profile" }),
             })
             const data = await res.json()
             if (data.url) window.location.href = data.url
@@ -35,10 +36,13 @@ const AddModuleButton = ({ productId, email, label }: AddModuleButtonProps) => {
             whileTap={{ scale: loading ? 1 : 0.98 }}
             onClick={handleClick}
             disabled={loading}
-            className="group inline-flex w-fit items-center gap-1.5 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-60"
+            className="group relative inline-flex w-fit items-center gap-1.5 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-60"
         >
-            {loading ? "Loading…" : label}
-            {!loading && <ArrowRight size={14} weight="bold" className="transition-transform duration-200 group-hover:translate-x-1"/>}
+            <span className={`inline-flex items-center gap-1.5 ${loading ? "invisible" : ""}`}>
+                {label}
+                <ArrowRight size={14} weight="bold" className="transition-transform duration-200 group-hover:translate-x-1"/>
+            </span>
+            {loading && <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>}
         </motion.button>
     )
 }

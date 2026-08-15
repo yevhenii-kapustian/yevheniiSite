@@ -10,9 +10,10 @@ type ModalProps = {
     title: string
     onClose: () => void
     children: React.ReactNode
+    wide?: boolean
 }
 
-const Modal = ({ open, title, onClose, children }: ModalProps) => {
+const Modal = ({ open, title, onClose, children, wide }: ModalProps) => {
     useEffect(() => {
         if (!open) return
 
@@ -46,7 +47,7 @@ const Modal = ({ open, title, onClose, children }: ModalProps) => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 16, scale: 0.97 }}
                         transition={{ type: "spring", stiffness: 340, damping: 30 }}
-                        className="card-shadow max-h-[88vh] w-[92vw] sm:w-[80vw] max-w-6xl overflow-y-auto rounded-[32px] border border-black/[0.05] bg-white p-5 sm:p-8"
+                        className={`card-shadow max-h-[88vh] w-[92vw] sm:w-full overflow-y-auto rounded-[28px] border border-black/[0.05] bg-white p-5 sm:p-6 ${wide ? "max-w-5xl" : "max-w-lg"}`}
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="mb-4 flex items-center justify-between sm:mb-6">

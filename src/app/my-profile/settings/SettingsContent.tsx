@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { CheckCircle, CreditCard, Trash, WarningCircle } from "@phosphor-icons/react"
 import Card from "../Card"
 import Modal from "../Modal"
+import Spinner from "@/components/Spinner"
 import { getBrowserClient } from "@/supabase/browser-client"
 
 const EXPERIENCE_OPTIONS = ["New to training", "Some experience", "Advanced"]
@@ -12,20 +13,24 @@ const DAYS_PER_WEEK_OPTIONS = ["2-3", "4", "5+"]
 const EQUIPMENT_OPTIONS = ["Full gym", "Home basics", "Bodyweight only"]
 const ACTIVITY_LEVEL_OPTIONS = ["Mostly sitting", "On my feet a lot", "Physically demanding job"]
 
-const MODULE_LABELS: Record<string, string> = { nutrition: "Nutrition", training: "Training" }
-
-type EntitlementInfo = { module: string, status: string, currentPeriodEnd: string | null }
+type EntitlementInfo = { module: string, status: string, currentPeriodEnd: string | null, cancelAtPeriodEnd: boolean }
 type TrainingPrefs = { experience: string | null, daysPerWeek: string | null, equipment: string | null, activityLevel: string | null }
+
+type SubscriptionPrice = { amount: number, interval: string, currency: string }
 
 type SettingsContentProps = {
     email: string
     entitlements: EntitlementInfo[]
     hasSubscription: boolean
+    subscriptionPrice: SubscriptionPrice | null
     trainingPrefs: TrainingPrefs
 }
 
 const formatDate = (iso: string | null) =>
     iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null
+
+const formatPrice = ({ amount, interval, currency }: SubscriptionPrice) =>
+    `${new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: amount % 1 === 0 ? 0 : 2 }).format(amount)}/${interval === "month" ? "mo" : "yr"}`
 
 const PillGroup = ({ options, value, onChange }: { options: string[], value: string | null, onChange: (value: string) => void }) => (
     <div className="flex flex-wrap gap-2">
@@ -44,7 +49,7 @@ const PillGroup = ({ options, value, onChange }: { options: string[], value: str
     </div>
 )
 
-const SettingsContent = ({ email, entitlements, hasSubscription, trainingPrefs: initialPrefs }: SettingsContentProps) => {
+const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPrice, trainingPrefs: initialPrefs }: SettingsContentProps) => {
     const router = useRouter()
 
     const [newEmail, setNewEmail] = useState("")
@@ -157,9 +162,10 @@ const SettingsContent = ({ email, entitlements, hasSubscription, trainingPrefs: 
                             type="button"
                             onClick={handleEmailChange}
                             disabled={emailSaving || !newEmail}
-                            className="shrink-0 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
+                            className="relative shrink-0 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
                         >
-                            {emailSaving ? "Sending…" : "Send confirmation"}
+                            <span className={emailSaving ? "invisible" : ""}>Send confirmation</span>
+                            {emailSaving && <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>}
                         </button>
                     </div>
                     {emailSent && (
@@ -173,31 +179,59 @@ const SettingsContent = ({ email, entitlements, hasSubscription, trainingPrefs: 
 
             <Card className="flex flex-col gap-4 p-6 sm:p-7">
                 <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Subscription</span>
-                <div className="flex flex-col gap-2">
-                    {["nutrition", "training"].map(module => {
-                        const entitlement = entitlements.find(e => e.module === module)
-                        const status = entitlement?.status ?? "none"
-                        return (
-                            <div key={module} className="flex items-center justify-between text-sm">
-                                <span className="text-ink-strong">{MODULE_LABELS[module]}</span>
-                                <span className={`text-xs font-medium ${status === "active" ? "text-ink-strong" : "text-ink-strong/40"}`}>
-                                    {status === "active" && `Active${entitlement?.currentPeriodEnd ? ` · renews ${formatDate(entitlement.currentPeriodEnd)}` : ""}`}
-                                    {status === "canceled" && `Canceled${entitlement?.currentPeriodEnd ? ` · ends ${formatDate(entitlement.currentPeriodEnd)}` : ""}`}
-                                    {status === "expired" && "Expired"}
-                                    {status === "none" && "Not subscribed"}
-                                </span>
+                {(() => {
+                    // Nutrition + training are always sold as one bundle and share a single
+                    // stripe_subscription_id, so their status/date can never diverge — one row.
+                    const entitlement = entitlements[0]
+                    const status = entitlement?.status ?? "none"
+                    const cancelling = status === "active" && entitlement?.cancelAtPeriodEnd
+                    const dateLabel = formatDate(entitlement?.currentPeriodEnd ?? null)
+
+                    const badge = cancelling
+                        ? { dot: "border border-ink-strong", pill: "bg-black/[0.045] text-ink-strong", label: "Ending soon" }
+                        : status === "active"
+                            ? { dot: "bg-ink-strong", pill: "bg-black/[0.045] text-ink-strong", label: "Active" }
+                            : status === "canceled"
+                                ? { dot: "bg-ink-strong/25", pill: "bg-black/[0.03] text-ink-strong/40", label: "Canceled" }
+                                : status === "expired"
+                                    ? { dot: "bg-ink-strong/25", pill: "bg-black/[0.03] text-ink-strong/40", label: "Expired" }
+                                    : { dot: "bg-ink-strong/15", pill: "bg-black/[0.03] text-ink-strong/40", label: "Not subscribed" }
+
+                    const caption = cancelling
+                        ? dateLabel && `Ends ${dateLabel}`
+                        : status === "active"
+                            ? dateLabel && `Renews ${dateLabel}`
+                            : status === "canceled"
+                                ? dateLabel && `Ends ${dateLabel}`
+                                : null
+
+                    return (
+                        <div className="flex items-center justify-between">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-sm text-ink-strong">Nutrition & Training</span>
+                                {subscriptionPrice && <span className="text-[11px] text-ink-strong/40">{formatPrice(subscriptionPrice)}</span>}
                             </div>
-                        )
-                    })}
-                </div>
+                            <div className="flex flex-col items-end gap-1">
+                                <span className={`flex items-center gap-1.5 rounded-full py-1 pl-2 pr-2.5 text-xs font-medium ${badge.pill}`}>
+                                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${badge.dot}`}/>
+                                    {badge.label}
+                                </span>
+                                {caption && <span className="text-[11px] text-ink-strong/40">{caption}</span>}
+                            </div>
+                        </div>
+                    )
+                })()}
                 {hasSubscription && (
                     <button
                         type="button"
                         onClick={handleManageBilling}
                         disabled={portalLoading}
-                        className="mt-1 flex w-fit items-center gap-2 rounded-full bg-black/[0.045] px-4 py-2.5 text-sm font-medium text-ink-strong transition-colors duration-200 hover:bg-black/[0.08] disabled:opacity-40"
+                        className="relative mt-1 flex w-fit items-center gap-2 rounded-full bg-black/[0.045] px-4 py-2.5 text-sm font-medium text-ink-strong transition-colors duration-200 hover:bg-black/[0.08] disabled:opacity-40"
                     >
-                        <CreditCard size={16}/> {portalLoading ? "Opening…" : "Manage billing & cancel"}
+                        <span className={`flex items-center gap-2 ${portalLoading ? "invisible" : ""}`}>
+                            <CreditCard size={16}/> Manage billing & cancel
+                        </span>
+                        {portalLoading && <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>}
                     </button>
                 )}
             </Card>
@@ -227,9 +261,10 @@ const SettingsContent = ({ email, entitlements, hasSubscription, trainingPrefs: 
                         type="button"
                         onClick={handleSavePrefs}
                         disabled={prefsSaving}
-                        className="w-fit rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
+                        className="relative w-fit rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
                     >
-                        {prefsSaving ? "Saving…" : "Save changes"}
+                        <span className={prefsSaving ? "invisible" : ""}>Save changes</span>
+                        {prefsSaving && <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>}
                     </button>
                     {prefsSaved && <span className="text-xs text-ink-strong/50">Saved — your training plan will update.</span>}
                 </div>
@@ -270,9 +305,9 @@ const SettingsContent = ({ email, entitlements, hasSubscription, trainingPrefs: 
                         type="button"
                         onClick={handleDeleteAccount}
                         disabled={confirmText !== "DELETE" || deleting}
-                        className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-red-700 disabled:opacity-40"
+                        className="flex items-center justify-center rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-red-700 disabled:opacity-40"
                     >
-                        {deleting ? "Deleting…" : "Permanently delete my account"}
+                        {deleting ? <Spinner/> : "Permanently delete my account"}
                     </button>
                 </div>
             </Modal>

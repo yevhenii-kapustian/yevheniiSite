@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getNutritionTargetForDate, getMealsForDate } from "@/supabase/queries"
+import { getEntitlementsForUser, getProductPrice, getNutritionTargetForDate, getMealsForDate } from "@/supabase/queries"
 import NutritionCalendarStrip from "../NutritionCalendarStrip"
 import AddModuleButton from "../AddModuleButton"
 import NutritionContent from "./NutritionContent"
@@ -35,7 +35,8 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
     if (!hasNutrition) {
         const nutritionState = getModuleState(entitlements, "nutrition")
         const nutritionPeriodEnd = entitlements.find(e => e.module === "nutrition")?.current_period_end ?? null
-        const { message, buttonLabel } = upsellCopy(nutritionState, nutritionPeriodEnd, "You don't have a nutrition plan yet.")
+        const bundlePrice = await getProductPrice(BUNDLE_PRODUCT_ID)
+        const { message, buttonLabel } = upsellCopy(nutritionState, nutritionPeriodEnd, "You don't have a nutrition plan yet.", bundlePrice)
 
         return (
             <div className="flex flex-col gap-8">

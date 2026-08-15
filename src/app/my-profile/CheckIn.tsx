@@ -6,6 +6,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { calculateNutritionTargets, type Goal } from "@/utils/nutritionEngine"
 import type { Gender } from "@/utils/bodyGoal"
 import BodyAvatarErrorBoundary from "@/components/BodyAvatar/ErrorBoundary"
+import Spinner from "@/components/Spinner"
 
 const BodyAvatar = dynamic(() => import("@/components/BodyAvatar"), { ssr: false })
 
@@ -177,9 +178,9 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                             type="button"
                             onClick={handleContinue}
                             disabled={saving}
-                            className="mt-2 w-full rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40 sm:mt-3"
+                            className="relative mt-2 w-full rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40 sm:mt-3"
                         >
-                            {saving ? "Saving…" : "Save"}
+                            {saving ? <span className="flex items-center justify-center"><Spinner/></span> : "Save"}
                         </button>
                     </div>
                 </div>

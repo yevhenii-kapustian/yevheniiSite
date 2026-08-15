@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProfile, getNutritionTargetForDate, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, getWorkoutLogsForDate, type TrainingPlanExercise } from "@/supabase/queries"
+import { getEntitlementsForUser, getProductPrice, getProfile, getNutritionTargetForDate, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, getWorkoutLogsForDate, type TrainingPlanExercise } from "@/supabase/queries"
 import { getModuleState } from "@/utils/entitlements"
+import { BUNDLE_PRODUCT_ID } from "@/data/products"
 import MyPlanContent from "./MyPlanContent"
 
 export const metadata: Metadata = {
@@ -62,6 +63,9 @@ export default async function MyProfile ({ searchParams }: PageProps) {
         muscleGroups: Array.from(new Set((planByDay.get(i + 1) ?? []).map(e => e.muscleGroup))),
     }))
 
+    const needsUpsell = !activeModules.includes("nutrition") || !hasTraining
+    const bundlePrice = needsUpsell ? await getProductPrice(BUNDLE_PRODUCT_ID) : null
+
     return (
         <MyPlanContent
             email={user.email!}
@@ -74,6 +78,7 @@ export default async function MyProfile ({ searchParams }: PageProps) {
             trainingState={trainingState}
             nutritionPeriodEnd={nutritionPeriodEnd}
             trainingPeriodEnd={trainingPeriodEnd}
+            bundlePrice={bundlePrice}
             loggedWorkoutToday={loggedWorkoutToday}
             trainsWithProgram={profile?.trains_with_program ?? false}
             activityLevel={profile?.activity_level ?? null}

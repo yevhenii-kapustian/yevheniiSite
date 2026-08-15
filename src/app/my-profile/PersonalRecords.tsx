@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Trophy } from "@phosphor-icons/react"
+import { Plus, Trash, Trophy } from "@phosphor-icons/react"
 import type { PersonalRecord } from "@/utils/trainingReport"
 import Modal from "./Modal"
+import Dropdown from "./Dropdown"
+import Spinner from "@/components/Spinner"
 
 type ExerciseOption = { planExerciseId: number, name: string }
 
@@ -17,6 +19,8 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
     const [weightKg, setWeightKg] = useState("")
     const [reps, setReps] = useState("")
     const [saving, setSaving] = useState(false)
+
+    const [deletingLogId, setDeletingLogId] = useState<number | null>(null)
 
     const handleSubmit = async () => {
         if (!planExerciseId || !weightKg || !reps) return
@@ -44,6 +48,20 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
         }
     }
 
+    const handleDelete = async (logId: number) => {
+        setDeletingLogId(logId)
+        try {
+            const res = await fetch("/api/workout-sets", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ logId }),
+            })
+            if (res.ok) router.refresh()
+        } finally {
+            setDeletingLogId(null)
+        }
+    }
+
     return (
         <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -65,11 +83,22 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
             {records.length > 0 ? (
                 <div className="flex flex-col divide-y divide-black/[0.06]">
                     {records.map(record => (
-                        <div key={record.exerciseName} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                        <div key={record.logId} className="group flex items-center justify-between gap-3 py-2.5 text-sm">
                             <span className="text-ink-strong">{record.exerciseName}</span>
-                            <div className="flex shrink-0 flex-col items-end">
-                                <span className="font-semibold text-ink-strong">{record.weightKg}kg × {record.reps}</span>
-                                <span className="text-[11px] text-ink-strong/40">{formatDate(record.performedAt)}</span>
+                            <div className="flex shrink-0 items-center gap-2">
+                                <div className="flex flex-col items-end">
+                                    <span className="font-semibold text-ink-strong">{record.weightKg}kg × {record.reps}</span>
+                                    <span className="text-[11px] text-ink-strong/40">{formatDate(record.performedAt)}</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleDelete(record.logId)}
+                                    disabled={deletingLogId === record.logId}
+                                    aria-label={`Delete record for ${record.exerciseName}`}
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-strong/40 transition-colors duration-200 hover:bg-black/[0.045] hover:text-ink-strong disabled:opacity-40"
+                                >
+                                    <Trash size={14} weight="bold"/>
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -80,15 +109,11 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
 
             <Modal open={open} title="Log a record" onClose={() => setOpen(false)}>
                 <div className="flex flex-col gap-3">
-                    <select
+                    <Dropdown
                         value={planExerciseId}
-                        onChange={e => setPlanExerciseId(Number(e.target.value))}
-                        className="w-full rounded-2xl bg-black/[0.03] px-3.5 py-2.5 text-sm text-ink-strong outline-none transition-colors duration-200 focus:bg-black/[0.05]"
-                    >
-                        {exerciseOptions.map(option => (
-                            <option key={option.planExerciseId} value={option.planExerciseId}>{option.name}</option>
-                        ))}
-                    </select>
+                        onChange={value => setPlanExerciseId(Number(value))}
+                        options={exerciseOptions.map(option => ({ value: option.planExerciseId, label: option.name }))}
+                    />
 
                     <div className="grid grid-cols-2 gap-2">
                         <input
@@ -113,9 +138,9 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
                         type="button"
                         onClick={handleSubmit}
                         disabled={saving || !weightKg || !reps}
-                        className="rounded-full bg-black px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
+                        className="flex items-center justify-center rounded-full bg-black px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-40"
                     >
-                        {saving ? "Saving…" : "Save record"}
+                        {saving ? <Spinner/> : "Save record"}
                     </button>
                 </div>
             </Modal>

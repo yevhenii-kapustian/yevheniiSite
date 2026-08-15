@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getTrainingPlanWithExercises, getTrainingPlanForWeek, getWorkoutLogsForDate } from "@/supabase/queries"
+import { getEntitlementsForUser, getProductPrice, getTrainingPlanWithExercises, getTrainingPlanForWeek, getWorkoutLogsForDate } from "@/supabase/queries"
 import { getISOWeekKey } from "@/utils/planGenerator"
 import AddModuleButton from "../AddModuleButton"
 import WorkoutTracker from "./WorkoutTracker"
@@ -79,8 +79,9 @@ export default async function ExercisesPage ({ searchParams }: PageProps) {
         <div className="flex flex-col gap-8">
             <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Exercises</h1>
 
-            {hasTraining ? content : (() => {
-                const { message, buttonLabel } = upsellCopy(trainingState, trainingPeriodEnd, "You don't have a training plan yet.")
+            {hasTraining ? content : await (async () => {
+                const bundlePrice = await getProductPrice(BUNDLE_PRODUCT_ID)
+                const { message, buttonLabel } = upsellCopy(trainingState, trainingPeriodEnd, "You don't have a training plan yet.", bundlePrice)
                 return (
                     <div className="flex flex-col items-start gap-3">
                         <p className="text-sm text-ink-strong/60">{message}</p>

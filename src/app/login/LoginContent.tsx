@@ -68,8 +68,8 @@ const LoginContent = () => {
                                 placeholder="you@example.com"
                                 className="w-full rounded-lg border border-black/10 px-4 py-2.5 text-sm text-ink-strong outline-none focus:border-black/30"
                             />
-                            <Button type="submit" variant="solid" size="sm" className="w-full" disabled={loading}>
-                                {loading ? "Sending…" : "Send login link"}
+                            <Button type="submit" variant="solid" size="sm" className="w-full" loading={loading}>
+                                Send login link
                             </Button>
                         </form>
                     </>

@@ -12,6 +12,11 @@ export async function POST(req: NextRequest) {
         const body = await req.json()
         const { termsAccepted } = body
         const productIds: string[] = body.productIds ?? (body.productId ? [body.productId] : [])
+        // The anonymous /get-started quiz has no account yet, so it lands on /welcome
+        // (which sends a sign-in link). A logged-in user buying from /my-profile already
+        // has a session, so AddModuleButton points this at /setup instead.
+        const successPath = typeof body.successPath === "string" ? body.successPath : "/welcome"
+        const cancelPath = typeof body.cancelPath === "string" ? body.cancelPath : "/get-started"
 
         if (productIds.length === 0) {
             return NextResponse.json({ message: "Missing productId" }, { status: 400 })
@@ -41,8 +46,8 @@ export async function POST(req: NextRequest) {
                 line_items: products.map(product => ({ price: product!.stripe_price_id!, quantity: 1 })),
                 customer_email: body.email || undefined,
                 metadata: quizMetadata,
-                success_url: `${origin}/welcome?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${origin}/get-started`,
+                success_url: `${origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${origin}${cancelPath}`,
             })
 
             return NextResponse.json({ url: subscriptionSession.url })

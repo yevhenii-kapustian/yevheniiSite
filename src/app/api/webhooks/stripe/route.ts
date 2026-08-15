@@ -163,7 +163,8 @@ export async function POST(req: NextRequest) {
         const updated = await updateEntitlementBySubscriptionId(
             subscription.id,
             subscriptionStatusToEntitlementStatus(subscription.status),
-            new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
+            new Date(subscription.items.data[0].current_period_end * 1000).toISOString(),
+            subscription.cancel_at_period_end
         )
         if (updated) await recalculateNutritionTargetIfActive(updated.user_id)
     }

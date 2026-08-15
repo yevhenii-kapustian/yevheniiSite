@@ -197,7 +197,7 @@ const Header = () => {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="fixed inset-y-0 right-0 z-[60] flex w-[78%] max-w-xs flex-col border-l border-white/10 bg-[#1c1c1e] pt-[calc(env(safe-area-inset-top)+16px)] shadow-[-24px_0_70px_rgba(0,0,0,0.4)] lg:hidden"
+                        className="fixed inset-y-0 right-0 z-100 flex w-[78%] max-w-xs flex-col border-l border-white/10 bg-[#1c1c1e] pt-[calc(env(safe-area-inset-top)+16px)] shadow-[-24px_0_70px_rgba(0,0,0,0.4)] lg:hidden"
                     >
                         <div className="flex items-center justify-end px-4">
                             <button

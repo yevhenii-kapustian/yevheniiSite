@@ -54,6 +54,7 @@ type MyPlanContentProps = {
     trainingState: ModuleState
     nutritionPeriodEnd: string | null
     trainingPeriodEnd: string | null
+    bundlePrice: number | null
     loggedWorkoutToday: boolean
     trainsWithProgram: boolean
     activityLevel: string | null
@@ -121,6 +122,7 @@ const MyPlanContent = ({
     trainingState,
     nutritionPeriodEnd,
     trainingPeriodEnd,
+    bundlePrice,
     loggedWorkoutToday,
     trainsWithProgram,
     activityLevel,
@@ -255,7 +257,7 @@ const MyPlanContent = ({
                             <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Nutrition</span>
                         </div>
                         {(() => {
-                            const { message, buttonLabel } = upsellCopy(nutritionState, nutritionPeriodEnd, "You'll need to track your own calories for now.")
+                            const { message, buttonLabel } = upsellCopy(nutritionState, nutritionPeriodEnd, "You'll need to track your own calories for now.", bundlePrice)
                             return (
                                 <>
                                     <p className="text-sm text-ink-strong/60">{message}</p>
@@ -284,7 +286,7 @@ const MyPlanContent = ({
                             </Link>
                         </>
                     ) : (() => {
-                        const { message, buttonLabel } = upsellCopy(trainingState, trainingPeriodEnd, "No training plan yet.")
+                        const { message, buttonLabel } = upsellCopy(trainingState, trainingPeriodEnd, "No training plan yet.", bundlePrice)
                         return (
                             <>
                                 <p className="text-sm text-ink-strong/60">{message}</p>
@@ -342,7 +344,7 @@ const MyPlanContent = ({
                 </div>
             )}
 
-            <Modal open={checkInOpen} title="Update stats" onClose={() => setCheckInOpen(false)}>
+            <Modal open={checkInOpen} title="Update stats" onClose={() => setCheckInOpen(false)} wide>
                 <div className="flex flex-col gap-6">
                     <CheckIn
                         initial={checkIn}

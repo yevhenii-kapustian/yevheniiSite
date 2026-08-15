@@ -95,6 +95,7 @@ export type Database = {
       }
       entitlements: {
         Row: {
+          cancel_at_period_end: boolean
           created_at: string
           current_period_end: string | null
           id: number
@@ -104,6 +105,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
           id?: never
@@ -113,6 +115,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
           id?: never

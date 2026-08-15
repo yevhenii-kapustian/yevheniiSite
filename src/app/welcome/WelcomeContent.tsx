@@ -1,45 +1,65 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { CheckCircle, WarningCircle } from "@phosphor-icons/react"
 import { getBrowserClient } from "@/supabase/browser-client"
 
-const SIGN_IN_TIMEOUT_MS = 4000
+// Hard navigation on purpose: a client-side router.push/replace can serve /my-profile from
+// Next's Router Cache (prefetched by the header nav before the webhook granted the
+// entitlement), showing a stale "no access yet" state.
+const goToProfile = () => { window.location.href = "/my-profile" }
 
 const WelcomeContent = () => {
-    const router = useRouter()
     const [status, setStatus] = useState<"working" | "no-link" | "expired">("working")
 
     useEffect(() => {
-        const hasAuthParams = window.location.hash.includes("access_token") || new URLSearchParams(window.location.search).has("code")
+        // detectSessionInUrl is off (see browser-client.ts) — parse and exchange whatever's
+        // in the URL ourselves. Two different shapes land here depending on the source:
+        //  - Magic links (server-generated in the Stripe webhook, no verifier possible)
+        //    come back as #access_token=... in the hash — handled via setSession().
+        //  - Google login (signInWithOAuth, initiated in THIS browser, so it does have a
+        //    verifier) comes back as ?code=... in the query — handled via exchangeCodeForSession().
+        const hashParams = new URLSearchParams(window.location.hash.slice(1))
+        const accessToken = hashParams.get("access_token")
+        const refreshToken = hashParams.get("refresh_token")
+        const code = new URLSearchParams(window.location.search).get("code")
 
-        if (!hasAuthParams) {
-            setStatus("no-link")
+        const supabase = getBrowserClient()
+
+        if (!accessToken && !code) {
+            // No token of either kind in the URL — either this is an already-logged-in user
+            // who just bought an extra module from /my-profile (no email needed, send
+            // them straight back in) or a brand-new signup waiting on their inbox.
+            supabase.auth.getUser().then(({ data }) => {
+                if (data.user) {
+                    goToProfile()
+                } else {
+                    setStatus("no-link")
+                }
+            })
             return
         }
 
-        // The @supabase/ssr browser client has detectSessionInUrl on by default — it
-        // consumes the hash/code itself on init. Don't also call setSession /
-        // exchangeCodeForSession here: two consumers racing for the same one-time
-        // token is what caused "PKCE code verifier not found".
-        const supabase = getBrowserClient()
+        // Strip the tokens out of the address bar/history immediately — we've already
+        // captured what we need, no reason for the live credentials to keep sitting there.
+        window.history.replaceState(null, "", window.location.pathname)
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session) router.replace("/my-profile")
+        let cancelled = false
+        const exchange = accessToken && refreshToken
+            ? supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+            : supabase.auth.exchangeCodeForSession(code!)
+
+        exchange.then(({ data, error }) => {
+            if (cancelled) return
+            if (data.session && !error) {
+                goToProfile()
+            } else {
+                setStatus("expired")
+            }
         })
 
-        supabase.auth.getUser().then(({ data }) => {
-            if (data.user) router.replace("/my-profile")
-        })
-
-        const timeout = setTimeout(() => setStatus("expired"), SIGN_IN_TIMEOUT_MS)
-
-        return () => {
-            subscription.unsubscribe()
-            clearTimeout(timeout)
-        }
-    }, [router])
+        return () => { cancelled = true }
+    }, [])
 
     if (status === "working") {
         return (

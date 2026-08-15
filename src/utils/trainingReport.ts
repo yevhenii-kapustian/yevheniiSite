@@ -1,4 +1,5 @@
 type WorkoutLogRow = {
+    logId: number
     performedAt: string
     exerciseName: string
     actualReps: number
@@ -33,6 +34,7 @@ export const getWeeklyVolume = (logs: WorkoutLogRow[], weeks = 8): WeeklyVolumeP
 }
 
 export type PersonalRecord = {
+    logId: number
     exerciseName: string
     weightKg: number
     reps: number
@@ -50,6 +52,7 @@ export const getPersonalRecords = (logs: WorkoutLogRow[], limit = 5): PersonalRe
 
         if (isBetter) {
             bestByExercise.set(log.exerciseName, {
+                logId: log.logId,
                 exerciseName: log.exerciseName,
                 weightKg: log.actualWeightKg,
                 reps: log.actualReps,

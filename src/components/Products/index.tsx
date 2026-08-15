@@ -179,12 +179,13 @@ const Products = ({showName = true,
                                     </label>
                                     <Button
                                         onClick={(e: React.MouseEvent) => handleBuyNow(e, item.id)}
-                                        disabled={checkoutLoadingId === item.id || agreedToTermsId !== item.id}
+                                        disabled={agreedToTermsId !== item.id}
+                                        loading={checkoutLoadingId === item.id}
                                         variant="solid"
                                         size="sm"
                                         fullWidth
                                     >
-                                        {checkoutLoadingId === item.id ? "Redirecting…" : "Buy Now"}
+                                        Buy Now
                                     </Button>
                                 </div>
                             )}

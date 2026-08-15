@@ -3,6 +3,7 @@
 import Link from "next/link"
 import clsx from "clsx"
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react"
+import Spinner from "../Spinner"
 
 export type ButtonVariant = "solid" | "solid-light" | "outline-dark" | "outline-light"
 export type ButtonSize = "sm" | "md"
@@ -25,6 +26,7 @@ type BaseProps = {
     variant?: ButtonVariant
     size?: ButtonSize
     fullWidth?: boolean
+    loading?: boolean
     className?: string
     children: ReactNode
 }
@@ -41,22 +43,29 @@ type ButtonAsButton = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 
 type ButtonProps = ButtonAsLink | ButtonAsButton
 
 const Button = (props: ButtonProps) => {
-    const { variant = "solid", size = "md", fullWidth, className, children } = props
-    const classes = clsx(baseStyles, variantStyles[variant], sizeStyles[size], fullWidth && "w-full", className)
+    const { variant = "solid", size = "md", fullWidth, loading, className, children } = props
+    const classes = clsx(baseStyles, variantStyles[variant], sizeStyles[size], fullWidth && "w-full", loading && "relative", className)
+
+    const content = loading ? (
+        <>
+            <span className="invisible inline-flex items-center gap-2">{children}</span>
+            <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>
+        </>
+    ) : children
 
     if (props.href) {
         const { href, scroll, target, onClick, rel } = props as ButtonAsLink
         return (
             <Link href={href} scroll={scroll} target={target} rel={rel} onClick={onClick} className={classes}>
-                {children}
+                {content}
             </Link>
         )
     }
 
     const { type = "button", onClick, disabled } = props as ButtonAsButton
     return (
-        <button type={type} onClick={onClick} disabled={disabled} className={classes}>
-            {children}
+        <button type={type} onClick={onClick} disabled={disabled || loading} className={classes}>
+            {content}
         </button>
     )
 }

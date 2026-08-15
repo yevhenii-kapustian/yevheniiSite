@@ -126,7 +126,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                             {exerciseCount} exercise{exerciseCount === 1 ? "" : "s"} logged
                         </button>
                     ) : (
-                        <span className="text-ink-strong/30">No workout logged</span>
+                        <span className="text-ink-strong/30">—</span>
                     )
 
                     return (
@@ -135,7 +135,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-semibold text-ink-strong">{formatDate(date)}</span>
                                     <span className="text-xs text-ink-strong/40">
-                                        {hasWeight ? weightCell : "No check-in"}
+                                        {hasWeight ? weightCell : "—"}
                                     </span>
                                 </div>
 
