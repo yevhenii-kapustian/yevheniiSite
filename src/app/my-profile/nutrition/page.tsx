@@ -28,6 +28,13 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
     const today = new Date().toISOString().slice(0, 10)
     const selectedDate = date ?? today
     const isToday = selectedDate === today
+    const isFuture = selectedDate > today
+
+    // A week ahead is navigable as a read-only preview of the current daily target —
+    // there's nothing to log yet for a day that hasn't happened.
+    const maxDateObj = new Date(`${today}T00:00:00`)
+    maxDateObj.setDate(maxDateObj.getDate() + 7)
+    const maxDate = maxDateObj.toISOString().slice(0, 10)
 
     const entitlements = await getEntitlementsForUser(user.id)
     const hasNutrition = entitlements.some(e => e.module === "nutrition" && e.status === "active")
@@ -75,9 +82,10 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
             <div className="flex flex-col gap-4">
                 <p className="text-sm text-ink-strong/50">
                     {isToday ? "Today" : new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
-                    {target && ` · ${Math.round(eaten.calories).toLocaleString("en-US")} / ${target.calories.toLocaleString("en-US")} kcal logged`}
+                    {target && !isFuture && ` · ${Math.round(eaten.calories).toLocaleString("en-US")} / ${target.calories.toLocaleString("en-US")} kcal logged`}
+                    {target && isFuture && ` · ${target.calories.toLocaleString("en-US")} kcal target (preview)`}
                 </p>
-                <NutritionCalendarStrip date={selectedDate} maxDate={today}/>
+                <NutritionCalendarStrip date={selectedDate} maxDate={maxDate}/>
             </div>
 
             <NutritionContent selectedDate={selectedDate} isToday={isToday} macroCards={macroCards} meals={meals}/>

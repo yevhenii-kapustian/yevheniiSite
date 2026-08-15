@@ -7,18 +7,9 @@ import { CaretLeft, CaretRight, Check, Confetti, Info, Smiley, SmileyMeh, Smiley
 import Modal from "../Modal"
 import Card from "../Card"
 import { getWorkoutLabel } from "@/utils/workoutLabel"
+import type { TrainingPlanExercise } from "@/supabase/queries"
 
 export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-
-export type TrainingPlanExercise = {
-    planExerciseId: number
-    name: string
-    muscleGroup: string
-    description: string | null
-    sets: number
-    reps: number
-    weightKg: number | null
-}
 
 type WorkoutLog = {
     id: number
@@ -45,6 +36,7 @@ type WorkoutTrackerProps = {
     weekOffset: number
     weekDates: string[]
     hasPlanForWeek: boolean
+    isPreviewWeek: boolean
 }
 
 type SetInput = { reps: number, weightKg: number, revealDifficulty: boolean }
@@ -56,7 +48,7 @@ const buildInitialInputs = (exercises: TrainingPlanExercise[]): SetInput[][] =>
         revealDifficulty: false,
     })))
 
-const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, weekOffset, weekDates, hasPlanForWeek }: WorkoutTrackerProps) => {
+const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, weekOffset, weekDates, hasPlanForWeek, isPreviewWeek }: WorkoutTrackerProps) => {
     const router = useRouter()
     const pathname = usePathname()
     const [dayOfWeek, setDayOfWeek] = useState(initialDayOfWeek ?? todayDayOfWeek)
@@ -79,7 +71,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [days, dayOfWeek])
 
-    const goToWeek = (nextOffset: number) => router.push(`${pathname}?day=${dayOfWeek}&week=${Math.min(nextOffset, 0)}`)
+    const goToWeek = (nextOffset: number) => router.push(`${pathname}?day=${dayOfWeek}&week=${Math.min(nextOffset, 1)}`)
 
     const updateInput = (exerciseIndex: number, setIndex: number, patch: Partial<SetInput>) => {
         setInputsByExercise(prev => prev.map((sets, ei) => ei === exerciseIndex
@@ -140,11 +132,23 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
     return (
         <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-4">
-                <p className="text-sm text-ink-strong/50">
-                    {isToday ? "Today" : DAY_LABELS[dayOfWeek - 1]}
-                    {` · ${workoutLabel}`}
-                    {isToday && !isRestDay && ` · ${doneSets}/${totalSets} sets done`}
+                <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-ink-strong/50">
+                    <span>
+                        {isToday ? "Today" : DAY_LABELS[dayOfWeek - 1]}
+                        {` · ${workoutLabel}`}
+                        {isToday && !isRestDay && ` · ${doneSets}/${totalSets} sets done`}
+                    </span>
+                    {isPreviewWeek && (
+                        <span className="rounded-full bg-black/[0.045] px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-strong/50">
+                            Preview
+                        </span>
+                    )}
                 </p>
+                {isPreviewWeek && (
+                    <p className="text-xs text-ink-strong/35">
+                        A preview of next week — it may shift slightly once this week&apos;s sessions are done.
+                    </p>
+                )}
 
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
@@ -161,7 +165,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                             <button
                                 type="button"
                                 onClick={() => goToWeek(weekOffset + 1)}
-                                disabled={weekOffset >= 0}
+                                disabled={weekOffset >= 1}
                                 aria-label="Next week"
                                 className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong transition-colors duration-200 hover:bg-black/[0.08] disabled:opacity-30"
                             >
@@ -385,11 +389,65 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
 
             <Modal open={infoExercise !== null} title={infoExercise?.name ?? ""} onClose={() => setInfoExercise(null)}>
                 {infoExercise && (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-5">
                         <p className="text-xs font-medium uppercase tracking-[0.15em] text-ink-strong/35">{infoExercise.muscleGroup}</p>
+
                         <p className="text-sm leading-relaxed text-ink-strong/70">
                             {infoExercise.description ?? "No description available for this exercise yet."}
                         </p>
+
+                        {infoExercise.howToPerform && (
+                            <div className="flex flex-col gap-2 border-t border-black/[0.05] pt-4">
+                                <span className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-strong/35">How to perform</span>
+                                <ol className="flex flex-col gap-1.5 text-sm leading-relaxed text-ink-strong/70">
+                                    {infoExercise.howToPerform.split("\n").filter(Boolean).map((step, i) => (
+                                        <li key={i} className="flex gap-2">
+                                            <span className="shrink-0 font-medium text-ink-strong/40">{i + 1}.</span>
+                                            {step}
+                                        </li>
+                                    ))}
+                                </ol>
+                            </div>
+                        )}
+
+                        {infoExercise.musclesWorked && (
+                            <div className="flex flex-col gap-2 border-t border-black/[0.05] pt-4">
+                                <span className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-strong/35">What muscles work</span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {infoExercise.musclesWorked.split(",").map(m => m.trim()).filter(Boolean).map(muscle => (
+                                        <span key={muscle} className="rounded-full bg-black/[0.04] px-2.5 py-1 text-xs font-medium text-ink-strong/70">{muscle}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {infoExercise.tips && (
+                            <div className="flex flex-col gap-2 border-t border-black/[0.05] pt-4">
+                                <span className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-strong/35">Tips</span>
+                                <ul className="flex flex-col gap-1.5 text-sm leading-relaxed text-ink-strong/70">
+                                    {infoExercise.tips.split("\n").filter(Boolean).map((tip, i) => (
+                                        <li key={i} className="flex gap-2">
+                                            <span className="shrink-0 text-ink-strong/30">•</span>
+                                            {tip}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {infoExercise.commonMistakes && (
+                            <div className="flex flex-col gap-2 border-t border-black/[0.05] pt-4">
+                                <span className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-strong/35">Common mistakes</span>
+                                <ul className="flex flex-col gap-1.5 text-sm leading-relaxed text-ink-strong/70">
+                                    {infoExercise.commonMistakes.split("\n").filter(Boolean).map((mistake, i) => (
+                                        <li key={i} className="flex gap-2">
+                                            <span className="shrink-0 text-ink-strong/30">•</span>
+                                            {mistake}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 )}
             </Modal>

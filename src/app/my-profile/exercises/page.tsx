@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProductPrice, getTrainingPlanWithExercises, getTrainingPlanForWeek, getWorkoutLogsForDate } from "@/supabase/queries"
+import { getEntitlementsForUser, getProductPrice, getTrainingPlanWithExercises, getTrainingPlanForWeek, getTrainingPlanPreviewForWeek, getWorkoutLogsForDate } from "@/supabase/queries"
 import { getISOWeekKey } from "@/utils/planGenerator"
 import AddModuleButton from "../AddModuleButton"
 import WorkoutTracker from "./WorkoutTracker"
@@ -39,9 +39,10 @@ export default async function ExercisesPage ({ searchParams }: PageProps) {
         const initialDayOfWeek = requestedDayOfWeek >= 1 && requestedDayOfWeek <= 7 ? requestedDayOfWeek : todayDayOfWeek
 
         // weekOffset is relative to the current ISO week (0 = this week, -1 = last week, ...).
-        // Future weeks don't exist yet, so clamp at 0.
-        const weekOffset = Math.min(Number(week) || 0, 0)
+        // +1 (next week) is allowed as a read-only preview — nothing beyond that exists yet.
+        const weekOffset = Math.min(Number(week) || 0, 1)
         const isCurrentWeek = weekOffset === 0
+        const isPreviewWeek = weekOffset === 1
 
         const monday = new Date(`${today}T00:00:00`)
         monday.setDate(monday.getDate() - (todayDayOfWeek - 1) + weekOffset * 7)
@@ -52,7 +53,11 @@ export default async function ExercisesPage ({ searchParams }: PageProps) {
         })
 
         const [planByDay, todayLogs] = await Promise.all([
-            isCurrentWeek ? getTrainingPlanWithExercises(user.id) : getTrainingPlanForWeek(user.id, getISOWeekKey(monday)),
+            isCurrentWeek
+                ? getTrainingPlanWithExercises(user.id)
+                : isPreviewWeek
+                    ? getTrainingPlanPreviewForWeek(user.id, getISOWeekKey(monday))
+                    : getTrainingPlanForWeek(user.id, getISOWeekKey(monday)),
             getWorkoutLogsForDate(user.id, today),
         ])
 
@@ -71,6 +76,7 @@ export default async function ExercisesPage ({ searchParams }: PageProps) {
                 weekOffset={weekOffset}
                 weekDates={weekDates}
                 hasPlanForWeek={hasPlanForWeek}
+                isPreviewWeek={isPreviewWeek}
             />
         )
     }

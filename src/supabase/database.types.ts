@@ -136,25 +136,40 @@ export type Database = {
       }
       exercises: {
         Row: {
+          common_mistakes: string | null
           created_at: string
+          description: string
           equipment: string | null
+          how_to_perform: string | null
           id: number
           muscle_group: string
+          muscles_worked: string | null
           name: string
+          tips: string | null
         }
         Insert: {
+          common_mistakes?: string | null
           created_at?: string
+          description: string
           equipment?: string | null
+          how_to_perform?: string | null
           id?: never
           muscle_group: string
+          muscles_worked?: string | null
           name: string
+          tips?: string | null
         }
         Update: {
+          common_mistakes?: string | null
           created_at?: string
+          description?: string
           equipment?: string | null
+          how_to_perform?: string | null
           id?: never
           muscle_group?: string
+          muscles_worked?: string | null
           name?: string
+          tips?: string | null
         }
         Relationships: []
       }

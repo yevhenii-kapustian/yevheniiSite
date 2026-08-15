@@ -17,14 +17,16 @@ type ProfileForPlan = {
     experience: string | null
     daysPerWeek: string | null
     equipment: string | null
+    gender: string | null
+    bodyWeightKg: number | null
 }
 
-const FULL_BODY_GROUPS = ["Chest", "Back", "Quads", "Shoulders", "Abs"]
+const FULL_BODY_GROUPS = ["Chest", "Back", "Quads", "Glutes", "Shoulders", "Abs"]
 const UPPER_GROUPS = ["Chest", "Back", "Shoulders", "Biceps", "Triceps"]
-const LOWER_GROUPS = ["Quads", "Hamstrings", "Calves", "Abs"]
+const LOWER_GROUPS = ["Quads", "Hamstrings", "Glutes", "Calves", "Abs"]
 const PUSH_GROUPS = ["Chest", "Shoulders", "Triceps"]
 const PULL_GROUPS = ["Back", "Biceps"]
-const LEGS_GROUPS = ["Quads", "Hamstrings", "Calves"]
+const LEGS_GROUPS = ["Quads", "Hamstrings", "Glutes", "Calves"]
 
 // day_of_week follows ISO weekday numbering: 1 = Monday ... 7 = Sunday.
 const SPLITS: Record<string, { dayOfWeek: number, muscleGroups: string[] }[]> = {
@@ -60,11 +62,61 @@ const EXPERIENCE_PARAMS: Record<string, { sets: number, reps: number }> = {
     "Advanced": { sets: 4, reps: 8 },
 }
 
+// Full Body and Upper/Lower already spread 5-6 muscle groups across one session, so one
+// exercise per group is already a full workout. Push/Pull/Legs deliberately covers far
+// fewer groups per day (3 for Push/Pull, 4 for Legs) specifically so each one can get more
+// than a single movement — a beginner still gets one lift per group to focus on technique,
+// but anyone with real training experience expects a compound + at least one accessory
+// per muscle group on a PPL split, not a single set of exercises for the whole session.
+const getExercisesPerMuscleGroup = (daysPerWeek: string, experience: string): number =>
+    (daysPerWeek === "5+" && experience !== "New to training") ? 2 : 1
+
 // Isolation lifts (curls, raises, extensions...) are always lighter than compound
 // lifts (squats, presses, rows...) regardless of equipment — using one flat number
 // per equipment tier gave absurd results like a 60kg biceps curl.
 const ISOLATION_KEYWORDS = ["Curl", "Raise", "Extension", "Fly"]
 const isIsolationExercise = (name: string) => ISOLATION_KEYWORDS.some(keyword => name.includes(keyword))
+
+const LOWER_BODY_MUSCLE_GROUPS = new Set(["Quads", "Hamstrings", "Glutes", "Calves"])
+
+// STARTING_WEIGHT_KG is calibrated for an average-build man around 80kg — it needs
+// adjusting for anyone who isn't that, otherwise a 50kg woman and a 100kg man get
+// handed the identical bar weight. The upper-body strength gap between sexes is
+// larger than the lower-body one on average, so they get different multipliers rather
+// than one flat number. Both factors are intentionally mild (clamped) — this is still
+// just a starting guess the logged-effort progression is meant to correct within a
+// few sessions, not a precise prescription.
+const FEMALE_STRENGTH_MULTIPLIER = { upper: 0.6, lower: 0.8 }
+const BODYWEIGHT_REFERENCE_KG = 80
+const BODYWEIGHT_MULTIPLIER_RANGE = { min: 0.7, max: 1.3 }
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+
+const WEIGHT_ROUNDING_KG: Record<string, number> = {
+    Barbell: 2.5,
+    Dumbbell: 1,
+    Cable: 2.5,
+    Machine: 2.5,
+}
+
+const roundToIncrement = (value: number, equipment: string) => {
+    const increment = WEIGHT_ROUNDING_KG[equipment] ?? 1
+    return Math.round(value / increment) * increment
+}
+
+const adjustForBodyStats = (baseWeight: number, muscleGroup: string, equipment: string, profile: ProfileForPlan) => {
+    if (baseWeight <= 0) return baseWeight
+
+    const isLowerBody = LOWER_BODY_MUSCLE_GROUPS.has(muscleGroup)
+    const genderMultiplier = profile.gender === "female"
+        ? (isLowerBody ? FEMALE_STRENGTH_MULTIPLIER.lower : FEMALE_STRENGTH_MULTIPLIER.upper)
+        : 1
+    const bodyweightMultiplier = profile.bodyWeightKg
+        ? clamp(profile.bodyWeightKg / BODYWEIGHT_REFERENCE_KG, BODYWEIGHT_MULTIPLIER_RANGE.min, BODYWEIGHT_MULTIPLIER_RANGE.max)
+        : 1
+
+    return roundToIncrement(baseWeight * genderMultiplier * bodyweightMultiplier, equipment)
+}
 
 // Starting points only — the app has no 1RM data, so these are deliberately conservative.
 // They're meant to be adjusted upward as the user logs real sets, not a precision estimate.
@@ -138,7 +190,11 @@ export const generateTrainingPlan = (
     const previousTargets = options.previousTargets ?? new Map<number, PreviousTarget>()
 
     const allowedEquipment = new Set(EQUIPMENT_TIERS[equipmentTier])
-    const { sets, reps } = EXPERIENCE_PARAMS[experience]
+    const { sets: baseSets, reps } = EXPERIENCE_PARAMS[experience]
+    const exercisesPerGroup = getExercisesPerMuscleGroup(daysPerWeek, experience)
+    // Splitting the same target volume across more than one exercise per group — one set
+    // fewer each so the total per muscle group doesn't just double outright.
+    const setsPerExercise = exercisesPerGroup > 1 ? Math.max(baseSets - 1, 2) : baseSets
 
     const exercisesByMuscleGroup = new Map<string, ExerciseRow[]>()
     for (const exercise of exercises) {
@@ -156,24 +212,30 @@ export const generateTrainingPlan = (
             const pool = exercisesByMuscleGroup.get(muscleGroup)
             if (!pool || pool.length === 0) continue
 
-            // Cycle through the pool across repeated days within the week (e.g. Mon/Wed/Fri
-            // full body), starting from a week-dependent offset so different weeks land on
-            // different exercises for the same slot instead of always picking index 0.
-            const usedIndex = usedIndexByGroup.get(muscleGroup) ?? rotationOffset
-            const exercise = pool[usedIndex % pool.length]
-            usedIndexByGroup.set(muscleGroup, usedIndex + 1)
+            const slotsThisGroup = Math.min(exercisesPerGroup, pool.length)
 
-            const previous = previousTargets.get(exercise.id)
-            const weightTier = STARTING_WEIGHT_KG[exercise.equipment!]?.[experience]
-            const defaultWeight = weightTier ? (isIsolationExercise(exercise.name) ? weightTier.isolation : weightTier.compound) : 0
+            for (let slot = 0; slot < slotsThisGroup; slot++) {
+                // Cycle through the pool across repeated days within the week (e.g. Mon/Wed/Fri
+                // full body) and across multiple slots on the same day, starting from a
+                // week-dependent offset so different weeks land on different exercises for
+                // the same slot instead of always picking index 0.
+                const usedIndex = usedIndexByGroup.get(muscleGroup) ?? rotationOffset
+                const exercise = pool[usedIndex % pool.length]
+                usedIndexByGroup.set(muscleGroup, usedIndex + 1)
 
-            result.push({
-                exerciseId: exercise.id,
-                dayOfWeek: day.dayOfWeek,
-                sets,
-                reps: previous?.reps ?? reps,
-                weightKg: previous?.weightKg ?? defaultWeight,
-            })
+                const previous = previousTargets.get(exercise.id)
+                const weightTier = STARTING_WEIGHT_KG[exercise.equipment!]?.[experience]
+                const baseWeight = weightTier ? (isIsolationExercise(exercise.name) ? weightTier.isolation : weightTier.compound) : 0
+                const defaultWeight = adjustForBodyStats(baseWeight, muscleGroup, exercise.equipment!, profile)
+
+                result.push({
+                    exerciseId: exercise.id,
+                    dayOfWeek: day.dayOfWeek,
+                    sets: setsPerExercise,
+                    reps: previous?.reps ?? reps,
+                    weightKg: previous?.weightKg ?? defaultWeight,
+                })
+            }
         }
     }
 

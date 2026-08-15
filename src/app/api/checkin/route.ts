@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthClient } from "@/supabase/server-client";
-import { upsertProfile, insertBodyLog, recalculateNutritionTargetIfActive } from "@/supabase/queries";
+import { upsertProfile, insertBodyLog, recalculateNutritionTargetIfActive, regenerateTrainingPlanForCurrentWeek } from "@/supabase/queries";
 
 const VALID_GENDERS = ["male", "female"]
 const VALID_GOALS = ["fat_loss", "maintenance", "muscle_gain"]
@@ -43,6 +43,10 @@ export async function POST(req: NextRequest) {
         weight_kg: weightNum,
     })
 
+    // Gender/bodyweight now feed into the training plan's starting-weight suggestions
+    // (see planGenerator.ts), so an updated check-in should reflect in this week's
+    // plan immediately rather than waiting for next week's regeneration.
+    await regenerateTrainingPlanForCurrentWeek(user.id)
     await recalculateNutritionTargetIfActive(user.id)
 
     return NextResponse.json({ message: "Success" })

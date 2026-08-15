@@ -374,27 +374,22 @@ export const recalculateNutritionTargetIfActive = async (userId: string) => {
 // Exercise selection rotates week to week so the same slot doesn't always land on the
 // same movement, while weight/reps carry over from the most recent week that exercise
 // was last assigned — so switching exercises doesn't reset progression to zero.
-export const getOrCreateTrainingPlan = async (userId: string) => {
+// Shared by getOrCreateTrainingPlan (real, persisted generation) and
+// getTrainingPlanPreviewForWeek (a read-only "what would next week look like" preview) —
+// both need the full exercise pool and the user's most recent weight/reps per exercise
+// so progression carries over instead of resetting to the experience-tier default.
+const getExercisePool = async () => {
     const supabase = getServerClient()
-    const weekKey = getISOWeekKey(new Date())
-
-    const { data: existing } = await supabase
-        .from("training_plans")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("week_number", weekKey)
-        .maybeSingle()
-
-    if (existing) return existing.id
-
-    const profile = await getProfile(userId)
-
-    const { data: exerciseRows, error: exerciseError } = await supabase
+    const { data, error } = await supabase
         .from("exercises")
-        .select("id, name, muscle_group, equipment")
+        .select("id, name, muscle_group, equipment, description, how_to_perform, muscles_worked, tips, common_mistakes")
 
-    if (exerciseError) throw exerciseError
+    if (error) throw error
+    return data
+}
 
+const getPreviousTargetsForUser = async (userId: string) => {
+    const supabase = getServerClient()
     const { data: pastAssignments, error: pastError } = await supabase
         .from("plan_exercises")
         .select("exercise_id, target_weight_kg, target_reps, training_plans!inner(user_id, week_number)")
@@ -413,12 +408,36 @@ export const getOrCreateTrainingPlan = async (userId: string) => {
             previousTargets.set(row.exercise_id, { weightKg: row.target_weight_kg ?? 0, reps: row.target_reps })
         }
     }
+    return previousTargets
+}
+
+export const getOrCreateTrainingPlan = async (userId: string) => {
+    const supabase = getServerClient()
+    const weekKey = getISOWeekKey(new Date())
+
+    const { data: existing } = await supabase
+        .from("training_plans")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("week_number", weekKey)
+        .maybeSingle()
+
+    if (existing) return existing.id
+
+    const [profile, exerciseRows, previousTargets, bodyWeightKg] = await Promise.all([
+        getProfile(userId),
+        getExercisePool(),
+        getPreviousTargetsForUser(userId),
+        getLatestBodyWeight(userId),
+    ])
 
     const generatedExercises = generateTrainingPlan(
         {
             experience: profile?.experience ?? null,
             daysPerWeek: profile?.days_per_week ?? null,
             equipment: profile?.equipment ?? null,
+            gender: profile?.gender ?? null,
+            bodyWeightKg,
         },
         exerciseRows,
         { rotationOffset: weekKey, previousTargets }
@@ -473,6 +492,10 @@ export type TrainingPlanExercise = {
     name: string
     muscleGroup: string
     description: string | null
+    howToPerform: string | null
+    musclesWorked: string | null
+    tips: string | null
+    commonMistakes: string | null
     sets: number
     reps: number
     weightKg: number | null
@@ -483,7 +506,7 @@ const getPlanExercisesByDay = async (planId: number) => {
 
     const { data, error } = await supabase
         .from("plan_exercises")
-        .select("id, day_of_week, target_sets, target_reps, target_weight_kg, order_index, exercises(name, muscle_group, description)")
+        .select("id, day_of_week, target_sets, target_reps, target_weight_kg, order_index, exercises(name, muscle_group, description, how_to_perform, muscles_worked, tips, common_mistakes)")
         .eq("training_plan_id", planId)
         .order("day_of_week", { ascending: true })
         .order("order_index", { ascending: true })
@@ -500,6 +523,10 @@ const getPlanExercisesByDay = async (planId: number) => {
             name: exercise.name,
             muscleGroup: exercise.muscle_group,
             description: exercise.description,
+            howToPerform: exercise.how_to_perform,
+            musclesWorked: exercise.muscles_worked,
+            tips: exercise.tips,
+            commonMistakes: exercise.common_mistakes,
             sets: row.target_sets,
             reps: row.target_reps,
             weightKg: row.target_weight_kg,
@@ -531,6 +558,59 @@ export const getTrainingPlanForWeek = async (userId: string, weekKey: number) =>
     if (!plan) return null
 
     return getPlanExercisesByDay(plan.id)
+}
+
+// A read-only, non-persisted preview of what next week's plan WOULD look like if it were
+// generated right now — same rotation/progression logic as getOrCreateTrainingPlan, just
+// never written to training_plans/plan_exercises. Nothing here can ever affect a past or
+// current week: it's a pure computation over the live exercise pool + profile, thrown away
+// once the response is sent. The real plan for that week is only ever created for real once
+// that week actually becomes the current one.
+export const getTrainingPlanPreviewForWeek = async (userId: string, weekKey: number): Promise<Map<number, TrainingPlanExercise[]>> => {
+    const [profile, exerciseRows, previousTargets, bodyWeightKg] = await Promise.all([
+        getProfile(userId),
+        getExercisePool(),
+        getPreviousTargetsForUser(userId),
+        getLatestBodyWeight(userId),
+    ])
+
+    const exerciseById = new Map(exerciseRows.map(row => [row.id, row]))
+
+    const generatedExercises = generateTrainingPlan(
+        {
+            experience: profile?.experience ?? null,
+            daysPerWeek: profile?.days_per_week ?? null,
+            equipment: profile?.equipment ?? null,
+            gender: profile?.gender ?? null,
+            bodyWeightKg,
+        },
+        exerciseRows,
+        { rotationOffset: weekKey, previousTargets }
+    )
+
+    const byDay = new Map<number, TrainingPlanExercise[]>()
+    for (const item of generatedExercises) {
+        const exercise = exerciseById.get(item.exerciseId)
+        if (!exercise) continue
+
+        const list = byDay.get(item.dayOfWeek) ?? []
+        list.push({
+            planExerciseId: -exercise.id,
+            name: exercise.name,
+            muscleGroup: exercise.muscle_group,
+            description: exercise.description,
+            howToPerform: exercise.how_to_perform,
+            musclesWorked: exercise.muscles_worked,
+            tips: exercise.tips,
+            commonMistakes: exercise.common_mistakes,
+            sets: item.sets,
+            reps: item.reps,
+            weightKg: item.weightKg,
+        })
+        byDay.set(item.dayOfWeek, list)
+    }
+
+    return byDay
 }
 
 export const getWorkoutLogsForDate = async (userId: string, date: string) => {

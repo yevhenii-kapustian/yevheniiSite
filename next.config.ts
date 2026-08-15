@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The whole /my-profile area is dynamically rendered (reads cookies/DB every request),
+  // but Next's client Router Cache still holds dynamic pages for 30s by default — so
+  // saving settings/logging a meal/etc. and then navigating to another page via a normal
+  // <Link> click could show stale data for up to 30s instead of the just-changed state.
+  // Disabling that here fixes it for every page, not just the ones we've hit this bug on.
+  experimental: {
+    staleTimes: {
+      dynamic: 0,
+    },
+  },
   async headers() {
     return [
       {
