@@ -18,10 +18,14 @@ const goalForSlider = (sliderValue: number): string => {
     return "maintenance"
 }
 
+// A 0, negative, or empty value here silently breaks nutrition target creation downstream
+// (recalculateNutritionTargetIfActive treats falsy age/height as "profile incomplete" and
+// just gives up with no error) — clamping at the source is simpler than validating it at
+// every layer between the quiz and that check.
 const statFields = [
-    { key: "age", label: "Age" },
-    { key: "height", label: "Height, cm" },
-    { key: "weight", label: "Weight, kg" },
+    { key: "age", label: "Age", min: 13, max: 100 },
+    { key: "height", label: "Height, cm", min: 100, max: 250 },
+    { key: "weight", label: "Weight, kg", min: 30, max: 300 },
 ] as const
 
 const AnimatedNumber = ({ value }: { value: number }) => {
@@ -60,7 +64,18 @@ const BodyStatsStep = ({ onNext }: BodyStatsStepProps) => {
         weight: setWeight,
     }
 
+    const isStatInRange = (field: typeof statFields[number]) =>
+        Number.isFinite(statValues[field.key]) && statValues[field.key] >= field.min && statValues[field.key] <= field.max
+    const allStatsValid = statFields.every(isStatInRange)
+
+    const clampStat = (field: typeof statFields[number]) => {
+        const value = statValues[field.key]
+        const clamped = Math.min(Math.max(Number.isFinite(value) ? value : field.min, field.min), field.max)
+        if (clamped !== value) statSetters[field.key](clamped)
+    }
+
     const handleContinue = () => {
+        if (!allStatsValid) return
         onNext({
             gender,
             age: String(age),
@@ -124,9 +139,14 @@ const BodyStatsStep = ({ onNext }: BodyStatsStepProps) => {
                                 <label className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">{field.label}</label>
                                 <input
                                     type="number"
+                                    min={field.min}
+                                    max={field.max}
                                     value={statValues[field.key]}
                                     onChange={e => statSetters[field.key](Number(e.target.value))}
-                                    className="border-b border-white/15 bg-transparent pb-1.5 text-lg text-white outline-none transition-colors duration-200 focus:border-white/40"
+                                    onBlur={() => clampStat(field)}
+                                    className={`border-b bg-transparent pb-1.5 text-lg text-white outline-none transition-colors duration-200 focus:border-white/40 ${
+                                        isStatInRange(field) ? "border-white/15" : "border-red-400/60"
+                                    }`}
                                 />
                             </div>
                         ))}
@@ -164,10 +184,15 @@ const BodyStatsStep = ({ onNext }: BodyStatsStepProps) => {
                             A program built around {result.programDescription}.
                         </p>
                         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="mt-3 w-full sm:w-fit">
-                            <Button variant="solid-light" size="sm" className="w-full sm:w-auto" onClick={handleContinue}>
+                            <Button variant="solid-light" size="sm" className="w-full sm:w-auto" onClick={handleContinue} disabled={!allStatsValid}>
                                 Continue
                             </Button>
                         </motion.div>
+                        {!allStatsValid && (
+                            <p className="text-xs text-red-400">
+                                Age {statFields[0].min}-{statFields[0].max}, height {statFields[1].min}-{statFields[1].max}cm, weight {statFields[2].min}-{statFields[2].max}kg.
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

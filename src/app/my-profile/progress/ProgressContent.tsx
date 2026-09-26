@@ -6,7 +6,20 @@ import WeeklyWeightBars from "../WeeklyWeightBars"
 import TrainingVolumeChart from "../TrainingVolumeChart"
 import PersonalRecords from "../PersonalRecords"
 import NutritionAdherence from "../NutritionAdherence"
+import ProgressPhotos from "./ProgressPhotos"
+import BodyMeasurements from "./BodyMeasurements"
 import type { WeeklyVolumePoint, PersonalRecord } from "@/utils/trainingReport"
+
+type Photo = { id: number, label: string, takenAt: string, url: string | null }
+type Measurement = {
+    id: number
+    logged_at: string
+    waist_cm: number | null
+    chest_cm: number | null
+    hips_cm: number | null
+    thigh_cm: number | null
+    arm_cm: number | null
+}
 
 type WeightPoint = { loggedAt: string, weightKg: number }
 type WeightDelta = { days: number, change: number, current: number }
@@ -25,6 +38,8 @@ type ProgressContentProps = {
     plannedDaysThisWeek: number
     intakeHistory: { logged_date: string, calories: number }[]
     nutritionTargetCalories: number
+    progressPhotos: Photo[]
+    measurements: Measurement[]
 }
 
 const CardHeader = ({ icon, label, value }: { icon: React.ReactNode, label: string, value?: string }) => (
@@ -51,6 +66,8 @@ const ProgressContent = ({
     plannedDaysThisWeek,
     intakeHistory,
     nutritionTargetCalories,
+    progressPhotos,
+    measurements,
 }: ProgressContentProps) => {
     const hasWeightTrend = weightHistory.length >= 2 && weightDelta
 
@@ -99,6 +116,14 @@ const ProgressContent = ({
                     <NutritionAdherence intakeHistory={intakeHistory} targetCalories={nutritionTargetCalories}/>
                 </Card>
             )}
+
+            <div className="lg:col-span-2">
+                <ProgressPhotos photos={progressPhotos}/>
+            </div>
+
+            <div className="lg:col-span-2">
+                <BodyMeasurements measurements={measurements}/>
+            </div>
         </div>
     )
 }

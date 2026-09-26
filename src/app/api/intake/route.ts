@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthClient } from "@/supabase/server-client";
-import { insertMeal, deleteMeal } from "@/supabase/queries";
+import { insertMeal, deleteMeal, getEntitlementsForUser } from "@/supabase/queries";
+import { hasActiveModule } from "@/utils/entitlements";
+import { parseJsonBody } from "@/lib/parseJsonBody";
+import { getTodayLocalDate } from "@/utils/date";
 
 export async function POST(req: NextRequest) {
     const supabase = await getServerAuthClient()
@@ -10,7 +13,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { mealType, name, calories, proteinG, fatG, carbsG } = await req.json()
+    // Page-level redirects gate the UI, but nothing stopped a request made straight
+    // against this endpoint from logging meals without an active nutrition subscription.
+    const entitlements = await getEntitlementsForUser(user.id)
+    if (!hasActiveModule(entitlements, "nutrition")) {
+        return NextResponse.json({ message: "Nutrition module required" }, { status: 403 })
+    }
+
+    const { data: body, error: parseError } = await parseJsonBody(req)
+    if (parseError) return parseError
+    const { mealType, name, calories, proteinG, fatG, carbsG } = body
 
     const caloriesNum = Number(calories)
     if (!Number.isFinite(caloriesNum) || caloriesNum <= 0 || caloriesNum > 20000) {
@@ -23,15 +35,18 @@ export async function POST(req: NextRequest) {
         }
     }
 
+    // protein_g/fat_g/carbs_g are whole-number (int) columns — rounding here too, not just
+    // on the client, so any decimal value (from this or a future caller) can never reach an
+    // insert that Postgres would silently-to-the-caller reject as a type mismatch.
     await insertMeal({
         user_id: user.id,
-        logged_date: new Date().toISOString().slice(0, 10),
+        logged_date: getTodayLocalDate(),
         meal_type: mealType || null,
         name: name || null,
-        calories: caloriesNum,
-        protein_g: proteinG ? Number(proteinG) : null,
-        fat_g: fatG ? Number(fatG) : null,
-        carbs_g: carbsG ? Number(carbsG) : null,
+        calories: Math.round(caloriesNum),
+        protein_g: proteinG ? Math.round(Number(proteinG)) : null,
+        fat_g: fatG ? Math.round(Number(fatG)) : null,
+        carbs_g: carbsG ? Math.round(Number(carbsG)) : null,
     })
 
     return NextResponse.json({ message: "Success" })
@@ -45,8 +60,14 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { mealId } = await req.json()
-    const mealIdNum = Number(mealId)
+    const entitlements = await getEntitlementsForUser(user.id)
+    if (!hasActiveModule(entitlements, "nutrition")) {
+        return NextResponse.json({ message: "Nutrition module required" }, { status: 403 })
+    }
+
+    const { data: body, error: parseError } = await parseJsonBody<{ mealId?: unknown }>(req)
+    if (parseError) return parseError
+    const mealIdNum = Number(body.mealId)
     if (!Number.isInteger(mealIdNum) || mealIdNum <= 0) {
         return NextResponse.json({ message: "Invalid mealId" }, { status: 400 })
     }

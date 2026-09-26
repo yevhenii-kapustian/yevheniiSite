@@ -1,3 +1,5 @@
+import { toLocalDateString } from "./date"
+
 type WorkoutLogRow = {
     logId: number
     performedAt: string
@@ -6,11 +8,16 @@ type WorkoutLogRow = {
     actualWeightKg: number
 }
 
+// performedAt is a full timestamp (timestamptz), not just a date — slicing its raw string
+// to get "the date" reads the UTC calendar day of that instant, not the local one, which
+// for a workout logged late in the evening in a timezone ahead of UTC could already land on
+// the wrong side of midnight. Parsing it as a real Date and using local getters (getDay/
+// getDate) instead determines which calendar day it actually fell on locally.
 const getISOWeekStart = (dateStr: string) => {
-    const d = new Date(`${dateStr.slice(0, 10)}T00:00:00`)
+    const d = new Date(dateStr)
     const weekday = (d.getDay() + 6) % 7 // Monday = 0
     d.setDate(d.getDate() - weekday)
-    return d.toISOString().slice(0, 10)
+    return toLocalDateString(d)
 }
 
 export type WeeklyVolumePoint = {

@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { AnimatePresence, motion } from "framer-motion"
 import { Trash } from "@phosphor-icons/react"
 import AddMealForm from "../AddMealForm"
 import Card from "../Card"
+import { getOverageLevel, OVERAGE_TEXT_CLASSES, OVERAGE_BAR_CLASSES } from "./overage"
 
 const MEAL_TYPE_LABELS: Record<string, string> = {
     breakfast: "Breakfast",
@@ -31,55 +31,80 @@ type MacroCard = {
 type NutritionContentProps = {
     selectedDate: string
     isToday: boolean
+    isFuture: boolean
+    targetCalories: number | null
+    eatenCalories: number
     macroCards: MacroCard[]
     meals: Meal[]
 }
 
-const NutritionContent = ({ selectedDate, isToday, macroCards, meals }: NutritionContentProps) => {
+const NutritionContent = ({ selectedDate, isToday, isFuture, targetCalories, eatenCalories, macroCards, meals }: NutritionContentProps) => {
     const router = useRouter()
     const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [deleteError, setDeleteError] = useState<string | null>(null)
 
     const handleDelete = async (mealId: number) => {
         setDeletingId(mealId)
+        setDeleteError(null)
         try {
-            await fetch("/api/intake", {
+            const res = await fetch("/api/intake", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ mealId }),
             })
-            router.refresh()
+            if (res.ok) {
+                router.refresh()
+            } else {
+                setDeleteError("Couldn't delete this meal — please try again.")
+            }
+        } catch {
+            setDeleteError("Couldn't delete this meal — please try again.")
         } finally {
             setDeletingId(null)
         }
     }
 
+    // key resets local state (delete errors/loading) on date change — no animation tied to
+    // it anymore, just React's normal remount-on-key-change behavior.
     return (
-        <AnimatePresence mode="wait">
-            <motion.div
-                key={selectedDate}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-6"
-            >
+        <div key={selectedDate} className="flex flex-col gap-6">
+                <p className="text-sm text-ink-strong/50">
+                    {isToday ? "Today" : new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+                    {targetCalories != null && !isFuture && (
+                        <>
+                            {" · "}
+                            <span className={(() => {
+                                const level = getOverageLevel(eatenCalories, targetCalories)
+                                return level === "none" ? "" : `font-medium transition-colors duration-200 ${OVERAGE_TEXT_CLASSES[level]}`
+                            })()}>
+                                {Math.round(eatenCalories).toLocaleString("en-US")}
+                            </span>
+                            {` / ${targetCalories.toLocaleString("en-US")} kcal logged`}
+                        </>
+                    )}
+                    {targetCalories != null && isFuture && ` · ${targetCalories.toLocaleString("en-US")} kcal target (preview)`}
+                </p>
+
                 {macroCards.length > 0 && (
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                        {macroCards.map(macro => (
-                            <Card key={macro.label} className="flex flex-col gap-2 p-5">
-                                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">{macro.label}</span>
-                                <span className="text-xl font-semibold tracking-tight text-ink-strong">
-                                    {Math.round(macro.eaten).toLocaleString("en-US")}{macro.unit}
-                                    <span className="text-sm font-normal text-ink-strong/40"> / {macro.goal.toLocaleString("en-US")}{macro.unit}</span>
-                                </span>
-                                <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/[0.05]">
-                                    <div
-                                        className="h-full rounded-full bg-black transition-all duration-300"
-                                        style={{ width: `${Math.min((macro.eaten / macro.goal) * 100, 100)}%` }}
-                                    />
-                                </div>
-                            </Card>
-                        ))}
+                        {macroCards.map(macro => {
+                            const overage = getOverageLevel(macro.eaten, macro.goal)
+                            return (
+                                <Card key={macro.label} className="flex flex-col gap-2 p-5">
+                                    <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">{macro.label}</span>
+                                    <span className={`text-xl font-semibold tracking-tight transition-colors duration-200 ${OVERAGE_TEXT_CLASSES[overage]}`}>
+                                        {Math.round(macro.eaten).toLocaleString("en-US")}{macro.unit}
+                                        <span className="text-sm font-normal text-ink-strong/40"> / {macro.goal.toLocaleString("en-US")}{macro.unit}</span>
+                                    </span>
+                                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/[0.05]">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-300 ${OVERAGE_BAR_CLASSES[overage]}`}
+                                            style={{ width: `${Math.min((macro.eaten / macro.goal) * 100, 100)}%` }}
+                                        />
+                                    </div>
+                                </Card>
+                            )
+                        })}
                     </div>
                 )}
 
@@ -111,13 +136,14 @@ const NutritionContent = ({ selectedDate, isToday, macroCards, meals }: Nutritio
                         ) : (
                             <p className="text-sm text-ink-strong/50">Nothing logged for this day.</p>
                         )}
+                        {deleteError && <p className="mt-2 text-xs text-red-500">{deleteError}</p>}
                     </div>
 
                     {isToday && <AddMealForm/>}
                 </div>
-            </motion.div>
-        </AnimatePresence>
+            </div>
     )
 }
+
 
 export default NutritionContent

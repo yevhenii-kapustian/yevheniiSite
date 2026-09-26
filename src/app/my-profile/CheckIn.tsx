@@ -62,6 +62,7 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
     const [age, setAge] = useState(initial.age)
     const [goal, setGoal] = useState<Goal>(initial.goal)
     const [saving, setSaving] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const result = useMemo(
         () => calculateNutritionTargets({
@@ -85,8 +86,11 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
 
     const handleContinue = async () => {
         setSaving(true)
+        setError(null)
         try {
             await onContinue({ gender, age, height, weight, goal })
+        } catch {
+            setError("Couldn't save your stats — please try again.")
         } finally {
             setSaving(false)
         }
@@ -182,6 +186,7 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                         >
                             {saving ? <span className="flex items-center justify-center"><Spinner/></span> : "Save"}
                         </button>
+                        {error && <p className="text-xs text-red-500">{error}</p>}
                     </div>
                 </div>
             </div>

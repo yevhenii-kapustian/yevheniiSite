@@ -139,26 +139,35 @@ const MyPlanContent = ({
     const router = useRouter()
     const [checkInOpen, setCheckInOpen] = useState(false)
     const [deletingMealId, setDeletingMealId] = useState<number | null>(null)
+    const [mealError, setMealError] = useState<string | null>(null)
 
     const handleCheckInContinue = async (values: CheckInValues) => {
-        await fetch("/api/checkin", {
+        const res = await fetch("/api/checkin", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(values),
         })
+        if (!res.ok) throw new Error("Check-in failed")
         router.refresh()
         setCheckInOpen(false)
     }
 
     const handleDeleteMeal = async (mealId: number) => {
         setDeletingMealId(mealId)
+        setMealError(null)
         try {
-            await fetch("/api/intake", {
+            const res = await fetch("/api/intake", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ mealId }),
             })
-            router.refresh()
+            if (res.ok) {
+                router.refresh()
+            } else {
+                setMealError("Couldn't delete this meal — please try again.")
+            }
+        } catch {
+            setMealError("Couldn't delete this meal — please try again.")
         } finally {
             setDeletingMealId(null)
         }
@@ -340,6 +349,7 @@ const MyPlanContent = ({
                         ) : (
                             <p className="text-sm text-ink-strong/50">Nothing logged {isToday ? "yet today" : "for this day"}.</p>
                         )}
+                        {mealError && <p className="mt-2 text-xs text-red-500">{mealError}</p>}
                     </Card>
                 </div>
             )}

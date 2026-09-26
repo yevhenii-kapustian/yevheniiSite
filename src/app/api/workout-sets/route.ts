@@ -6,8 +6,12 @@ import {
     insertWorkoutSetLog,
     updatePlanExerciseTargets,
     deleteWorkoutSetLog,
+    getEntitlementsForUser,
 } from "@/supabase/queries";
 import { computeProgression, type Effort } from "@/utils/progression";
+import { hasActiveModule } from "@/utils/entitlements";
+import { parseJsonBody } from "@/lib/parseJsonBody";
+import { getTodayLocalDate } from "@/utils/date";
 
 const VALID_EFFORTS = ["easy", "moderate", "hard", "failed"]
 
@@ -19,7 +23,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { planExerciseId, setNumber, actualReps, actualWeightKg, effort } = await req.json()
+    const entitlements = await getEntitlementsForUser(user.id)
+    if (!hasActiveModule(entitlements, "training")) {
+        return NextResponse.json({ message: "Training module required" }, { status: 403 })
+    }
+
+    const { data: body, error: parseError } = await parseJsonBody(req)
+    if (parseError) return parseError
+    const { planExerciseId, setNumber, actualReps, actualWeightKg, effort } = body
 
     const planExerciseIdNum = Number(planExerciseId)
     const setNumberNum = Number(setNumber)
@@ -49,7 +60,7 @@ export async function POST(req: NextRequest) {
     // Once every set for this exercise is logged for the day, use the effort ratings
     // to progress (or hold, or deload) the target for next time — otherwise the plan
     // would target the exact same weight/reps forever.
-    const today = new Date().toISOString().slice(0, 10)
+    const today = getTodayLocalDate()
     const planExercise = await getPlanExerciseForProgression(planExerciseIdNum)
     const todaysEfforts = await getTodaysEffortsForPlanExercise(user.id, planExerciseIdNum, today)
 
@@ -76,8 +87,14 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { logId } = await req.json()
-    const logIdNum = Number(logId)
+    const entitlements = await getEntitlementsForUser(user.id)
+    if (!hasActiveModule(entitlements, "training")) {
+        return NextResponse.json({ message: "Training module required" }, { status: 403 })
+    }
+
+    const { data: body, error: parseError } = await parseJsonBody<{ logId?: unknown }>(req)
+    if (parseError) return parseError
+    const logIdNum = Number(body.logId)
     if (!Number.isInteger(logIdNum) || logIdNum <= 0) {
         return NextResponse.json({ message: "Invalid logId" }, { status: 400 })
     }

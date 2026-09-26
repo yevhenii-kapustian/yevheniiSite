@@ -38,7 +38,10 @@ export default function FormStep ({currentQuestions, onNext, setInput, input, is
    }
 
    if (currentQuestions.type === "input") {
-    const validateEmail = /^((?!\.)[\w-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/gim
+    // Plain, non-stateful RFC-5322-lite check — no "g" flag (which made repeated .test()
+    // calls on the same regex alternate true/false via lastIndex) and no [\w-_.] character
+    // class (which silently rejected legitimate "+"-tagged addresses like name+tag@gmail.com).
+    const validateEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     const isEmailField = currentQuestions.subtype === "email"
     const isEmailValidate = isEmailField ? validateEmail.test(input) : true
     const isButtonDisabled = input.trim() === "" || !isEmailValidate

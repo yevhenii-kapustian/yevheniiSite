@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthClient } from "@/supabase/server-client";
 import { upsertProfile, recalculateNutritionTargetIfActive, regenerateTrainingPlanForCurrentWeek } from "@/supabase/queries";
+import { parseJsonBody } from "@/lib/parseJsonBody";
 
 const VALID_EXPERIENCE = ["New to training", "Some experience", "Advanced"]
 const VALID_DAYS_PER_WEEK = ["2-3", "4", "5+"]
@@ -15,7 +16,9 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { trainsWithProgram, experience, daysPerWeek, equipment, activityLevel } = await req.json()
+    const { data: body, error: parseError } = await parseJsonBody(req)
+    if (parseError) return parseError
+    const { trainsWithProgram, experience, daysPerWeek, equipment, activityLevel } = body
 
     const update: { id: string, trains_with_program?: boolean, experience?: string, days_per_week?: string, equipment?: string, activity_level?: string } = { id: user.id }
 

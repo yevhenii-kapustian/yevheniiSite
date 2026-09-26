@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendLoginLink } from "@/supabase/queries";
 import { sendMagicLinkEmail } from "@/lib/email";
+import { parseJsonBody } from "@/lib/parseJsonBody";
 
 export async function POST(req: NextRequest) {
-    const { email } = await req.json()
-    if (!email) {
+    const { data: body, error: parseError } = await parseJsonBody<{ email?: unknown }>(req)
+    if (parseError) return parseError
+    const { email } = body
+    if (!email || typeof email !== "string") {
         return NextResponse.json({ message: "Missing email" }, { status: 400 })
     }
 

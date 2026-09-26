@@ -1,3 +1,5 @@
+import { toLocalDateString } from "@/utils/date"
+
 type WeightPoint = {
     loggedAt: string
     weightKg: number
@@ -10,7 +12,7 @@ const getWeekStart = (iso: string) => {
     const date = new Date(`${iso.slice(0, 10)}T00:00:00`)
     const weekday = (date.getDay() + 6) % 7 // Monday = 0
     date.setDate(date.getDate() - weekday)
-    return date.toISOString().slice(0, 10)
+    return toLocalDateString(date)
 }
 
 const formatWeekLabel = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })

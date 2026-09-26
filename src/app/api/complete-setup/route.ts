@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthClient } from "@/supabase/server-client";
 import { upsertProfile, insertBodyLog, regenerateTrainingPlanForCurrentWeek, recalculateNutritionTargetIfActive } from "@/supabase/queries";
+import { parseJsonBody } from "@/lib/parseJsonBody";
+import { getTodayLocalDate } from "@/utils/date";
 
 const VALID_GENDERS = ["male", "female"]
 const VALID_GOALS = ["fat_loss", "maintenance", "muscle_gain"]
@@ -20,7 +22,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { gender, age, height, weight, goal, activityLevel, experience, daysPerWeek, equipment } = await req.json()
+    const { data: body, error: parseError } = await parseJsonBody(req)
+    if (parseError) return parseError
+    const { gender, age, height, weight, goal, activityLevel, experience, daysPerWeek, equipment } = body
 
     const ageNum = Number(age)
     const heightNum = Number(height)
@@ -54,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     await insertBodyLog({
         user_id: user.id,
-        logged_at: new Date().toISOString().slice(0, 10),
+        logged_at: getTodayLocalDate(),
         weight_kg: weightNum,
     })
 

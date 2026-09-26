@@ -9,6 +9,14 @@ export const getModuleState = (entitlements: EntitlementRow[], module: string): 
     return "none"
 }
 
+// Page-level entitlement checks (redirect to an upsell if the module isn't active) only
+// stop a browser following the normal UI — they do nothing against a request made directly
+// against the API. This is the same check, for API routes that mutate module-specific data
+// (meal logs, workout sets, exercise swaps) so a request can't just skip the page and use a
+// paid feature for free.
+export const hasActiveModule = (entitlements: EntitlementRow[], module: string): boolean =>
+    entitlements.some(e => e.module === module && e.status === "active")
+
 const formatPeriodEnd = (iso: string | null) =>
     iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null
 

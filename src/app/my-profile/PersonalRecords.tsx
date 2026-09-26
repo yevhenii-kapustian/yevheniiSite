@@ -21,10 +21,12 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
     const [saving, setSaving] = useState(false)
 
     const [deletingLogId, setDeletingLogId] = useState<number | null>(null)
+    const [error, setError] = useState<string | null>(null)
 
     const handleSubmit = async () => {
         if (!planExerciseId || !weightKg || !reps) return
         setSaving(true)
+        setError(null)
         try {
             const res = await fetch("/api/workout-sets", {
                 method: "POST",
@@ -42,7 +44,11 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
                 setReps("")
                 setOpen(false)
                 router.refresh()
+            } else {
+                setError("Couldn't save this record — please try again.")
             }
+        } catch {
+            setError("Couldn't save this record — please try again.")
         } finally {
             setSaving(false)
         }
@@ -50,13 +56,20 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
 
     const handleDelete = async (logId: number) => {
         setDeletingLogId(logId)
+        setError(null)
         try {
             const res = await fetch("/api/workout-sets", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ logId }),
             })
-            if (res.ok) router.refresh()
+            if (res.ok) {
+                router.refresh()
+            } else {
+                setError("Couldn't delete this record — please try again.")
+            }
+        } catch {
+            setError("Couldn't delete this record — please try again.")
         } finally {
             setDeletingLogId(null)
         }
@@ -106,6 +119,7 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
             ) : (
                 <p className="text-sm text-ink-strong/50">No records yet — add your first one.</p>
             )}
+            {error && !open && <p className="text-xs text-red-500">{error}</p>}
 
             <Modal open={open} title="Log a record" onClose={() => setOpen(false)}>
                 <div className="flex flex-col gap-3">
@@ -142,6 +156,7 @@ const PersonalRecords = ({ records, exerciseOptions }: { records: PersonalRecord
                     >
                         {saving ? <Spinner/> : "Save record"}
                     </button>
+                    {error && open && <p className="text-xs text-red-500">{error}</p>}
                 </div>
             </Modal>
         </div>

@@ -1,12 +1,15 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProductPrice, getTrainingPlanWithExercises, getTrainingPlanForWeek, getTrainingPlanPreviewForWeek, getWorkoutLogsForDate } from "@/supabase/queries"
+import { getEntitlementsForUser, getProductPrice, getTrainingPlanWithExercises, getTrainingPlanForWeek, getTrainingPlanPreviewForWeek, getWorkoutLogsForDate, type TrainingPlanExercise } from "@/supabase/queries"
 import { getISOWeekKey } from "@/utils/planGenerator"
 import AddModuleButton from "../AddModuleButton"
 import WorkoutTracker from "./WorkoutTracker"
 import { BUNDLE_PRODUCT_ID } from "@/data/products"
 import { getModuleState, upsellCopy } from "@/utils/entitlements"
+import { getTodayLocalDate, toLocalDateString } from "@/utils/date"
+import { Barbell } from "@phosphor-icons/react/dist/ssr"
+
 
 export const metadata: Metadata = {
     title: "Exercises - Yevhenii Fit",
@@ -31,7 +34,7 @@ export default async function ExercisesPage ({ searchParams }: PageProps) {
 
     let content = null
     if (hasTraining) {
-        const today = new Date().toISOString().slice(0, 10)
+        const today = getTodayLocalDate()
         const todayDayOfWeek = ((new Date(`${today}T00:00:00`).getDay() + 6) % 7) + 1 // Monday = 1
 
         const { day, week } = await searchParams
@@ -49,17 +52,42 @@ export default async function ExercisesPage ({ searchParams }: PageProps) {
         const weekDates = Array.from({ length: 7 }, (_, i) => {
             const d = new Date(monday)
             d.setDate(d.getDate() + i)
-            return d.toISOString().slice(0, 10)
+            return toLocalDateString(d)
         })
 
-        const [planByDay, todayLogs] = await Promise.all([
-            isCurrentWeek
-                ? getTrainingPlanWithExercises(user.id)
-                : isPreviewWeek
-                    ? getTrainingPlanPreviewForWeek(user.id, getISOWeekKey(monday))
-                    : getTrainingPlanForWeek(user.id, getISOWeekKey(monday)),
-            getWorkoutLogsForDate(user.id, today),
-        ])
+        // Both the real (current-week) and preview plan fetches return isDeloadWeek bundled
+        // with the exercises, computed from the exact same generation/row rather than a
+        // second, independent query — a separate query for is_deload used to run in
+        // parallel with the lazy plan creation and could read before the brand-new plan's
+        // row existed, silently showing "not a deload" for a plan whose sets/weights were
+        // already deload-reduced anyway.
+        let planByDay: Map<number, TrainingPlanExercise[]> | null
+        let isDeloadWeek: boolean
+        let todayLogs: Awaited<ReturnType<typeof getWorkoutLogsForDate>>
+
+        if (isCurrentWeek) {
+            const [plan, logs] = await Promise.all([
+                getTrainingPlanWithExercises(user.id),
+                getWorkoutLogsForDate(user.id, today),
+            ])
+            planByDay = plan.byDay
+            isDeloadWeek = plan.isDeloadWeek
+            todayLogs = logs
+        } else if (isPreviewWeek) {
+            const [preview, logs] = await Promise.all([
+                getTrainingPlanPreviewForWeek(user.id, getISOWeekKey(monday)),
+                getWorkoutLogsForDate(user.id, today),
+            ])
+            planByDay = preview.byDay
+            isDeloadWeek = preview.isDeloadWeek
+            todayLogs = logs
+        } else {
+            [planByDay, todayLogs] = await Promise.all([
+                getTrainingPlanForWeek(user.id, getISOWeekKey(monday)),
+                getWorkoutLogsForDate(user.id, today),
+            ])
+            isDeloadWeek = false
+        }
 
         const hasPlanForWeek = planByDay !== null
         const days = Array.from({ length: 7 }, (_, i) => ({
@@ -77,13 +105,19 @@ export default async function ExercisesPage ({ searchParams }: PageProps) {
                 weekDates={weekDates}
                 hasPlanForWeek={hasPlanForWeek}
                 isPreviewWeek={isPreviewWeek}
+                isDeloadWeek={isDeloadWeek}
             />
         )
     }
 
     return (
         <div className="flex flex-col gap-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Exercises</h1>
+            <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white">
+                    <Barbell size={16} weight="bold"/>
+                </span>
+                <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Exercises</h1>
+            </div>
 
             {hasTraining ? content : await (async () => {
                 const bundlePrice = await getProductPrice(BUNDLE_PRODUCT_ID)

@@ -1,5 +1,7 @@
-const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-    <div className={`card-shadow rounded-[28px] border border-black/[0.05] bg-white ${className}`}>
+type CardProps = { children: React.ReactNode, className?: string, glass?: boolean }
+
+const Card = ({ children, className = "", glass = false }: CardProps) => (
+    <div className={`card-shadow rounded-[28px] border ${glass ? "nav-blur border-white/40 bg-white/55" : "border-black/[0.05] bg-white"} ${className}`}>
         {children}
     </div>
 )

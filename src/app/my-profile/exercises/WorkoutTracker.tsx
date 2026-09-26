@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { AnimatePresence, motion } from "framer-motion"
-import { CaretLeft, CaretRight, Check, Confetti, Info, Smiley, SmileyMeh, SmileySad, Trash } from "@phosphor-icons/react"
+import { ArrowsClockwise, CaretLeft, CaretRight, Check, Confetti, Info, Smiley, SmileyMeh, SmileySad, Trash } from "@phosphor-icons/react"
 import Modal from "../Modal"
 import Card from "../Card"
 import { getWorkoutLabel } from "@/utils/workoutLabel"
@@ -37,7 +37,26 @@ type WorkoutTrackerProps = {
     weekDates: string[]
     hasPlanForWeek: boolean
     isPreviewWeek: boolean
+    isDeloadWeek: boolean
 }
+
+// Mirrors isIsolationExercise in planGenerator.ts — kept as a small local check rather
+// than a shared import since this is purely a display heuristic (should warm-up sets
+// show), not something that needs to stay in perfect lockstep with the server-side one.
+const ISOLATION_KEYWORDS = ["Curl", "Raise", "Extension", "Fly"]
+const isIsolationName = (name: string) => ISOLATION_KEYWORDS.some(keyword => name.includes(keyword))
+
+const getWarmupSets = (workingWeightKg: number, isIsolation: boolean) => {
+    if (workingWeightKg <= 0 || isIsolation) return []
+    const round = (value: number) => Math.round(value / 0.5) * 0.5
+    return [
+        { pct: "~50%", weightKg: round(workingWeightKg * 0.5) },
+        { pct: "~75%", weightKg: round(workingWeightKg * 0.75) },
+    ]
+}
+
+const REST_SECONDS_COMPOUND = 90
+const REST_SECONDS_ISOLATION = 60
 
 type SetInput = { reps: number, weightKg: number, revealDifficulty: boolean }
 
@@ -48,13 +67,18 @@ const buildInitialInputs = (exercises: TrainingPlanExercise[]): SetInput[][] =>
         revealDifficulty: false,
     })))
 
-const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, weekOffset, weekDates, hasPlanForWeek, isPreviewWeek }: WorkoutTrackerProps) => {
+const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, weekOffset, weekDates, hasPlanForWeek, isPreviewWeek, isDeloadWeek }: WorkoutTrackerProps) => {
     const router = useRouter()
     const pathname = usePathname()
     const [dayOfWeek, setDayOfWeek] = useState(initialDayOfWeek ?? todayDayOfWeek)
     const [saving, setSaving] = useState<string | null>(null)
     const [deletingLogId, setDeletingLogId] = useState<number | null>(null)
     const [infoExercise, setInfoExercise] = useState<TrainingPlanExercise | null>(null)
+    const [swappingId, setSwappingId] = useState<number | null>(null)
+    const [swapHistory, setSwapHistory] = useState<Record<number, number[]>>({})
+    const [swapErrorId, setSwapErrorId] = useState<number | null>(null)
+    const [logError, setLogError] = useState<string | null>(null)
+    const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null)
 
     const day = days.find(d => d.dayOfWeek === dayOfWeek)
     const exercises = day?.exercises ?? []
@@ -66,12 +90,45 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
     // Re-syncs whenever the selected day OR the underlying week's data changes (e.g.
     // navigating weeks while staying on the same day-of-week column) — a plain click
     // handler alone would miss that second case since `days` changes without a click.
+    // Also clears any rest-timer countdown left running from the previous day/week —
+    // otherwise it kept ticking down against whatever exercise happens to render next.
     useEffect(() => {
         setInputsByExercise(buildInitialInputs(exercises))
+        setRestSecondsLeft(null)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [days, dayOfWeek])
 
     const goToWeek = (nextOffset: number) => router.push(`${pathname}?day=${dayOfWeek}&week=${Math.min(nextOffset, 1)}`)
+
+    useEffect(() => {
+        if (restSecondsLeft === null) return
+        if (restSecondsLeft <= 0) { setRestSecondsLeft(null); return }
+        const timeout = setTimeout(() => setRestSecondsLeft(s => (s ?? 1) - 1), 1000)
+        return () => clearTimeout(timeout)
+    }, [restSecondsLeft])
+
+    const swapExercise = async (planExerciseId: number, currentExerciseId: number) => {
+        setSwappingId(planExerciseId)
+        setSwapErrorId(null)
+        try {
+            const res = await fetch("/api/plan-exercises/swap", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    planExerciseId,
+                    previouslySwappedIds: swapHistory[planExerciseId] ?? [],
+                }),
+            })
+            if (res.ok) {
+                setSwapHistory(prev => ({ ...prev, [planExerciseId]: [...(prev[planExerciseId] ?? []), currentExerciseId] }))
+                router.refresh()
+            } else {
+                setSwapErrorId(planExerciseId)
+            }
+        } finally {
+            setSwappingId(null)
+        }
+    }
 
     const updateInput = (exerciseIndex: number, setIndex: number, patch: Partial<SetInput>) => {
         setInputsByExercise(prev => prev.map((sets, ei) => ei === exerciseIndex
@@ -82,12 +139,13 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
     const logFor = (planExerciseId: number, setNumber: number) =>
         todayLogs.find(l => l.plan_exercise_id === planExerciseId && l.set_number === setNumber)
 
-    const submitSet = async (exerciseIndex: number, setIndex: number, planExerciseId: number, effort: Effort) => {
+    const submitSet = async (exerciseIndex: number, setIndex: number, planExerciseId: number, effort: Effort, isIsolation: boolean) => {
         const input = inputsByExercise[exerciseIndex][setIndex]
         const key = `${planExerciseId}-${setIndex + 1}`
         setSaving(key)
+        setLogError(null)
         try {
-            await fetch("/api/workout-sets", {
+            const res = await fetch("/api/workout-sets", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -98,7 +156,14 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                     effort,
                 }),
             })
-            router.refresh()
+            if (res.ok) {
+                setRestSecondsLeft(isIsolation ? REST_SECONDS_ISOLATION : REST_SECONDS_COMPOUND)
+                router.refresh()
+            } else {
+                setLogError("Couldn't save that set — please try again.")
+            }
+        } catch {
+            setLogError("Couldn't save that set — please try again.")
         } finally {
             setSaving(null)
         }
@@ -106,13 +171,20 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
 
     const deleteSet = async (logId: number) => {
         setDeletingLogId(logId)
+        setLogError(null)
         try {
-            await fetch("/api/workout-sets", {
+            const res = await fetch("/api/workout-sets", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ logId }),
             })
-            router.refresh()
+            if (res.ok) {
+                router.refresh()
+            } else {
+                setLogError("Couldn't delete that set — please try again.")
+            }
+        } catch {
+            setLogError("Couldn't delete that set — please try again.")
         } finally {
             setDeletingLogId(null)
         }
@@ -132,18 +204,25 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
     return (
         <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-4">
-                <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-ink-strong/50">
-                    <span>
-                        {isToday ? "Today" : DAY_LABELS[dayOfWeek - 1]}
-                        {` · ${workoutLabel}`}
-                        {isToday && !isRestDay && ` · ${doneSets}/${totalSets} sets done`}
-                    </span>
-                    {isPreviewWeek && (
-                        <span className="rounded-full bg-black/[0.045] px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-strong/50">
-                            Preview
-                        </span>
-                    )}
-                </p>
+                {(isPreviewWeek || isDeloadWeek) && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        {isPreviewWeek && (
+                            <span className="rounded-full bg-black/[0.045] px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-strong/50">
+                                Preview
+                            </span>
+                        )}
+                        {isDeloadWeek && (
+                            <span className="rounded-full bg-black/[0.045] px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-strong/50">
+                                Deload
+                            </span>
+                        )}
+                    </div>
+                )}
+                {isDeloadWeek && (
+                    <p className="text-xs text-ink-strong/35">
+                        Lighter week by design — fewer sets, less weight. Full intensity resumes next week.
+                    </p>
+                )}
                 {isPreviewWeek && (
                     <p className="text-xs text-ink-strong/35">
                         A preview of next week — it may shift slightly once this week&apos;s sessions are done.
@@ -195,15 +274,16 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                 </div>
             </div>
 
-            <AnimatePresence mode="wait">
-                {isRestDay ? (
-                    <motion.div
-                        key="rest"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.2 }}
-                    >
+            {/* key resets per-exercise input state on day change — no entrance animation
+                tied to it, just React's normal remount-on-key-change behavior. */}
+            <div key={dayOfWeek} className="flex flex-col gap-4">
+                    <p className="text-sm text-ink-strong/50">
+                        {isToday ? "Today" : DAY_LABELS[dayOfWeek - 1]}
+                        {` · ${workoutLabel}`}
+                        {isToday && !isRestDay && ` · ${doneSets}/${totalSets} sets done`}
+                    </p>
+
+                    {isRestDay ? (
                         <Card className="flex flex-col items-center gap-1 px-6 py-16 text-center">
                             <p className="text-sm font-semibold text-ink-strong">{hasPlanForWeek ? "Rest day" : "No plan recorded for this week"}</p>
                             <p className="text-sm text-ink-strong/50">
@@ -212,16 +292,8 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                     : "This week predates your current training plan, so there's nothing logged here."}
                             </p>
                         </Card>
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        key={dayOfWeek}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex flex-col gap-4"
-                    >
+                    ) : (
+                        <>
                         <AnimatePresence>
                             {workoutComplete && (
                                 <motion.div
@@ -239,9 +311,33 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                             )}
                         </AnimatePresence>
 
+                        <AnimatePresence>
+                            {restSecondsLeft !== null && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    className="card-shadow flex items-center justify-between gap-3 rounded-2xl bg-black/[0.045] px-4 py-2.5"
+                                >
+                                    <span className="text-sm font-medium text-ink-strong">Rest — {restSecondsLeft}s</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setRestSecondsLeft(null)}
+                                        className="text-xs font-medium text-ink-strong/40 hover:text-ink-strong"
+                                    >
+                                        Skip
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {logError && <p className="text-sm text-red-500">{logError}</p>}
+
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                             {exercises.map((exercise, exerciseIndex) => {
                                 const doneCount = todayLogs.filter(l => l.plan_exercise_id === exercise.planExerciseId).length
+                                const allSetsDone = exercise.sets > 0 && doneCount >= exercise.sets
+                                const warmupSets = isToday && !allSetsDone ? getWarmupSets(exercise.weightKg ?? 0, isIsolationName(exercise.name)) : []
 
                                 return (
                                     <Card key={exercise.planExerciseId} className="p-5">
@@ -254,14 +350,27 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                                 </p>
                                             </div>
                                             <div className="flex shrink-0 flex-col items-end gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setInfoExercise(exercise)}
-                                                    aria-label={`View info for ${exercise.name}`}
-                                                    className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong/50 transition-colors duration-200 hover:bg-black hover:text-white"
-                                                >
-                                                    <Info size={14} weight="bold"/>
-                                                </button>
+                                                <div className="flex items-center gap-1.5">
+                                                    {isToday && doneCount === 0 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => swapExercise(exercise.planExerciseId, exercise.exerciseId)}
+                                                            disabled={swappingId === exercise.planExerciseId}
+                                                            aria-label={`Swap ${exercise.name} for a different exercise`}
+                                                            className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong/50 transition-colors duration-200 hover:bg-black hover:text-white disabled:opacity-40"
+                                                        >
+                                                            <ArrowsClockwise size={14} weight="bold" className={swappingId === exercise.planExerciseId ? "animate-spin" : ""}/>
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setInfoExercise(exercise)}
+                                                        aria-label={`View info for ${exercise.name}`}
+                                                        className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.045] text-ink-strong/50 transition-colors duration-200 hover:bg-black hover:text-white"
+                                                    >
+                                                        <Info size={14} weight="bold"/>
+                                                    </button>
+                                                </div>
                                                 {isToday && (
                                                     <div className="flex gap-1">
                                                         {Array.from({ length: exercise.sets }, (_, i) => (
@@ -277,7 +386,20 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 flex flex-col gap-2 border-t border-black/[0.05] pt-4">
+                                        {swapErrorId === exercise.planExerciseId && (
+                                            <p className="mt-2 text-xs text-red-500">No other {exercise.muscleGroup.toLowerCase()} exercise available to swap in with your current equipment.</p>
+                                        )}
+
+                                        {warmupSets.length > 0 && (
+                                            <div className="mt-4 flex items-center gap-2 border-t border-black/[0.05] pt-4 text-xs text-ink-strong/40">
+                                                <span className="font-medium uppercase tracking-[0.08em]">Warm-up</span>
+                                                {warmupSets.map((w, i) => (
+                                                    <span key={i} className="rounded-full bg-black/[0.03] px-2 py-1">{w.weightKg}kg <span className="text-ink-strong/25">{w.pct}</span></span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className={`flex flex-col gap-2 pt-4 ${warmupSets.length > 0 ? "mt-2" : "mt-4 border-t border-black/[0.05]"}`}>
                                             {Array.from({ length: exercise.sets }, (_, setIndex) => {
                                                 const setNumber = setIndex + 1
                                                 const log = logFor(exercise.planExerciseId, setNumber)
@@ -363,7 +485,7 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                                                                     key={option.value}
                                                                                     type="button"
                                                                                     disabled={saving === key}
-                                                                                    onClick={() => submitSet(exerciseIndex, setIndex, exercise.planExerciseId, option.value)}
+                                                                                    onClick={() => submitSet(exerciseIndex, setIndex, exercise.planExerciseId, option.value, isIsolationName(exercise.name))}
                                                                                     className="flex items-center gap-1.5 rounded-full bg-black/[0.045] px-3 py-1 text-xs font-medium text-ink-strong/50 transition-colors duration-200 hover:bg-black hover:text-white disabled:opacity-40"
                                                                                 >
                                                                                     <Icon size={13}/>
@@ -383,9 +505,9 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                 )
                             })}
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        </>
+                    )}
+            </div>
 
             <Modal open={infoExercise !== null} title={infoExercise?.name ?? ""} onClose={() => setInfoExercise(null)}>
                 {infoExercise && (

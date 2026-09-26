@@ -5,7 +5,7 @@ export const sendMagicLinkEmail = async (email: string, actionLink: string) => {
     if (!from) return
 
     const resend = getResend()
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
         from,
         to: email,
         replyTo: "yevheni.fit@gmail.com",
@@ -24,4 +24,5 @@ export const sendMagicLinkEmail = async (email: string, actionLink: string) => {
             </div>
         `,
     })
+    if (error) throw new Error(`Failed to send magic link email: ${error.message}`)
 }

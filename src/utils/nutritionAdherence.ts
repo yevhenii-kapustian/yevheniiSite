@@ -1,3 +1,5 @@
+import { toLocalDateString } from "./date"
+
 type IntakeRow = {
     logged_date: string
     calories: number
@@ -30,7 +32,7 @@ export const getAdherenceDays = (intake: IntakeRow[], targetCalories: number, da
     for (let i = days - 1; i >= 0; i--) {
         const d = new Date(today)
         d.setDate(d.getDate() - i)
-        const date = d.toISOString().slice(0, 10)
+        const date = toLocalDateString(d)
         const calories = caloriesByDate.get(date) ?? 0
 
         result.push({

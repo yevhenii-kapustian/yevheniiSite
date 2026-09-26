@@ -16,6 +16,8 @@
     "@stripe/stripe-js": "^7.4.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.8",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.4",
     "clsx": "^2.1.1",
     "motion": "^12.23.0",
     "next": "15.3.6",

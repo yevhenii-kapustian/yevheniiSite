@@ -23,17 +23,24 @@ const AddMealForm = () => {
     const [carbs, setCarbs] = useState("")
     const [grams, setGrams] = useState("")
     const [saving, setSaving] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     const caloriesPer100g = (Number(protein) || 0) * 4 + (Number(fat) || 0) * 9 + (Number(carbs) || 0) * 4
     const portionRatio = (Number(grams) || 0) / 100
     const totalCalories = Math.round(caloriesPer100g * portionRatio)
-    const totalProteinG = Math.round((Number(protein) || 0) * portionRatio * 10) / 10
-    const totalFatG = Math.round((Number(fat) || 0) * portionRatio * 10) / 10
-    const totalCarbsG = Math.round((Number(carbs) || 0) * portionRatio * 10) / 10
+    // daily_intake_logs.protein_g/fat_g/carbs_g are whole-number (int) columns — rounding to
+    // one decimal place here used to send e.g. 23.4 to the API, which Postgres rejects
+    // outright for an int column. Since insertMeal didn't check for that error, the whole
+    // meal (calories included, since it's one INSERT) silently failed to save every time
+    // the macros happened to round to a non-whole number, which is most of the time.
+    const totalProteinG = Math.round((Number(protein) || 0) * portionRatio)
+    const totalFatG = Math.round((Number(fat) || 0) * portionRatio)
+    const totalCarbsG = Math.round((Number(carbs) || 0) * portionRatio)
 
     const handleAdd = async () => {
         if (!totalCalories) return
         setSaving(true)
+        setError(null)
         try {
             const res = await fetch("/api/intake", {
                 method: "POST",
@@ -54,7 +61,12 @@ const AddMealForm = () => {
                 setCarbs("")
                 setGrams("")
                 router.refresh()
+            } else {
+                const data = await res.json().catch(() => null)
+                setError(data?.message || "Couldn't save this meal — please try again.")
             }
+        } catch {
+            setError("Couldn't save this meal — please try again.")
         } finally {
             setSaving(false)
         }
@@ -145,6 +157,7 @@ const AddMealForm = () => {
             >
                 Add meal
             </button>
+            {error && <p className="text-xs text-red-500">{error}</p>}
         </Card>
     )
 }

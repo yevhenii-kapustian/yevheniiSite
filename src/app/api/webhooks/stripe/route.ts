@@ -14,6 +14,7 @@ import {
     updateEntitlementBySubscriptionId,
     recalculateNutritionTargetIfActive,
 } from "@/supabase/queries";
+import { getTodayLocalDate } from "@/utils/date";
 import type Stripe from "stripe";
 
 const sendPurchaseEmail = async (email: string, productName: string, downloadUrl: string) => {
@@ -21,7 +22,7 @@ const sendPurchaseEmail = async (email: string, productName: string, downloadUrl
     if (!from) return
 
     const resend = getResend()
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
         from,
         to: email,
         replyTo: "yevheni.fit@gmail.com",
@@ -43,6 +44,7 @@ const sendPurchaseEmail = async (email: string, productName: string, downloadUrl
             </div>
         `,
     })
+    if (error) throw new Error(`Failed to send purchase email: ${error.message}`)
 }
 
 const fulfillOneTimePurchase = async (session: Stripe.Checkout.Session, productId: string) => {
@@ -104,7 +106,7 @@ const fulfillSubscription = async (session: Stripe.Checkout.Session, productIds:
     if (metadata.weight) {
         await insertBodyLog({
             user_id: user.id,
-            logged_at: new Date().toISOString().slice(0, 10),
+            logged_at: getTodayLocalDate(),
             weight_kg: Number(metadata.weight),
         })
     }
@@ -128,7 +130,12 @@ const fulfillSubscription = async (session: Stripe.Checkout.Session, productIds:
 }
 
 const subscriptionStatusToEntitlementStatus = (status: Stripe.Subscription.Status) => {
-    if (status === "active" || status === "trialing") return "active"
+    // "past_due" means Stripe is still actively retrying a failed payment — its own dunning
+    // flow runs for days to weeks before it gives up. Cutting access on the very first
+    // declined card turns a temporary payment hiccup (expired card, bank flagged the
+    // charge) into an immediate, avoidable loss of access and support ticket. Access is
+    // only pulled once Stripe itself concludes the subscription won't be paid.
+    if (status === "active" || status === "trialing" || status === "past_due") return "active"
     if (status === "canceled") return "canceled"
     return "expired"
 }
@@ -146,27 +153,36 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Invalid signature" }, { status: 400 })
     }
 
-    if (event.type === "checkout.session.completed") {
-        const session = event.data.object as Stripe.Checkout.Session
+    // Fulfillment writes (profile/entitlement/body-log upserts) now throw on a real DB
+    // failure instead of swallowing it — if that happens here, we must return a non-200 so
+    // Stripe treats delivery as failed and retries. All the writes involved are upserts on
+    // real unique constraints, so a retry is safe and won't double-grant or duplicate rows.
+    try {
+        if (event.type === "checkout.session.completed") {
+            const session = event.data.object as Stripe.Checkout.Session
 
-        if (session.mode === "subscription") {
-            const productIds = session.metadata?.productIds?.split(",").filter(Boolean) ?? []
-            if (productIds.length > 0) await fulfillSubscription(session, productIds)
-        } else {
-            const productId = session.metadata?.productId
-            if (productId) await fulfillOneTimePurchase(session, productId)
+            if (session.mode === "subscription") {
+                const productIds = session.metadata?.productIds?.split(",").filter(Boolean) ?? []
+                if (productIds.length > 0) await fulfillSubscription(session, productIds)
+            } else {
+                const productId = session.metadata?.productId
+                if (productId) await fulfillOneTimePurchase(session, productId)
+            }
         }
-    }
 
-    if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
-        const subscription = event.data.object as Stripe.Subscription
-        const updated = await updateEntitlementBySubscriptionId(
-            subscription.id,
-            subscriptionStatusToEntitlementStatus(subscription.status),
-            new Date(subscription.items.data[0].current_period_end * 1000).toISOString(),
-            subscription.cancel_at_period_end
-        )
-        if (updated) await recalculateNutritionTargetIfActive(updated.user_id)
+        if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
+            const subscription = event.data.object as Stripe.Subscription
+            const updated = await updateEntitlementBySubscriptionId(
+                subscription.id,
+                subscriptionStatusToEntitlementStatus(subscription.status),
+                new Date(subscription.items.data[0].current_period_end * 1000).toISOString(),
+                subscription.cancel_at_period_end
+            )
+            if (updated) await recalculateNutritionTargetIfActive(updated.user_id)
+        }
+    } catch (error) {
+        console.error(`Stripe webhook fulfillment failed for event ${event.id} (${event.type}):`, error)
+        return NextResponse.json({ message: "Fulfillment failed" }, { status: 500 })
     }
 
     return NextResponse.json({ received: true })

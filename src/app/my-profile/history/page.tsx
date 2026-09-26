@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
 import { getBodyLogHistory, getIntakeHistory, getWorkoutHistory } from "@/supabase/queries"
 import HistoryContent from "./HistoryContent"
+import { ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr"
+
 
 export const metadata: Metadata = {
     title: "History - Yevhenii Fit",
@@ -46,7 +48,12 @@ export default async function HistoryPage () {
 
     return (
         <div className="flex flex-col gap-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">History</h1>
+            <div className="flex items-center gap-2.5">
+                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white">
+                        <ClockCounterClockwise size={16} weight="bold"/>
+                    </span>
+                <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">History</h1>
+            </div>
 
             {dates.length === 0 ? (
                 <p className="text-sm text-ink-strong/50">Nothing logged yet — check in or log a meal to start building your history.</p>

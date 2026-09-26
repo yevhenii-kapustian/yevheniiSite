@@ -438,6 +438,98 @@ export type Database = {
           },
         ]
       }
+      body_measurements: {
+        Row: {
+          arm_cm: number | null
+          chest_cm: number | null
+          created_at: string
+          hips_cm: number | null
+          id: number
+          logged_at: string
+          thigh_cm: number | null
+          user_id: string
+          waist_cm: number | null
+        }
+        Insert: {
+          arm_cm?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          hips_cm?: number | null
+          id?: never
+          logged_at: string
+          thigh_cm?: number | null
+          user_id: string
+          waist_cm?: number | null
+        }
+        Update: {
+          arm_cm?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          hips_cm?: number | null
+          id?: never
+          logged_at?: string
+          thigh_cm?: number | null
+          user_id?: string
+          waist_cm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "body_measurements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          calories: number
+          carbs_g: number
+          created_at: string
+          external_id: string
+          fat_g: number
+          id: number
+          image_url: string | null
+          ingredients: string
+          instructions: string
+          protein_g: number
+          servings: number
+          source_url: string | null
+          title: string
+        }
+        Insert: {
+          calories: number
+          carbs_g: number
+          created_at?: string
+          external_id: string
+          fat_g: number
+          id?: never
+          image_url?: string | null
+          ingredients: string
+          instructions: string
+          protein_g: number
+          servings?: number
+          source_url?: string | null
+          title: string
+        }
+        Update: {
+          calories?: number
+          carbs_g?: number
+          created_at?: string
+          external_id?: string
+          fat_g?: number
+          id?: never
+          image_url?: string | null
+          ingredients?: string
+          instructions?: string
+          protein_g?: number
+          servings?: number
+          source_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       purchases: {
         Row: {
           amount: number | null
@@ -499,6 +591,7 @@ export type Database = {
         Row: {
           created_at: string
           id: number
+          is_deload: boolean
           template_name: string
           user_id: string
           week_number: number
@@ -506,6 +599,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: never
+          is_deload?: boolean
           template_name: string
           user_id: string
           week_number: number
@@ -513,6 +607,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: never
+          is_deload?: boolean
           template_name?: string
           user_id?: string
           week_number?: number

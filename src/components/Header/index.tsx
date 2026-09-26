@@ -92,11 +92,8 @@ const Header = () => {
 
     return(
         <>
-            <motion.header
+            <header
                 ref={headerRef}
-                initial={{ opacity: 0, y: -16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
                 className="sticky left-0 top-0 z-50 w-full px-3 pt-3 sm:px-6 sm:pt-4">
                 <div className={clsx(
                         "relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/10 bg-[#1c1c1e]/80 px-3 py-2 backdrop-blur-xl transition-shadow duration-300 sm:px-4",
@@ -187,7 +184,7 @@ const Header = () => {
                         </button>
                     </div>
                 </div>
-            </motion.header>
+            </header>
 
             <AnimatePresence>
                 {mobileOpen && (

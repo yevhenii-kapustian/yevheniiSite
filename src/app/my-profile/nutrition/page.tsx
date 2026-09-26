@@ -1,12 +1,15 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
+import Link from "next/link"
+import { ForkKnife } from "@phosphor-icons/react/dist/ssr"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProductPrice, getNutritionTargetForDate, getMealsForDate } from "@/supabase/queries"
+import { getEntitlementsForUser, getProductPrice, getNutritionTargetForDate, getMealsForDate, checkAndAdjustNutritionTargetForTrend } from "@/supabase/queries"
 import NutritionCalendarStrip from "../NutritionCalendarStrip"
 import AddModuleButton from "../AddModuleButton"
 import NutritionContent from "./NutritionContent"
 import { BUNDLE_PRODUCT_ID } from "@/data/products"
 import { getModuleState, upsellCopy } from "@/utils/entitlements"
+import { getTodayLocalDate, toLocalDateString } from "@/utils/date"
 
 export const metadata: Metadata = {
     title: "Nutrition - Yevhenii Fit",
@@ -25,7 +28,7 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
     }
 
     const { date } = await searchParams
-    const today = new Date().toISOString().slice(0, 10)
+    const today = getTodayLocalDate()
     const selectedDate = date ?? today
     const isToday = selectedDate === today
     const isFuture = selectedDate > today
@@ -34,7 +37,7 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
     // there's nothing to log yet for a day that hasn't happened.
     const maxDateObj = new Date(`${today}T00:00:00`)
     maxDateObj.setDate(maxDateObj.getDate() + 7)
-    const maxDate = maxDateObj.toISOString().slice(0, 10)
+    const maxDate = toLocalDateString(maxDateObj)
 
     const entitlements = await getEntitlementsForUser(user.id)
     const hasNutrition = entitlements.some(e => e.module === "nutrition" && e.status === "active")
@@ -55,6 +58,11 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
             </div>
         )
     }
+
+    // Only worth checking when looking at "today" — this can insert a new target, and
+    // that should only ever happen in response to the user actually being here today,
+    // not as a side effect of browsing history or the next-week preview.
+    if (isToday) await checkAndAdjustNutritionTargetForTrend(user.id)
 
     const [target, meals] = await Promise.all([
         getNutritionTargetForDate(user.id, selectedDate),
@@ -77,18 +85,32 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
 
     return (
         <div className="flex flex-col gap-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Nutrition</h1>
-
-            <div className="flex flex-col gap-4">
-                <p className="text-sm text-ink-strong/50">
-                    {isToday ? "Today" : new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
-                    {target && !isFuture && ` · ${Math.round(eaten.calories).toLocaleString("en-US")} / ${target.calories.toLocaleString("en-US")} kcal logged`}
-                    {target && isFuture && ` · ${target.calories.toLocaleString("en-US")} kcal target (preview)`}
-                </p>
-                <NutritionCalendarStrip date={selectedDate} maxDate={maxDate}/>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white">
+                        <ForkKnife size={16} weight="bold"/>
+                    </span>
+                    <h1 className="text-3xl font-semibold tracking-tight text-ink-strong sm:text-4xl">Nutrition</h1>
+                </div>
+                <Link
+                    href="/my-profile/nutrition/recipes"
+                    className="flex items-center gap-1.5 rounded-full bg-black/[0.045] px-4 py-2 text-sm font-medium text-ink-strong transition-colors duration-200 hover:bg-black hover:text-white"
+                >
+                    <ForkKnife size={14} weight="bold"/> Recipes
+                </Link>
             </div>
 
-            <NutritionContent selectedDate={selectedDate} isToday={isToday} macroCards={macroCards} meals={meals}/>
+            <NutritionCalendarStrip date={selectedDate} maxDate={maxDate}/>
+
+            <NutritionContent
+                selectedDate={selectedDate}
+                isToday={isToday}
+                isFuture={isFuture}
+                targetCalories={target?.calories ?? null}
+                eatenCalories={eaten.calories}
+                macroCards={macroCards}
+                meals={meals}
+            />
         </div>
     )
 }

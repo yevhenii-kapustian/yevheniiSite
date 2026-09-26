@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthClient } from "@/supabase/server-client";
+import { parseJsonBody } from "@/lib/parseJsonBody";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -11,7 +12,9 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { email } = await req.json()
+    const { data: body, error: parseError } = await parseJsonBody<{ email?: unknown }>(req)
+    if (parseError) return parseError
+    const { email } = body
     if (typeof email !== "string" || !EMAIL_RE.test(email)) {
         return NextResponse.json({ message: "Invalid email" }, { status: 400 })
     }

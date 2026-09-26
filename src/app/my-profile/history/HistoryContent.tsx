@@ -41,6 +41,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
     const [openDate, setOpenDate] = useState<string | null>(null)
     const [openType, setOpenType] = useState<"nutrition" | "training" | null>(null)
     const [deletingWeightDate, setDeletingWeightDate] = useState<string | null>(null)
+    const [weightDeleteError, setWeightDeleteError] = useState<string | null>(null)
 
     const openModal = (date: string, type: "nutrition" | "training") => {
         setOpenDate(date)
@@ -53,13 +54,20 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
 
     const handleDeleteWeight = async (loggedAt: string) => {
         setDeletingWeightDate(loggedAt)
+        setWeightDeleteError(null)
         try {
-            await fetch("/api/body-log", {
+            const res = await fetch("/api/body-log", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ loggedAt }),
             })
-            router.refresh()
+            if (res.ok) {
+                router.refresh()
+            } else {
+                setWeightDeleteError("Couldn't delete this check-in — please try again.")
+            }
+        } catch {
+            setWeightDeleteError("Couldn't delete this check-in — please try again.")
         } finally {
             setDeletingWeightDate(null)
         }
@@ -77,6 +85,7 @@ const HistoryContent = ({ dates, weightByDate, caloriesByDate, mealsByDate, work
 
     return (
         <>
+            {weightDeleteError && <p className="mb-3 text-xs text-red-500">{weightDeleteError}</p>}
             <Card className="flex flex-col divide-y divide-black/[0.05] p-6 sm:p-7">
                 <div className="hidden items-center gap-4 pb-3 text-xs font-semibold uppercase tracking-[0.1em] text-ink-strong/35 sm:flex">
                     <span className="w-28 shrink-0">Date</span>

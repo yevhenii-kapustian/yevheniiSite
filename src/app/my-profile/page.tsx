@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
 import { getEntitlementsForUser, getProductPrice, getProfile, getNutritionTargetForDate, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, getWorkoutLogsForDate, type TrainingPlanExercise } from "@/supabase/queries"
 import { getModuleState } from "@/utils/entitlements"
+import { getTodayLocalDate } from "@/utils/date"
 import { BUNDLE_PRODUCT_ID } from "@/data/products"
 import MyPlanContent from "./MyPlanContent"
 
@@ -29,7 +30,7 @@ export default async function MyProfile ({ searchParams }: PageProps) {
         redirect("/get-started")
     }
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today = getTodayLocalDate()
     const { date } = await searchParams
     const selectedDate = date && date <= today ? date : today
     const isToday = selectedDate === today
@@ -57,7 +58,7 @@ export default async function MyProfile ({ searchParams }: PageProps) {
         carbsG: meals.reduce((sum, meal) => sum + (meal.carbs_g ?? 0), 0),
     }
 
-    const planByDay = hasTraining ? await getTrainingPlanWithExercises(user.id) : new Map<number, TrainingPlanExercise[]>()
+    const planByDay = hasTraining ? (await getTrainingPlanWithExercises(user.id)).byDay : new Map<number, TrainingPlanExercise[]>()
     const weekDays = Array.from({ length: 7 }, (_, i) => ({
         dayOfWeek: i + 1,
         muscleGroups: Array.from(new Set((planByDay.get(i + 1) ?? []).map(e => e.muscleGroup))),

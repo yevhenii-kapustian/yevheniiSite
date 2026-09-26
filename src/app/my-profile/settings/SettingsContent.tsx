@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { CheckCircle, CreditCard, Trash, WarningCircle } from "@phosphor-icons/react"
+import { CheckCircle, CreditCard, DownloadSimple, Trash, WarningCircle } from "@phosphor-icons/react"
 import Card from "../Card"
 import Modal from "../Modal"
 import Spinner from "@/components/Spinner"
@@ -13,7 +13,7 @@ const DAYS_PER_WEEK_OPTIONS = ["2-3", "4", "5+"]
 const EQUIPMENT_OPTIONS = ["Full gym", "Home basics", "Bodyweight only"]
 const ACTIVITY_LEVEL_OPTIONS = ["Mostly sitting", "On my feet a lot", "Physically demanding job"]
 
-type EntitlementInfo = { module: string, status: string, currentPeriodEnd: string | null, cancelAtPeriodEnd: boolean }
+type EntitlementInfo = { module: string, status: string, currentPeriodEnd: string | null, cancelAtPeriodEnd: boolean, stripeSubscriptionId: string | null }
 type TrainingPrefs = { experience: string | null, daysPerWeek: string | null, equipment: string | null, activityLevel: string | null }
 
 type SubscriptionPrice = { amount: number, interval: string, currency: string }
@@ -22,9 +22,14 @@ type SettingsContentProps = {
     email: string
     entitlements: EntitlementInfo[]
     hasSubscription: boolean
-    subscriptionPrice: SubscriptionPrice | null
+    subscriptionPricesById: Record<string, SubscriptionPrice | null>
     trainingPrefs: TrainingPrefs
 }
+
+const MODULE_LABELS: Record<string, string> = { nutrition: "Nutrition", training: "Training" }
+
+const moduleGroupLabel = (modules: string[]) =>
+    modules.length > 0 ? modules.map(m => MODULE_LABELS[m] ?? m).join(" & ") : "Nutrition & Training"
 
 const formatDate = (iso: string | null) =>
     iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null
@@ -49,7 +54,7 @@ const PillGroup = ({ options, value, onChange }: { options: string[], value: str
     </div>
 )
 
-const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPrice, trainingPrefs: initialPrefs }: SettingsContentProps) => {
+const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPricesById, trainingPrefs: initialPrefs }: SettingsContentProps) => {
     const router = useRouter()
 
     const [newEmail, setNewEmail] = useState("")
@@ -73,19 +78,29 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
             }
             setEmailSent(true)
             setNewEmail("")
+        } catch {
+            setEmailError("Something went wrong — please try again.")
         } finally {
             setEmailSaving(false)
         }
     }
 
     const [portalLoading, setPortalLoading] = useState(false)
+    const [portalError, setPortalError] = useState<string | null>(null)
 
     const handleManageBilling = async () => {
         setPortalLoading(true)
+        setPortalError(null)
         try {
             const res = await fetch("/api/billing-portal", { method: "POST" })
             const data = await res.json()
-            if (data.url) window.location.href = data.url
+            if (data.url) {
+                window.location.href = data.url
+            } else {
+                setPortalError(data.message || "Couldn't open billing portal — please try again.")
+            }
+        } catch {
+            setPortalError("Couldn't open billing portal — please try again.")
         } finally {
             setPortalLoading(false)
         }
@@ -94,10 +109,12 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
     const [prefs, setPrefs] = useState(initialPrefs)
     const [prefsSaving, setPrefsSaving] = useState(false)
     const [prefsSaved, setPrefsSaved] = useState(false)
+    const [prefsError, setPrefsError] = useState<string | null>(null)
 
     const handleSavePrefs = async () => {
         setPrefsSaving(true)
         setPrefsSaved(false)
+        setPrefsError(null)
         try {
             // Only send fields the user has actually picked — sending null for an
             // unset field would fail the API's enum validation and block the whole save.
@@ -107,13 +124,20 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
             if (prefs.equipment) body.equipment = prefs.equipment
             if (prefs.activityLevel) body.activityLevel = prefs.activityLevel
 
-            await fetch("/api/profile", {
+            const res = await fetch("/api/profile", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
             })
+            if (!res.ok) {
+                const data = await res.json().catch(() => null)
+                setPrefsError(data?.message || "Couldn't save — please try again.")
+                return
+            }
             setPrefsSaved(true)
             router.refresh()
+        } catch {
+            setPrefsError("Couldn't save — please try again.")
         } finally {
             setPrefsSaving(false)
         }
@@ -122,9 +146,11 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [confirmText, setConfirmText] = useState("")
     const [deleting, setDeleting] = useState(false)
+    const [deleteError, setDeleteError] = useState<string | null>(null)
 
     const handleDeleteAccount = async () => {
         setDeleting(true)
+        setDeleteError(null)
         try {
             const res = await fetch("/api/account", {
                 method: "DELETE",
@@ -134,7 +160,12 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
             if (res.ok) {
                 await getBrowserClient().auth.signOut()
                 window.location.href = "/"
+            } else {
+                const data = await res.json().catch(() => null)
+                setDeleteError(data?.message || "Couldn't delete your account — please try again.")
             }
+        } catch {
+            setDeleteError("Couldn't delete your account — please try again.")
         } finally {
             setDeleting(false)
         }
@@ -168,58 +199,84 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
                             {emailSaving && <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>}
                         </button>
                     </div>
-                    {emailSent && (
+                    {emailSent ? (
                         <p className="flex items-center gap-1.5 text-xs text-ink-strong/60">
-                            <CheckCircle size={14} weight="fill"/> Check your new inbox to confirm the change.
+                            <CheckCircle size={14} weight="fill"/> Almost done — confirm the link in both your old and new inbox to finish the change.
                         </p>
+                    ) : (
+                        <p className="text-xs text-ink-strong/35">We&apos;ll send a confirmation link to both your current and new email — the change only takes effect once you confirm both.</p>
                     )}
                     {emailError && <p className="text-xs text-red-500">{emailError}</p>}
+                </div>
+                <div className="flex flex-col gap-2 border-t border-black/[0.05] pt-4">
+                    <label className="text-xs font-medium uppercase tracking-[0.1em] text-ink-strong/35">Your data</label>
+                    <a
+                        href="/api/account/export"
+                        className="flex w-fit items-center gap-2 rounded-full bg-black/[0.045] px-4 py-2.5 text-sm font-medium text-ink-strong transition-colors duration-200 hover:bg-black/[0.08]"
+                    >
+                        <DownloadSimple size={16}/> Download my data
+                    </a>
                 </div>
             </Card>
 
             <Card className="flex flex-col gap-4 p-6 sm:p-7">
                 <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Subscription</span>
                 {(() => {
-                    // Nutrition + training are always sold as one bundle and share a single
-                    // stripe_subscription_id, so their status/date can never diverge — one row.
-                    const entitlement = entitlements[0]
-                    const status = entitlement?.status ?? "none"
-                    const cancelling = status === "active" && entitlement?.cancelAtPeriodEnd
-                    const dateLabel = formatDate(entitlement?.currentPeriodEnd ?? null)
+                    // A module bought standalone (e.g. adding Nutrition later from the
+                    // dashboard) gets its own stripe_subscription_id, separate from the
+                    // bundle's — so there can genuinely be more than one row here, each with
+                    // its own status/renewal date. Grouping by subscription id (falling back
+                    // to one group per un-subscribed module) instead of only ever reading
+                    // entitlements[0] means a second, independent subscription doesn't just
+                    // disappear from the UI.
+                    const groups = new Map<string, EntitlementInfo[]>()
+                    for (const entitlement of entitlements) {
+                        const key = entitlement.stripeSubscriptionId ?? `none:${entitlement.module}`
+                        groups.set(key, [...(groups.get(key) ?? []), entitlement])
+                    }
+                    if (groups.size === 0) groups.set("none", [])
 
-                    const badge = cancelling
-                        ? { dot: "border border-ink-strong", pill: "bg-black/[0.045] text-ink-strong", label: "Ending soon" }
-                        : status === "active"
-                            ? { dot: "bg-ink-strong", pill: "bg-black/[0.045] text-ink-strong", label: "Active" }
-                            : status === "canceled"
-                                ? { dot: "bg-ink-strong/25", pill: "bg-black/[0.03] text-ink-strong/40", label: "Canceled" }
-                                : status === "expired"
-                                    ? { dot: "bg-ink-strong/25", pill: "bg-black/[0.03] text-ink-strong/40", label: "Expired" }
-                                    : { dot: "bg-ink-strong/15", pill: "bg-black/[0.03] text-ink-strong/40", label: "Not subscribed" }
+                    return Array.from(groups.entries()).map(([key, group]) => {
+                        const modules = group.map(e => e.module)
+                        const status = group[0]?.status ?? "none"
+                        const cancelling = status === "active" && group[0]?.cancelAtPeriodEnd
+                        const dateLabel = formatDate(group[0]?.currentPeriodEnd ?? null)
+                        const price = group[0]?.stripeSubscriptionId ? subscriptionPricesById[group[0].stripeSubscriptionId] : null
 
-                    const caption = cancelling
-                        ? dateLabel && `Ends ${dateLabel}`
-                        : status === "active"
-                            ? dateLabel && `Renews ${dateLabel}`
-                            : status === "canceled"
-                                ? dateLabel && `Ends ${dateLabel}`
-                                : null
+                        const badge = cancelling
+                            ? { dot: "border border-ink-strong", pill: "bg-black/[0.045] text-ink-strong", label: "Ending soon" }
+                            : status === "active"
+                                ? { dot: "bg-ink-strong", pill: "bg-black/[0.045] text-ink-strong", label: "Active" }
+                                : status === "canceled"
+                                    ? { dot: "bg-ink-strong/25", pill: "bg-black/[0.03] text-ink-strong/40", label: "Canceled" }
+                                    : status === "expired"
+                                        ? { dot: "bg-ink-strong/25", pill: "bg-black/[0.03] text-ink-strong/40", label: "Expired" }
+                                        : { dot: "bg-ink-strong/15", pill: "bg-black/[0.03] text-ink-strong/40", label: "Not subscribed" }
 
-                    return (
-                        <div className="flex items-center justify-between">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-sm text-ink-strong">Nutrition & Training</span>
-                                {subscriptionPrice && <span className="text-[11px] text-ink-strong/40">{formatPrice(subscriptionPrice)}</span>}
+                        const caption = cancelling
+                            ? dateLabel && `Ends ${dateLabel}`
+                            : status === "active"
+                                ? dateLabel && `Renews ${dateLabel}`
+                                : status === "canceled"
+                                    ? dateLabel && `Ends ${dateLabel}`
+                                    : null
+
+                        return (
+                            <div key={key} className="flex items-center justify-between border-b border-black/[0.05] pb-3 last:border-b-0 last:pb-0">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-sm text-ink-strong">{moduleGroupLabel(modules)}</span>
+                                    {price && <span className="text-[11px] text-ink-strong/40">{formatPrice(price)}</span>}
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                    <span className={`flex items-center gap-1.5 rounded-full py-1 pl-2 pr-2.5 text-xs font-medium ${badge.pill}`}>
+                                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${badge.dot}`}/>
+                                        {badge.label}
+                                    </span>
+                                    {caption && <span className="text-[11px] text-ink-strong/40">{caption}</span>}
+                                </div>
                             </div>
-                            <div className="flex flex-col items-end gap-1">
-                                <span className={`flex items-center gap-1.5 rounded-full py-1 pl-2 pr-2.5 text-xs font-medium ${badge.pill}`}>
-                                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${badge.dot}`}/>
-                                    {badge.label}
-                                </span>
-                                {caption && <span className="text-[11px] text-ink-strong/40">{caption}</span>}
-                            </div>
-                        </div>
-                    )
+                        )
+                    })
                 })()}
                 {hasSubscription && (
                     <button
@@ -234,6 +291,7 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
                         {portalLoading && <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>}
                     </button>
                 )}
+                {portalError && <p className="text-xs text-red-500">{portalError}</p>}
             </Card>
 
             <Card className="flex flex-col gap-5 p-6 sm:p-7">
@@ -267,6 +325,7 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
                         {prefsSaving && <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>}
                     </button>
                     {prefsSaved && <span className="text-xs text-ink-strong/50">Saved — your training plan will update.</span>}
+                    {prefsError && <span className="text-xs text-red-500">{prefsError}</span>}
                 </div>
             </Card>
 
@@ -309,6 +368,7 @@ const SettingsContent = ({ email, entitlements, hasSubscription, subscriptionPri
                     >
                         {deleting ? <Spinner/> : "Permanently delete my account"}
                     </button>
+                    {deleteError && <p className="text-xs text-red-500">{deleteError}</p>}
                 </div>
             </Modal>
         </div>
