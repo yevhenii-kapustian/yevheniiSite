@@ -4,15 +4,12 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { SlidersHorizontal, Barbell, ForkKnife, ArrowUpRight, Bell, Trash } from "@phosphor-icons/react"
-import AddModuleButton from "./AddModuleButton"
 import TrainsToggle from "./TrainsToggle"
 import CheckIn, { type CheckInValues } from "./CheckIn"
 import Modal from "./Modal"
 import Card from "./Card"
 import NutritionCalendarStrip from "./NutritionCalendarStrip"
-import { BUNDLE_PRODUCT_ID } from "@/data/products"
 import { getWorkoutLabel } from "@/utils/workoutLabel"
-import { upsellCopy, type ModuleState } from "@/utils/entitlements"
 
 const MEAL_TYPE_LABELS: Record<string, string> = {
     breakfast: "Breakfast",
@@ -44,17 +41,11 @@ type Meal = {
 }
 
 type MyPlanContentProps = {
-    email: string
     fullName: string | null
     dateLabel: string
     greeting: string
     hasNutrition: boolean
     hasTraining: boolean
-    nutritionState: ModuleState
-    trainingState: ModuleState
-    nutritionPeriodEnd: string | null
-    trainingPeriodEnd: string | null
-    bundlePrice: number | null
     loggedWorkoutToday: boolean
     trainsWithProgram: boolean
     activityLevel: string | null
@@ -112,17 +103,11 @@ const MacroBar = ({ label, eaten, goal }: { label: string, eaten: number, goal: 
 )
 
 const MyPlanContent = ({
-    email,
     fullName,
     dateLabel,
     greeting,
     hasNutrition,
     hasTraining,
-    nutritionState,
-    trainingState,
-    nutritionPeriodEnd,
-    trainingPeriodEnd,
-    bundlePrice,
     loggedWorkoutToday,
     trainsWithProgram,
     activityLevel,
@@ -187,10 +172,10 @@ const MyPlanContent = ({
     const missingWorkoutToday = isToday && hasTraining && !loggedWorkoutToday
     const showNudge = missingNutritionToday || missingWorkoutToday
     const nudgeMessage = missingNutritionToday && missingWorkoutToday
-        ? "You haven't logged any meals or workouts today yet."
+        ? "Start today by opening your workout and logging your first meal."
         : missingNutritionToday
-            ? "You haven't logged any meals today yet."
-            : "You haven't logged a workout today yet."
+            ? "Log your first meal to start tracking today."
+            : "Open today's workout when you're ready to train."
 
     return (
         <div className="flex flex-col gap-5">
@@ -212,11 +197,28 @@ const MyPlanContent = ({
             </div>
 
             {showNudge && (
-                <Card className="flex items-center gap-3 px-5 py-3.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/[0.04] text-ink-strong/60">
-                        <Bell size={14} weight="bold"/>
-                    </span>
-                    <p className="text-sm text-ink-strong/70">{nudgeMessage}</p>
+                <Card className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/[0.04] text-ink-strong/60">
+                            <Bell size={14} weight="bold"/>
+                        </span>
+                        <div>
+                            <p className="text-sm font-semibold text-ink-strong">Your plan is ready</p>
+                            <p className="text-sm text-ink-strong/55">{nudgeMessage}</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pl-11 sm:pl-0">
+                        {missingWorkoutToday && (
+                            <Link href="/my-profile/training" className="rounded-full bg-black px-3.5 py-2 text-xs font-semibold text-white transition-colors duration-200 hover:bg-ink-strong">
+                                Start workout
+                            </Link>
+                        )}
+                        {missingNutritionToday && (
+                            <Link href="/my-profile/nutrition" className="rounded-full bg-black/[0.045] px-3.5 py-2 text-xs font-semibold text-ink-strong transition-colors duration-200 hover:bg-black/[0.08]">
+                                Log meal
+                            </Link>
+                        )}
+                    </div>
                 </Card>
             )}
 
@@ -254,7 +256,7 @@ const MyPlanContent = ({
                         </div>
 
                         <Link href="/my-profile/nutrition" className="flex w-fit items-center gap-1 text-sm font-medium text-ink-strong hover:underline">
-                            Open nutrition <ArrowUpRight size={14} weight="bold"/>
+                            {isToday ? "Log meal" : "Open nutrition"} <ArrowUpRight size={14} weight="bold"/>
                         </Link>
                     </Card>
                 ) : (
@@ -265,15 +267,9 @@ const MyPlanContent = ({
                             </span>
                             <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Nutrition</span>
                         </div>
-                        {(() => {
-                            const { message, buttonLabel } = upsellCopy(nutritionState, nutritionPeriodEnd, "You'll need to track your own calories for now.", bundlePrice)
-                            return (
-                                <>
-                                    <p className="text-sm text-ink-strong/60">{message}</p>
-                                    <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label={buttonLabel}/>
-                                </>
-                            )
-                        })()}
+                        <p className="text-sm text-ink-strong/60">
+                            Your nutrition access is being prepared. If you just joined, refresh in a moment or contact support.
+                        </p>
                     </Card>
                 )}
 
@@ -290,16 +286,16 @@ const MyPlanContent = ({
                             <p className="text-2xl font-semibold tracking-tight text-ink-strong">
                                 {selectedWorkoutLabel === "Rest day" ? "Rest day" : `${selectedWorkoutLabel} day`}
                             </p>
-                            <Link href="/my-profile/exercises" className="flex w-fit items-center gap-1 text-sm font-medium text-ink-strong hover:underline">
-                                View exercises <ArrowUpRight size={14} weight="bold"/>
+                            <Link href="/my-profile/training" className="flex w-fit items-center gap-1 text-sm font-medium text-ink-strong hover:underline">
+                                {selectedWorkoutLabel === "Rest day" ? "Open training" : "Start workout"} <ArrowUpRight size={14} weight="bold"/>
                             </Link>
                         </>
                     ) : (() => {
-                        const { message, buttonLabel } = upsellCopy(trainingState, trainingPeriodEnd, "No training plan yet.", bundlePrice)
                         return (
                             <>
-                                <p className="text-sm text-ink-strong/60">{message}</p>
-                                <AddModuleButton productId={BUNDLE_PRODUCT_ID} email={email} label={buttonLabel}/>
+                                <p className="text-sm text-ink-strong/60">
+                                    Your training access is being prepared. If you just joined, refresh in a moment or contact support.
+                                </p>
                             </>
                         )
                     })()}
@@ -347,7 +343,9 @@ const MyPlanContent = ({
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-sm text-ink-strong/50">Nothing logged {isToday ? "yet today" : "for this day"}.</p>
+                            <p className="text-sm text-ink-strong/50">
+                                {isToday ? "Log your first meal to start tracking today." : "Nothing logged for this day."}
+                            </p>
                         )}
                         {mealError && <p className="mt-2 text-xs text-red-500">{mealError}</p>}
                     </Card>

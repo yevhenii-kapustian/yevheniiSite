@@ -1,7 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const slugify = require('slugify');
-const { createClient } = require('@supabase/supabase-js');
 
 // `npm run build` runs this as a plain node script, before `next build` —
 // Next's automatic .env.local loading doesn't apply here, so read it
@@ -30,32 +28,11 @@ const staticPages = [
   'legal/terms-conditions',
   'legal/privacy',
   'about',
-  'programs',
   'get-started',
 ];
 
-async function getProgramPages() {
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    console.log('Supabase env vars missing, skipping dynamic program pages in sitemap.');
-    return [];
-  }
-
-  try {
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const { data, error } = await supabase.from('products').select('name');
-    if (error || !data) throw error || new Error('No data returned');
-
-    return data.map((item) => `programs/${slugify(item.name, { lower: true, strict: true })}`);
-  } catch (error) {
-    console.log('Could not fetch products for sitemap, continuing without them:', error.message);
-    return [];
-  }
-}
-
 async function generateSitemap() {
-  const programPages = await getProgramPages();
-  const pages = [...staticPages, ...programPages];
+  const pages = [...staticPages];
   const lastmod = new Date().toISOString();
 
   const urls = pages.map((page) => {

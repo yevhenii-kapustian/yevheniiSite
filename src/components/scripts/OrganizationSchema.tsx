@@ -2,7 +2,7 @@ export default function OrganizationSchema() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Yevhenii Fit - Online Coaching & Fitness Programs",
+    name: "Yevhenii Fit - Online Fitness Coaching",
     url: "https://www.yevheniifit.com",
     logo: "https://www.yevheniifit.com/logo.png",
     sameAs: ["https://www.instagram.com/_ev_ge_niii_/"],

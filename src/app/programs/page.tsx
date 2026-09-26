@@ -1,12 +1,12 @@
-import ProgramsContent from "./ProgramsContent"
+import { notFound } from "next/navigation"
 
 export const metadata = {
-    title: "Programs - Online Coaching & Fitness Programs",
-    description: "Discover science-based fitness programs designed to help you lose fat, build muscle, and boost energy. Find the perfect plan tailored to your goals and lifestyle.",
+    title: "Page Not Found - Yevhenii Fit",
+    description: "This page is not available.",
 }
 
 const Programs = () => {
-    return <ProgramsContent/>
+    notFound()
 }
 
 export default Programs

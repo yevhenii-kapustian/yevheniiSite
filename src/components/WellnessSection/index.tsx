@@ -20,7 +20,7 @@ const WellnessSection = () => {
                         Your body is your most valuable asset. Start building long-term strength, energy, and resilience — one healthy
                         choice at a time. Small daily actions lead to powerful results. Make your health a priority, starting now.
                     </p>
-                    <Link className="size-fit font-semibold text-sm sm:text-base uppercase underline underline-offset-6" href="/programs">Find Your Plan</Link>
+                    <Link className="size-fit font-semibold text-sm sm:text-base uppercase underline underline-offset-6" href="/get-started">Find Your Plan</Link>
                 </div>
                 <motion.div
                     ref={ref}

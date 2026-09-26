@@ -3,13 +3,14 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ForkKnife } from "@phosphor-icons/react/dist/ssr"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProductPrice, getNutritionTargetForDate, getMealsForDate, checkAndAdjustNutritionTargetForTrend } from "@/supabase/queries"
+import { getEntitlementsForUser, getLatestBodyWeight, getProductPrice, getProfile, getNutritionTargetForDate, getMealsForDate, checkAndAdjustNutritionTargetForTrend } from "@/supabase/queries"
 import NutritionCalendarStrip from "../NutritionCalendarStrip"
 import AddModuleButton from "../AddModuleButton"
 import NutritionContent from "./NutritionContent"
 import { BUNDLE_PRODUCT_ID } from "@/data/products"
 import { getModuleState, upsellCopy } from "@/utils/entitlements"
 import { getTodayLocalDate, toLocalDateString } from "@/utils/date"
+import { isProfileSetupComplete } from "@/utils/profileSetup"
 
 export const metadata: Metadata = {
     title: "Nutrition - Yevhenii Fit",
@@ -39,8 +40,15 @@ export default async function NutritionPage ({ searchParams }: PageProps) {
     maxDateObj.setDate(maxDateObj.getDate() + 7)
     const maxDate = toLocalDateString(maxDateObj)
 
-    const entitlements = await getEntitlementsForUser(user.id)
+    const [entitlements, profile, weight] = await Promise.all([
+        getEntitlementsForUser(user.id),
+        getProfile(user.id),
+        getLatestBodyWeight(user.id),
+    ])
     const hasNutrition = entitlements.some(e => e.module === "nutrition" && e.status === "active")
+    if (hasNutrition && !isProfileSetupComplete(profile, weight)) {
+        redirect("/setup")
+    }
 
     if (!hasNutrition) {
         const nutritionState = getModuleState(entitlements, "nutrition")

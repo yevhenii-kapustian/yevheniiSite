@@ -23,6 +23,14 @@ const FIELDS = [
     { key: "arm", label: "Arm" },
 ] as const
 
+const FIELD_VALUE_KEYS = {
+    waist: "waist_cm",
+    chest: "chest_cm",
+    hips: "hips_cm",
+    thigh: "thigh_cm",
+    arm: "arm_cm",
+} as const
+
 const formatDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 
 const BodyMeasurements = ({ measurements }: { measurements: Measurement[] }) => {
@@ -78,15 +86,40 @@ const BodyMeasurements = ({ measurements }: { measurements: Measurement[] }) => 
     }
 
     const latest = measurements[0]
+    const latestValues = latest
+        ? FIELDS.map(field => ({
+            ...field,
+            value: latest[FIELD_VALUE_KEYS[field.key]],
+        })).filter(field => field.value != null)
+        : []
 
     return (
         <Card className="flex flex-col gap-4 p-5 sm:p-7">
-            <div className="flex items-center gap-2.5">
-                <CardIcon><Ruler size={14} weight="bold"/></CardIcon>
-                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Measurements</span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                    <CardIcon><Ruler size={14} weight="bold"/></CardIcon>
+                    <span className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">Measurements</span>
+                </div>
+                {latest && <span className="text-xs font-medium text-ink-strong/35">Latest {formatDate(latest.logged_at)}</span>}
             </div>
 
-            <div className="grid grid-cols-5 gap-2">
+            {latestValues.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                    {latestValues.map(field => (
+                        <div key={field.key} className="rounded-2xl bg-black/[0.03] px-3 py-3">
+                            <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-ink-strong/35">{field.label}</p>
+                            <p className="mt-1 text-lg font-semibold tracking-tight text-ink-strong">
+                                {field.value}
+                                <span className="ml-1 text-xs font-normal text-ink-strong/35">cm</span>
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-sm text-ink-strong/50">No measurements logged yet. Add only the numbers you want to track.</p>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 border-t border-black/[0.05] pt-4 sm:grid-cols-5">
                 {FIELDS.map(field => (
                     <div key={field.key} className="flex flex-col gap-1.5 rounded-2xl bg-black/[0.03] px-2 py-2 text-center">
                         <label className="text-[10px] font-medium uppercase tracking-[0.05em] text-ink-strong/35">{field.label}</label>
@@ -112,9 +145,9 @@ const BodyMeasurements = ({ measurements }: { measurements: Measurement[] }) => 
             </button>
             {error && <p className="text-xs text-red-500">{error}</p>}
 
-            {latest && (
+            {measurements.length > 1 && (
                 <div className="flex flex-col divide-y divide-black/[0.06] border-t border-black/[0.05] pt-2">
-                    {measurements.slice(0, 5).map(m => (
+                    {measurements.slice(1, 5).map(m => (
                         <div key={m.id} className="group flex items-center justify-between gap-3 py-2 text-sm">
                             <span className="text-ink-strong/50">{formatDate(m.logged_at)}</span>
                             <span className="text-ink-strong/70">

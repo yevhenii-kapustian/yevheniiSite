@@ -3,11 +3,11 @@ import { FAQsType } from "@/types/faqs"
 export const faqs: FAQsType[] = [
     {
         question: "How do I get started?",
-        answer: "Head to the Get Started page and answer a few quick questions about your goals — I'll personally review them and reach out on Instagram within 24 hours to talk through the right plan for you. If you'd rather buy a program directly, check out Programs instead."
+        answer: "Head to the Get Started page and answer a few quick questions about your goals — I'll personally review them and reach out on Instagram within 24 hours to talk through the right plan for you."
     },
     {
-        question: "Who are these programs for?",
-        answer: "Everyone — men and women, complete beginners to experienced athletes. Each program is built to meet you where you're at."
+        question: "Who is this coaching for?",
+        answer: "Everyone — men and women, complete beginners to experienced athletes. The plan is built to meet you where you're at."
     },
     {
         question: "Do you offer personalized meal plans?",

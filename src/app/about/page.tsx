@@ -3,7 +3,7 @@ import { babes } from '../fonts'
 import Button from '@/components/Button'
 
 export const metadata = {
-    title: "About - Online Coaching & Fitness Programs",
+    title: "About - Online Fitness Coaching",
     description: "Meet Yevhenii — a transformation coach who turned personal struggle into real results. Discover his journey from self-doubt to strength and how he helps others build muscle, burn fat, and boost confidence — with no fluff, just what works.",
 }
 
@@ -54,7 +54,7 @@ const About = () => {
                     </p>
                     <div className="flex w-full flex-col gap-3 pt-2 sm:w-auto sm:flex-row sm:gap-4">
                         <Button href="/get-started" variant="solid" size="sm" className="h-12 w-full sm:w-auto">Personal Plan</Button>
-                        <Button href="/programs" variant="outline-dark" size="sm" className="h-12 w-full sm:w-auto">View All Plans</Button>
+                        <Button href="/get-started" variant="outline-dark" size="sm" className="h-12 w-full sm:w-auto">Get Started</Button>
                     </div>
                 </div>
             </div>

@@ -195,9 +195,11 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
         ? exercises.reduce((sum, ex) => sum + todayLogs.filter(l => l.plan_exercise_id === ex.planExerciseId).length, 0)
         : 0
     const workoutComplete = isToday && !isRestDay && totalSets > 0 && doneSets === totalSets
+    const completionPct = totalSets > 0 ? Math.min((doneSets / totalSets) * 100, 100) : 0
 
     const dayMuscles = Array.from(new Set(exercises.map(e => e.muscleGroup)))
     const workoutLabel = getWorkoutLabel(dayMuscles)
+    const selectedDayTitle = isToday ? "Today's workout" : `${DAY_LABELS[dayOfWeek - 1]}'s workout`
 
     const monthLabel = new Date(`${weekDates[0]}T00:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" })
 
@@ -274,15 +276,35 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                 </div>
             </div>
 
+            {!isRestDay && (
+                <Card className="flex flex-col gap-4 p-5 sm:p-6">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-strong/35">{selectedDayTitle}</p>
+                            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-ink-strong">{workoutLabel}</h2>
+                            <p className="mt-1 text-sm text-ink-strong/45">{exercises.length} exercises · {totalSets} sets</p>
+                        </div>
+                        {isToday && (
+                        <div className="flex flex-col gap-1 sm:min-w-44">
+                            <div className="flex items-center justify-between text-xs font-medium text-ink-strong/45">
+                                <span>{doneSets}/{totalSets} sets</span>
+                                <span>{Math.round(completionPct)}%</span>
+                            </div>
+                            <div className="h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+                                <div
+                                    className="h-full rounded-full bg-black transition-all duration-300"
+                                    style={{ width: `${completionPct}%` }}
+                                />
+                            </div>
+                        </div>
+                        )}
+                    </div>
+                </Card>
+            )}
+
             {/* key resets per-exercise input state on day change — no entrance animation
                 tied to it, just React's normal remount-on-key-change behavior. */}
             <div key={dayOfWeek} className="flex flex-col gap-4">
-                    <p className="text-sm text-ink-strong/50">
-                        {isToday ? "Today" : DAY_LABELS[dayOfWeek - 1]}
-                        {` · ${workoutLabel}`}
-                        {isToday && !isRestDay && ` · ${doneSets}/${totalSets} sets done`}
-                    </p>
-
                     {isRestDay ? (
                         <Card className="flex flex-col items-center gap-1 px-6 py-16 text-center">
                             <p className="text-sm font-semibold text-ink-strong">{hasPlanForWeek ? "Rest day" : "No plan recorded for this week"}</p>
@@ -459,11 +481,12 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                                                     onClick={() => updateInput(exerciseIndex, setIndex, { revealDifficulty: !input?.revealDifficulty })}
                                                                     aria-label="Log this set"
                                                                     disabled={saving === key}
-                                                                    className={`ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${
-                                                                        input?.revealDifficulty ? "bg-black text-white" : "bg-black/[0.045] text-transparent hover:bg-black/[0.08]"
+                                                                    className={`ml-auto flex h-7 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-semibold transition-colors duration-200 ${
+                                                                        input?.revealDifficulty ? "bg-black text-white" : "bg-black/[0.045] text-ink-strong/55 hover:bg-black/[0.08] hover:text-ink-strong"
                                                                     }`}
                                                                 >
-                                                                    <Check size={14} weight="bold"/>
+                                                                    {input?.revealDifficulty && <Check size={12} weight="bold"/>}
+                                                                    Log
                                                                 </motion.button>
                                                             )}
                                                         </div>

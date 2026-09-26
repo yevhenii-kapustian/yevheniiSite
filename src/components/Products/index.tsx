@@ -6,7 +6,6 @@ import { ProductsType } from "@/types/products";
 import Link from "next/link";
 import { fromattedCurrancy } from "@/utils/currency";
 import { useRouter } from "next/navigation";
-import slugify from 'slugify'
 import { CaretDoubleLeft, CaretDoubleRight, CheckCircle } from "@phosphor-icons/react";
 import { useProducts } from "@/context/ProductsContext";
 import { useProductsData } from "@/hooks/useProductsData";
@@ -115,9 +114,8 @@ const Products = ({showName = true,
                     </div>
                 </li>
             )) : productsToShow?.map((item:ProductsType, index:number) => {
-                const learnMoreLink = slugify(item.name, {lower: true, strict: true})
                 return(
-                    <li onClick={variants !== "product" ? () => router.push(`/programs/${learnMoreLink}`) : undefined}
+                    <li onClick={variants !== "product" ? () => router.push("/get-started") : undefined}
                         className={`${styles.productsWrapperStyles} ${variants !== "product" ? "cursor-pointer" : undefined}`}
                         key={index}
                     >
@@ -129,7 +127,7 @@ const Products = ({showName = true,
                                 <p className="pb-4 text-xs text-ink-strong/50">
                                     <Link className="hover:text-ink-strong hover:underline" href="/">Home</Link>
                                     <span className="px-1.5">/</span>
-                                    <Link className="hover:text-ink-strong hover:underline" href="/programs">Programs</Link>
+                                    <Link className="hover:text-ink-strong hover:underline" href="/get-started">Coaching</Link>
                                     <span className="px-1.5">/</span>
                                     <span className="text-ink-strong/80">{item.name}</span>
                                 </p>

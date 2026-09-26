@@ -1,11 +1,10 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getServerAuthClient } from "@/supabase/server-client"
-import { getEntitlementsForUser, getProductPrice, getProfile, getNutritionTargetForDate, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, getWorkoutLogsForDate, type TrainingPlanExercise } from "@/supabase/queries"
-import { getModuleState } from "@/utils/entitlements"
+import { getEntitlementsForUser, getProfile, getNutritionTargetForDate, getLatestBodyWeight, getMealsForDate, getTrainingPlanWithExercises, getWorkoutLogsForDate, type TrainingPlanExercise } from "@/supabase/queries"
 import { getTodayLocalDate } from "@/utils/date"
-import { BUNDLE_PRODUCT_ID } from "@/data/products"
 import MyPlanContent from "./MyPlanContent"
+import { isProfileSetupComplete } from "@/utils/profileSetup"
 
 export const metadata: Metadata = {
     title: "My Profile - Yevhenii Fit",
@@ -45,10 +44,10 @@ export default async function MyProfile ({ searchParams }: PageProps) {
 
     const activeModules = entitlements.filter(e => e.status === "active").map(e => e.module)
     const hasTraining = activeModules.includes("training")
-    const nutritionState = getModuleState(entitlements, "nutrition")
-    const trainingState = getModuleState(entitlements, "training")
-    const nutritionPeriodEnd = entitlements.find(e => e.module === "nutrition")?.current_period_end ?? null
-    const trainingPeriodEnd = entitlements.find(e => e.module === "training")?.current_period_end ?? null
+    if (activeModules.length > 0 && !isProfileSetupComplete(profile, weight)) {
+        redirect("/setup")
+    }
+
     const todayLogs = hasTraining ? await getWorkoutLogsForDate(user.id, today) : []
     const loggedWorkoutToday = todayLogs.length > 0
     const eatenSelected = {
@@ -64,22 +63,13 @@ export default async function MyProfile ({ searchParams }: PageProps) {
         muscleGroups: Array.from(new Set((planByDay.get(i + 1) ?? []).map(e => e.muscleGroup))),
     }))
 
-    const needsUpsell = !activeModules.includes("nutrition") || !hasTraining
-    const bundlePrice = needsUpsell ? await getProductPrice(BUNDLE_PRODUCT_ID) : null
-
     return (
         <MyPlanContent
-            email={user.email!}
             fullName={profile?.full_name ?? null}
             dateLabel={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).toUpperCase()}
             greeting={getGreeting()}
             hasNutrition={activeModules.includes("nutrition")}
             hasTraining={hasTraining}
-            nutritionState={nutritionState}
-            trainingState={trainingState}
-            nutritionPeriodEnd={nutritionPeriodEnd}
-            trainingPeriodEnd={trainingPeriodEnd}
-            bundlePrice={bundlePrice}
             loggedWorkoutToday={loggedWorkoutToday}
             trainsWithProgram={profile?.trains_with_program ?? false}
             activityLevel={profile?.activity_level ?? null}

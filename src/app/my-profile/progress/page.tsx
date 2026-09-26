@@ -6,16 +6,17 @@ import {
     getBodyLogHistory,
     getEntitlementsForUser,
     getIntakeHistory,
+    getLatestBodyWeight,
     getLatestNutritionTarget,
+    getProfile,
     getTrainingPlanWithExercises,
     getWorkoutHistory,
-    getProgressPhotosForUser,
     getBodyMeasurementHistory,
 } from "@/supabase/queries"
-import { getServerClient } from "@/supabase/server-client"
 import { weightDelta, weightReportSentence } from "@/utils/weightReport"
 import { getPersonalRecords, getVolumeTrendSentence, getWeeklyVolume, getWorkoutDaysThisWeek } from "@/utils/trainingReport"
 import ProgressContent from "./ProgressContent"
+import { isProfileSetupComplete } from "@/utils/profileSetup"
 
 export const metadata: Metadata = {
     title: "Your Progress - Yevhenii Fit",
@@ -29,28 +30,26 @@ export default async function ProgressPage () {
         redirect("/get-started")
     }
 
-    const entitlements = await getEntitlementsForUser(user.id)
+    const [entitlements, profile, weight] = await Promise.all([
+        getEntitlementsForUser(user.id),
+        getProfile(user.id),
+        getLatestBodyWeight(user.id),
+    ])
     const hasTraining = entitlements.some(e => e.module === "training" && e.status === "active")
     const hasNutrition = entitlements.some(e => e.module === "nutrition" && e.status === "active")
+    if ((hasTraining || hasNutrition) && !isProfileSetupComplete(profile, weight)) {
+        redirect("/setup")
+    }
 
-    const [history, workoutHistory, intakeHistory, nutritionTarget, plan, progressPhotos, measurements] = await Promise.all([
+    const [history, workoutHistory, intakeHistory, nutritionTarget, plan, measurements] = await Promise.all([
         getBodyLogHistory(user.id),
         hasTraining ? getWorkoutHistory(user.id) : Promise.resolve([]),
         hasNutrition ? getIntakeHistory(user.id) : Promise.resolve([]),
         hasNutrition ? getLatestNutritionTarget(user.id) : Promise.resolve(null),
         hasTraining ? getTrainingPlanWithExercises(user.id) : Promise.resolve({ byDay: new Map(), isDeloadWeek: false }),
-        getProgressPhotosForUser(user.id),
         getBodyMeasurementHistory(user.id),
     ])
     const planByDay = plan.byDay
-
-    // Bucket is private — every viewable photo needs its own short-lived signed URL rather
-    // than a public link.
-    const photoStorage = getServerClient().storage.from("progress-photos")
-    const photosWithUrls = await Promise.all(progressPhotos.map(async photo => {
-        const { data } = await photoStorage.createSignedUrl(photo.storage_path, 60 * 10)
-        return { id: photo.id, label: photo.label, takenAt: photo.taken_at, url: data?.signedUrl ?? null }
-    }))
 
     const weightHistory = history.map(w => ({ loggedAt: w.logged_at, weightKg: w.weight_kg }))
     const delta = weightDelta(weightHistory)
@@ -89,7 +88,6 @@ export default async function ProgressPage () {
                 plannedDaysThisWeek={plannedDaysThisWeek}
                 intakeHistory={intakeHistory}
                 nutritionTargetCalories={nutritionTargetCalories}
-                progressPhotos={photosWithUrls}
                 measurements={measurements}
             />
         </div>

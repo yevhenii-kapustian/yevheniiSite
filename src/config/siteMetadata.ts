@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 
 export const siteMetadata: Metadata = {
-    title: "Yevhenii Fit - Online Coaching & Fitness Programs",
+    title: "Yevhenii Fit - Online Fitness Coaching",
     description:
         "Transform your body and mind with expert coaching, personalized workouts, and meal plans. Join Yevhenii Fit and start your transformation today!",
     metadataBase: new URL("https://www.yevheniifit.com"),
     openGraph: {
-        title: "Yevhenii Fit - Online Coaching & Fitness Programs",
+        title: "Yevhenii Fit - Online Fitness Coaching",
         description:
         "Transform your body and mind with expert coaching, personalized workouts, and meal plans. Join Yevhenii Fit and start your transformation today!",
         url: "https://www.yevheniifit.com",
-        siteName: "Yevhenii Fit - Online Coaching & Fitness Programs",
+        siteName: "Yevhenii Fit - Online Fitness Coaching",
         locale: "en_US",
         type: "website",
         images: [
@@ -24,7 +24,7 @@ export const siteMetadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "Yevhenii Fit - Online Coaching & Fitness Programs",
+        title: "Yevhenii Fit - Online Fitness Coaching",
         description:
         "Transform your body and mind with expert coaching, personalized workouts, and meal plans. Join Yevhenii Fit and start your transformation today!",
         images: ["https://www.yevheniifit.com/og-image.png"],

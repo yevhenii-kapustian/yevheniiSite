@@ -67,8 +67,8 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                             Personal Plan
                             <ArrowRight size={16} weight="bold" />
                         </Button>
-                        <Button href="/programs" variant="solid-light" size="sm" className="h-12 w-full sm:w-auto">
-                            View All Plans
+                        <Button href="/get-started" variant="solid-light" size="sm" className="h-12 w-full sm:w-auto">
+                            Get Started
                         </Button>
                     </motion.div>
                 </div>

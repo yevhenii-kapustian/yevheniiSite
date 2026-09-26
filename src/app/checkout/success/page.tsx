@@ -59,8 +59,8 @@ function CheckoutSuccessContent () {
                     <WarningCircle size={40} weight="fill" className="text-ink-strong/40" />
                     <h1 className="text-xl sm:text-2xl font-semibold text-ink-strong/80">We couldn&apos;t confirm your payment</h1>
                     <p className="max-w-md text-sm sm:text-base text-ink-strong/60">{errorMessage} If you were charged, email me and I&apos;ll sort it out right away.</p>
-                    <Button href="/programs" variant="solid" size="sm" className="mt-2">
-                        Back to programs
+                    <Button href="/get-started" variant="solid" size="sm" className="mt-2">
+                        Get started
                     </Button>
                 </>
             ) : (
@@ -83,8 +83,8 @@ function CheckoutSuccessContent () {
                             Your payment went through, but the file isn&apos;t linked up yet — email me and I&apos;ll send it over personally.
                         </p>
                     )}
-                    <Link href="/programs" className="mt-4 text-sm text-ink-strong/50 underline underline-offset-4 hover:text-ink-strong">
-                        Back to all programs
+                    <Link href="/get-started" className="mt-4 text-sm text-ink-strong/50 underline underline-offset-4 hover:text-ink-strong">
+                        Start a coaching request
                     </Link>
                 </>
             )}
