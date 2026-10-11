@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from "react"
-import { motion } from "framer-motion"
 import { ArrowRight } from "@phosphor-icons/react"
 import Spinner from "@/components/Spinner"
 
@@ -39,20 +38,18 @@ const AddModuleButton = ({ productId, email, label }: AddModuleButtonProps) => {
 
     return (
         <div className="flex flex-col items-start gap-2">
-            <motion.button
+            <button
                 type="button"
-                whileHover={{ scale: loading ? 1 : 1.02 }}
-                whileTap={{ scale: loading ? 1 : 0.98 }}
                 onClick={handleClick}
                 disabled={loading}
-                className="group relative inline-flex w-fit items-center gap-1.5 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors duration-200 hover:bg-ink-strong disabled:opacity-60"
+                className="group relative inline-flex w-fit items-center gap-1.5 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:bg-ink-strong active:scale-[0.98] disabled:opacity-60 disabled:hover:scale-100"
             >
                 <span className={`inline-flex items-center gap-1.5 ${loading ? "invisible" : ""}`}>
                     {label}
                     <ArrowRight size={14} weight="bold" className="transition-transform duration-200 group-hover:translate-x-1"/>
                 </span>
                 {loading && <span className="absolute inset-0 flex items-center justify-center"><Spinner/></span>}
-            </motion.button>
+            </button>
             {error && <p className="text-xs text-red-500">{error}</p>}
         </div>
     )

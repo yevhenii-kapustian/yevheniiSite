@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CaretRight, List, X } from "@phosphor-icons/react";
-import { AnimatePresence, motion } from "framer-motion";
+import gsap from "gsap";
 import clsx from "clsx";
 
 import { navigation, Navigation } from "@/data/navigation";
@@ -12,22 +12,6 @@ import { getBrowserClient } from "@/supabase/browser-client";
 import Logo from "../Logo";
 
 const SCROLL_THRESHOLD = 20;
-
-const drawerVariants = {
-    hidden: { x: "100%" },
-    visible: { x: 0, transition: { type: "spring" as const, damping: 32, stiffness: 320 } },
-    exit: { x: "100%", transition: { duration: 0.2, ease: "easeIn" as const } }
-}
-
-const drawerListVariants = {
-    hidden: {},
-    visible: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } }
-}
-
-const drawerItemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" as const } }
-}
 
 const Header = () => {
     const [mobileOpen, setMobileOpen] = useState<boolean>(false);
@@ -76,6 +60,35 @@ const Header = () => {
 
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [mobileOpen])
+
+    useEffect(() => {
+        const drawer = drawerRef.current
+        if (!drawer) return
+
+        const ctx = gsap.context(() => {
+            gsap.to(drawer, {
+                xPercent: mobileOpen ? 0 : 105,
+                duration: mobileOpen ? 0.45 : 0.24,
+                ease: mobileOpen ? "power3.out" : "power2.in",
+            })
+
+            if (mobileOpen) {
+                gsap.fromTo("[data-drawer-item]", {
+                    autoAlpha: 0,
+                    y: 10,
+                }, {
+                    autoAlpha: 1,
+                    y: 0,
+                    duration: 0.32,
+                    stagger: 0.055,
+                    delay: 0.12,
+                    ease: "power3.out",
+                })
+            }
+        }, drawer)
+
+        return () => ctx.revert()
     }, [mobileOpen])
 
     useEffect(() => {
@@ -169,33 +182,22 @@ const Header = () => {
                             aria-controls="mobile-nav"
                             className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors duration-200 hover:bg-white/10 lg:hidden"
                         >
-                            <AnimatePresence mode="wait" initial={false}>
-                                <motion.span
-                                    key={mobileOpen ? "close" : "open"}
-                                    initial={{ opacity: 0, rotate: -45, scale: 0.7 }}
-                                    animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                                    exit={{ opacity: 0, rotate: 45, scale: 0.7 }}
-                                    transition={{ duration: 0.15, ease: "easeOut" }}
-                                    className="flex"
-                                >
-                                    {mobileOpen ? <X size={20} weight="bold" /> : <List size={21} weight="bold" />}
-                                </motion.span>
-                            </AnimatePresence>
+                            <span className={clsx("flex transition-all duration-200", mobileOpen ? "rotate-90 scale-95" : "rotate-0 scale-100")}>
+                                {mobileOpen ? <X size={20} weight="bold" /> : <List size={21} weight="bold" />}
+                            </span>
                         </button>
                     </div>
                 </div>
             </header>
 
-            <AnimatePresence>
-                {mobileOpen && (
-                    <motion.div
-                        ref={drawerRef}
-                        variants={drawerVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className="fixed inset-y-0 right-0 z-100 flex w-[78%] max-w-xs flex-col border-l border-white/10 bg-[#1c1c1e] pt-[calc(env(safe-area-inset-top)+16px)] shadow-[-24px_0_70px_rgba(0,0,0,0.4)] lg:hidden"
-                    >
+            <div
+                ref={drawerRef}
+                className={clsx(
+                    "fixed inset-y-0 right-0 z-100 flex w-[78%] max-w-xs translate-x-full flex-col border-l border-white/10 bg-[#1c1c1e] pt-[calc(env(safe-area-inset-top)+16px)] shadow-[-24px_0_70px_rgba(0,0,0,0.4)] lg:hidden",
+                    mobileOpen ? "pointer-events-auto" : "pointer-events-none"
+                )}
+                aria-hidden={!mobileOpen}
+            >
                         <div className="flex items-center justify-end px-4">
                             <button
                                 onClick={() => setMobileOpen(false)}
@@ -206,17 +208,14 @@ const Header = () => {
                             </button>
                         </div>
 
-                        <motion.ul
+                        <ul
                             id="mobile-nav"
-                            variants={drawerListVariants}
-                            initial="hidden"
-                            animate="visible"
                             className="flex flex-1 flex-col gap-1 px-6 pt-2 text-base text-white"
                         >
                             {navigation.map((item:Navigation, index:number) => {
                                 const isActive = pathname === item.path
                                 return (
-                                    <motion.li variants={drawerItemVariants} key={item.name}>
+                                    <li data-drawer-item key={item.name}>
                                         <Link
                                             className={clsx(
                                                 "flex items-baseline gap-3 py-2.5 capitalize transition-colors duration-150",
@@ -229,12 +228,12 @@ const Header = () => {
                                             <span className="text-xs text-white/30">0{index + 1}</span>
                                             {item.name}
                                         </Link>
-                                    </motion.li>
+                                    </li>
                                 )
                             })}
-                        </motion.ul>
+                        </ul>
 
-                        <div className="flex flex-col border-t border-white/10 px-6 py-4">
+                        <div data-drawer-item className="flex flex-col border-t border-white/10 px-6 py-4">
                             {userEmail ? (
                                 <>
                                     <Link
@@ -272,9 +271,7 @@ const Header = () => {
                                 </>
                             )}
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            </div>
         </>
     )
 }

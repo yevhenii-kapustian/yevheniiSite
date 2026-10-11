@@ -3,19 +3,12 @@
 import Image from "next/image"
 import { babes } from "@/app/fonts"
 import { Quotes } from "@phosphor-icons/react"
-import { motion, useInView } from 'framer-motion'
-import { useRef } from "react"
+import Reveal from "@/components/animation/Reveal"
 
 const ClientTransformationSection = () => {
-    const ref = useRef(null)
-    const isInView = useInView(ref, {once: true})
-
     return(
-        <motion.section
-            ref={ref}
-            initial={{y: 32, opacity: 0}}
-            animate={isInView ? {y: 0, opacity: 1} : {}}
-            transition={{duration: 0.6, ease: "easeOut"}}
+        <Reveal
+            as="section"
             className="px-5 sm:px-10 lg:px-20 py-16 text-white bg-surface-strong"
         >
             <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center gap-8 sm:gap-14">
@@ -45,7 +38,7 @@ const ClientTransformationSection = () => {
                     <p className="self-end italic text-sm sm:text-base text-white/50">-Daryush</p>
                 </div>
             </div>
-        </motion.section>
+        </Reveal>
     )
 }
 

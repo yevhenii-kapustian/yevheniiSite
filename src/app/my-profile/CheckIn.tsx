@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import dynamic from "next/dynamic"
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
+import gsap from "gsap"
 import { calculateNutritionTargets, type Goal } from "@/utils/nutritionEngine"
 import type { Gender } from "@/utils/bodyGoal"
 import BodyAvatarErrorBoundary from "@/components/BodyAvatar/ErrorBoundary"
 import Spinner from "@/components/Spinner"
+import AnimatedNumber from "@/components/animation/AnimatedNumber"
 
 const BodyAvatar = dynamic(() => import("@/components/BodyAvatar"), { ssr: false })
 
@@ -27,18 +28,6 @@ const statFields = [
     { key: "height", label: "Height, cm", min: 100, max: 250 },
     { key: "weight", label: "Weight, kg", min: 30, max: 300 },
 ] as const
-
-const AnimatedNumber = ({ value }: { value: number }) => {
-    const motionValue = useMotionValue(value)
-    const spring = useSpring(motionValue, { stiffness: 90, damping: 20 })
-    const rounded = useTransform(spring, latest => Math.round(latest).toLocaleString("en-US"))
-
-    useEffect(() => {
-        motionValue.set(value)
-    }, [value, motionValue])
-
-    return <motion.span>{rounded}</motion.span>
-}
 
 export type CheckInValues = {
     gender: Gender
@@ -63,6 +52,7 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
     const [goal, setGoal] = useState<Goal>(initial.goal)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const genderIndicatorRef = useRef<HTMLDivElement>(null)
 
     const result = useMemo(
         () => calculateNutritionTargets({
@@ -96,6 +86,14 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
         }
     }
 
+    useEffect(() => {
+        gsap.to(genderIndicatorRef.current, {
+            x: gender === "male" ? 0 : 84,
+            duration: 0.34,
+            ease: "power3.out",
+        })
+    }, [gender])
+
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 sm:gap-6">
             <div className="flex flex-col items-center gap-1 text-center">
@@ -115,10 +113,9 @@ const CheckIn = ({ initial, activityLevel, accountsForTraining, onContinue }: Ch
                     <div className="flex flex-col gap-2 sm:gap-3">
                         <span className="text-xs font-semibold uppercase tracking-[0.25em] text-ink-strong/35">Gender</span>
                         <div className="relative flex w-fit rounded-full bg-black/[0.045] p-1">
-                            <motion.div
+                            <div
+                                ref={genderIndicatorRef}
                                 className="absolute inset-y-1 left-1 w-[84px] rounded-full bg-black"
-                                animate={{ x: gender === "male" ? 0 : 84 }}
-                                transition={{ type: "spring", stiffness: 320, damping: 28 }}
                             />
                             <button
                                 type="button"

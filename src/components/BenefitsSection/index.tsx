@@ -5,21 +5,14 @@ import { BenefitsStepsType } from "@/types/benefits"
 import { babes } from "@/app/fonts"
 import Image from "next/image"
 import Button from "@/components/Button"
-import { motion, useInView } from 'framer-motion'
-import { useRef } from "react"
+import Reveal from "@/components/animation/Reveal"
 
 const colStart = ["sm:col-start-1", "sm:col-start-2", "sm:col-start-3"]
 
 const BenefitsSection = () => {
-    const ref = useRef(null)
-    const isInView = useInView(ref, {once: true})
-
     return(
-        <motion.section
-            ref={ref}
-            initial={{y: 32, opacity: 0}}
-            animate={isInView ? {y: 0, opacity: 1} : {}}
-            transition={{duration: 0.6, ease: "easeOut"}}
+        <Reveal
+            as="section"
             className="px-5 lg:px-20 pt-14 pb-10 sm:py-10 border-t border-black/[0.06] sm:border-t-0 flex flex-col items-center"
         >
             <h2 className={`${babes.className} text-4xl sm:text-5xl leading-[0.95] text-ink text-center`}>How it works</h2>
@@ -87,7 +80,7 @@ const BenefitsSection = () => {
             >
                 Get My Personalized Plan
             </Button>
-        </motion.section>
+        </Reveal>
     )
 }
 

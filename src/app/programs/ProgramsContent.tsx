@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { babes } from "@/app/fonts"
-import { motion } from "framer-motion"
+import Reveal from "@/components/animation/Reveal"
 import { useProductsData } from "@/hooks/useProductsData"
 import { fromattedCurrancy } from "@/utils/currency"
 import { ArrowRight } from "@phosphor-icons/react"
@@ -16,17 +16,16 @@ const ProgramsContent = () => {
 
     return(
         <section className="px-5 sm:px-10 lg:px-20 py-16">
-            <motion.div
-                initial={{ y: -16, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+            <Reveal
+                y={-16}
+                duration={0.5}
                 className="mx-auto flex max-w-5xl flex-col items-start gap-4 text-left"
             >
                 <h1 className={`${babes.className} text-5xl sm:text-6xl leading-[0.95] text-ink-strong`}>All Programs</h1>
                 <p className="max-w-2xl text-sm sm:text-base text-ink-strong/70">
                     Structured, step-by-step plans built on real training and nutrition principles — pick the one that matches your goal.
                 </p>
-            </motion.div>
+            </Reveal>
 
             <div className="mx-auto mt-16 flex max-w-5xl flex-col divide-y divide-black/[0.06]">
                 {loading ? (

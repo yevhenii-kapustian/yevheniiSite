@@ -3,14 +3,9 @@
 import { babes } from "@/app/fonts";
 import Products from "../Products";
 import Link from "next/link";
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import { productVisibility } from "./animation";
+import Reveal from "@/components/animation/Reveal";
 
 const WellnessSection = () => {
-    const ref = useRef(null)
-    const isInView = useInView(ref, {once: true})
-
     return(
         <section className="relative overflow-hidden">
             <div className="py-10 px-5 lg:px-20 flex flex-col items-center gap-5 sm:flex-row sm:justify-evenly bg-white">
@@ -22,15 +17,11 @@ const WellnessSection = () => {
                     </p>
                     <Link className="size-fit font-semibold text-sm sm:text-base uppercase underline underline-offset-6" href="/get-started">Find Your Plan</Link>
                 </div>
-                <motion.div
-                    ref={ref}
+                <Reveal
                     className="w-full sm:w-[60%] lg:w-[75%] max-w-[1000px] flex items-center gap-3 sm:gap-8"
-                    variants={productVisibility}
-                    initial='hidden'
-                    animate={isInView ? "visible" : "hidden"}
                 >
                     <Products showArrows={true} showDescription={false} showBuy={false}/>
-                </motion.div>
+                </Reveal>
             </div>
         </section>
     )

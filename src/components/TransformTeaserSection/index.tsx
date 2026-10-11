@@ -2,7 +2,9 @@
 
 import { babes } from "@/app/fonts"
 import Button from "@/components/Button"
-import { motion, useInView, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import AnimatedNumber from "@/components/animation/AnimatedNumber"
+import Reveal from "@/components/animation/Reveal"
+import gsap from "gsap"
 import { useEffect, useRef, useState } from "react"
 
 const steps = [
@@ -13,39 +15,51 @@ const steps = [
 
 const CYCLE_MS = 2200
 
-const AnimatedNumber = ({ value }: { value: number }) => {
-    const motionValue = useMotionValue(value)
-    const spring = useSpring(motionValue, { stiffness: 90, damping: 20 })
-    const rounded = useTransform(spring, latest => Math.round(latest).toLocaleString("en-US"))
-
-    useEffect(() => {
-        motionValue.set(value)
-    }, [value, motionValue])
-
-    return <motion.span>{rounded}</motion.span>
-}
-
 const TransformTeaserSection = () => {
-    const ref = useRef(null)
-    const isInView = useInView(ref, { once: true })
+    const ref = useRef<HTMLElement | null>(null)
+    const progressRef = useRef<HTMLDivElement>(null)
+    const focusRef = useRef<HTMLSpanElement>(null)
     const [activeIndex, setActiveIndex] = useState(0)
+    const [hasEntered, setHasEntered] = useState(false)
 
     useEffect(() => {
-        if (!isInView) return
+        const node = ref.current
+        if (!node) return
+
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry?.isIntersecting) {
+                setHasEntered(true)
+                observer.disconnect()
+            }
+        }, { threshold: 0.25 })
+
+        observer.observe(node)
+        return () => observer.disconnect()
+    }, [])
+
+    useEffect(() => {
+        if (!hasEntered) return
         const interval = setInterval(() => {
             setActiveIndex(prev => (prev + 1) % steps.length)
         }, CYCLE_MS)
         return () => clearInterval(interval)
-    }, [isInView])
+    }, [hasEntered])
+
+    useEffect(() => {
+        gsap.to(progressRef.current, {
+            width: `${(activeIndex / (steps.length - 1)) * 100}%`,
+            duration: 0.5,
+            ease: "power2.inOut",
+        })
+        gsap.fromTo(focusRef.current, { autoAlpha: 0, y: 5 }, { autoAlpha: 1, y: 0, duration: 0.28, ease: "power2.out" })
+    }, [activeIndex])
 
     const active = steps[activeIndex]
 
     return (
-        <motion.section
+        <Reveal
+            as="section"
             ref={ref}
-            initial={{ y: 32, opacity: 0 }}
-            animate={isInView ? { y: 0, opacity: 1 } : {}}
-            transition={{ duration: 0.6, ease: "easeOut" }}
             className="overflow-hidden border-t border-black/[0.06]"
         >
             <div className="py-10 px-5 lg:px-20 flex flex-col items-center gap-5 sm:flex-row sm:justify-evenly bg-white">
@@ -69,22 +83,20 @@ const TransformTeaserSection = () => {
                     <div className="flex flex-col gap-6 rounded-[2rem] border border-black/[0.06] bg-surface-muted p-8">
                         <div className="relative flex items-center justify-between">
                             <div className="absolute left-0 right-0 top-[7px] h-px bg-black/[0.08]" />
-                            <motion.div
+                            <div
+                                ref={progressRef}
                                 className="absolute top-[7px] h-px bg-ink-strong"
-                                initial={false}
-                                animate={{ width: `${(activeIndex / (steps.length - 1)) * 100}%` }}
-                                transition={{ duration: 0.5, ease: "easeInOut" }}
                             />
                             {steps.map((step, index) => (
                                 <div key={step.label} className="relative flex flex-col items-center gap-2">
-                                    <motion.span
+                                    <span
                                         className="rounded-full bg-ink-strong"
-                                        animate={{
+                                        style={{
                                             height: index === activeIndex ? 16 : 10,
                                             width: index === activeIndex ? 16 : 10,
                                             opacity: index === activeIndex ? 1 : 0.25,
+                                            transition: "height 0.4s ease, width 0.4s ease, opacity 0.4s ease",
                                         }}
-                                        transition={{ duration: 0.4, ease: "easeOut" }}
                                     />
                                     <span className={`text-xs transition-colors duration-300 ${index === activeIndex ? "font-semibold text-ink-strong" : "text-ink-strong/40"}`}>
                                         {step.label}
@@ -100,20 +112,18 @@ const TransformTeaserSection = () => {
                                     <AnimatedNumber value={active.kcal} /> <span className="text-sm font-normal tracking-normal text-ink-strong/40">kcal / day</span>
                                 </p>
                             </div>
-                            <motion.span
+                            <span
+                                ref={focusRef}
                                 key={active.focus}
-                                initial={{ opacity: 0, y: 4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3 }}
                                 className="whitespace-nowrap rounded-full border border-black/10 px-3 py-1 text-xs font-medium text-ink-strong/60"
                             >
                                 {active.focus}
-                            </motion.span>
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
-        </motion.section>
+        </Reveal>
     )
 }
 

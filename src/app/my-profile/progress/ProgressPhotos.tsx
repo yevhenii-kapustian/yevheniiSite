@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
-import { AnimatePresence, motion } from "framer-motion"
+import gsap from "gsap"
 import { Camera, Trash, X } from "@phosphor-icons/react"
 import Card, { CardIcon } from "../Card"
 import Dropdown from "../Dropdown"
@@ -23,6 +23,8 @@ const FILTER_TABS = [{ value: "all", label: "All" }, ...LABEL_OPTIONS]
 const formatDate = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 
 const PhotoLightbox = ({ photo, onClose }: { photo: Photo | null, onClose: () => void }) => {
+    const lightboxRef = useRef<HTMLDivElement>(null)
+
     useEffect(() => {
         if (!photo) return
 
@@ -38,42 +40,48 @@ const PhotoLightbox = ({ photo, onClose }: { photo: Photo | null, onClose: () =>
         }
     }, [photo, onClose])
 
+    useEffect(() => {
+        if (!photo || !lightboxRef.current) return
+        const ctx = gsap.context(() => {
+            gsap.fromTo(lightboxRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2, ease: "power2.out" })
+            gsap.fromTo("[data-progress-photo]", { autoAlpha: 0, scale: 0.96 }, { autoAlpha: 1, scale: 1, duration: 0.32, ease: "power3.out" })
+        }, lightboxRef)
+
+        return () => ctx.revert()
+    }, [photo])
+
     if (typeof document === "undefined") return null
 
     return createPortal(
-        <AnimatePresence>
-            {photo && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 sm:p-8"
+        photo ? (
+            <div
+                ref={lightboxRef}
+                className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 opacity-0 sm:p-8"
+                onClick={onClose}
+            >
+                <button
+                    type="button"
                     onClick={onClose}
+                    aria-label="Close"
+                    className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
                 >
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label="Close"
-                        className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
-                    >
-                        <X size={18} weight="bold"/>
-                    </button>
-                    {photo.url && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={photo.url}
-                            alt={`${photo.label} photo from ${photo.takenAt}`}
-                            className="max-h-full max-w-full rounded-lg object-contain"
-                            onClick={e => e.stopPropagation()}
-                        />
-                    )}
-                    <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white">
-                        {LABEL_DISPLAY[photo.label] ?? photo.label} · {formatDate(photo.takenAt)}
-                    </span>
-                </motion.div>
-            )}
-        </AnimatePresence>,
+                    <X size={18} weight="bold"/>
+                </button>
+                {photo.url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        data-progress-photo
+                        src={photo.url}
+                        alt={`${photo.label} photo from ${photo.takenAt}`}
+                        className="max-h-full max-w-full rounded-lg object-contain opacity-0"
+                        onClick={e => e.stopPropagation()}
+                    />
+                )}
+                <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white">
+                    {LABEL_DISPLAY[photo.label] ?? photo.label} · {formatDate(photo.takenAt)}
+                </span>
+            </div>
+        ) : null,
         document.body
     )
 }

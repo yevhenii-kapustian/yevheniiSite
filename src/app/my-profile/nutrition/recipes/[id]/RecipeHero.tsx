@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { AnimatePresence, motion } from "framer-motion"
+import gsap from "gsap"
 import { ArrowsOut, Fire, X } from "@phosphor-icons/react"
 
 type RecipeHeroProps = {
@@ -17,6 +17,7 @@ type RecipeHeroProps = {
 
 const RecipeHero = ({ title, imageUrl, calories, proteinG, fatG, carbsG, servings }: RecipeHeroProps) => {
     const [fullscreen, setFullscreen] = useState(false)
+    const fullscreenRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         if (!fullscreen) return
@@ -31,6 +32,16 @@ const RecipeHero = ({ title, imageUrl, calories, proteinG, fatG, carbsG, serving
             document.removeEventListener("keydown", handleKey)
             document.body.style.overflow = ""
         }
+    }, [fullscreen])
+
+    useEffect(() => {
+        if (!fullscreen || !fullscreenRef.current) return
+        const ctx = gsap.context(() => {
+            gsap.fromTo(fullscreenRef.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2, ease: "power2.out" })
+            gsap.fromTo("[data-fullscreen-image]", { autoAlpha: 0, scale: 0.96 }, { autoAlpha: 1, scale: 1, duration: 0.32, ease: "power3.out" })
+        }, fullscreenRef)
+
+        return () => ctx.revert()
     }, [fullscreen])
 
     return (
@@ -66,34 +77,30 @@ const RecipeHero = ({ title, imageUrl, calories, proteinG, fatG, carbsG, serving
             </div>
 
             {imageUrl && typeof document !== "undefined" && createPortal(
-                <AnimatePresence>
-                    {fullscreen && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 sm:p-8"
+                fullscreen ? (
+                    <div
+                        ref={fullscreenRef}
+                        className="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 p-4 opacity-0 sm:p-8"
+                        onClick={() => setFullscreen(false)}
+                    >
+                        <button
+                            type="button"
                             onClick={() => setFullscreen(false)}
+                            aria-label="Close"
+                            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
                         >
-                            <button
-                                type="button"
-                                onClick={() => setFullscreen(false)}
-                                aria-label="Close"
-                                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
-                            >
-                                <X size={18} weight="bold"/>
-                            </button>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src={imageUrl}
-                                alt={title}
-                                className="max-h-full max-w-full rounded-lg object-contain"
-                                onClick={e => e.stopPropagation()}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>,
+                            <X size={18} weight="bold"/>
+                        </button>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            data-fullscreen-image
+                            src={imageUrl}
+                            alt={title}
+                            className="max-h-full max-w-full rounded-lg object-contain opacity-0"
+                            onClick={e => e.stopPropagation()}
+                        />
+                    </div>
+                ) : null,
                 document.body
             )}
         </div>

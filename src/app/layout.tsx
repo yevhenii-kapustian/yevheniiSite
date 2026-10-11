@@ -7,6 +7,7 @@ import { ProductsProvider } from "@/context/ProductsContext";
 import CookieConsentBanner from "@/components/Cookie";
 import { siteMetadata } from "@/config/siteMetadata";
 import OrganizationSchema from "@/components/scripts/OrganizationSchema";
+import PageTransition from "@/components/PageTransition";
 
 
 const openSans = Open_Sans({
@@ -28,7 +29,9 @@ export default function RootLayout({
         <Header />
         <main className="flex-grow">
           <ProductsProvider>
-            {children}
+            <PageTransition>
+              {children}
+            </PageTransition>
             <CookieConsentBanner />
           </ProductsProvider>
         </main>

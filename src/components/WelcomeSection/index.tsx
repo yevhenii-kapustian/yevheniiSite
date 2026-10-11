@@ -1,11 +1,11 @@
 'use client'
 
 import Image from "next/image"
-import { motion } from 'framer-motion'
+import { useLayoutEffect, useRef } from "react"
+import gsap from "gsap"
 import { babes } from "@/app/fonts"
 import Button from "@/components/Button"
 import { ArrowRight } from "@phosphor-icons/react"
-import { titleVariant, descriptionVariant, buttonsVariant } from "./animation"
 import type { ReactNode } from "react"
 
 type WelcomeSectionProps = {
@@ -14,6 +14,26 @@ type WelcomeSectionProps = {
 }
 
 const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
+    const contentRef = useRef<HTMLDivElement>(null)
+
+    useLayoutEffect(() => {
+        const node = contentRef.current
+        if (!node) return
+
+        const ctx = gsap.context(() => {
+            gsap.from("[data-hero-reveal]", {
+                autoAlpha: 0,
+                y: 12,
+                duration: 0.55,
+                stagger: 0.12,
+                ease: "power3.out",
+                clearProps: "transform,opacity,visibility",
+            })
+        }, node)
+
+        return () => ctx.revert()
+    }, [])
+
     return(
         <section id="hero" className="relative w-full flex flex-col min-h-[560px] sm:min-h-0">
             <div className="relative flex-1 py-10 sm:py-40">
@@ -28,34 +48,25 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                     <span className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,1)_10%,rgba(99,0,8,0)_70%)]"/>
                 </div>
 
-                <div className="relative w-full h-full max-w-full px-5 pt-10 flex flex-col justify-center items-start gap-5 sm:left-[10vw] sm:max-w-[60%] sm:px-0 sm:pt-0 sm:gap-6 lg:max-w-[50%]">
-                    <span className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70 backdrop-blur-sm">
+                <div ref={contentRef} className="relative w-full h-full max-w-full px-5 pt-10 flex flex-col justify-center items-start gap-5 sm:left-[10vw] sm:max-w-[60%] sm:px-0 sm:pt-0 sm:gap-6 lg:max-w-[50%]">
+                    <span data-hero-reveal className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70 backdrop-blur-sm">
                         <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
                         Online Coaching
                     </span>
-                    <motion.h1
-                        initial="hidden"
-                        animate="visible"
-                        transition={{ duration: 0.5 }}
-                        variants={titleVariant}
+                    <h1
+                        data-hero-reveal
                         className={`${babes.className} text-5xl sm:text-6xl lg:text-7xl leading-[0.95] text-white text-shadow-[0px_0px_12px_#00000070]`}
                     >
                         {title}
-                    </motion.h1>
-                    <motion.h2
-                        variants={descriptionVariant}
-                        initial="hidden"
-                        animate="visible"
-                        transition={{ delay: 0.3, duration: 0.5 }}
+                    </h1>
+                    <h2
+                        data-hero-reveal
                         className="w-full lg:w-[70%] text-xs sm:text-sm lg:text-base font-light leading-relaxed text-white/85 text-shadow-[0px_0px_12px_#00000070]"
                     >
                         {description}
-                    </motion.h2>
-                    <motion.div
-                        variants={buttonsVariant}
-                        initial="hidden"
-                        animate="visible"
-                        transition={{ delay: 0.6, duration: 0.5 }}
+                    </h2>
+                    <div
+                        data-hero-reveal
                         className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto"
                     >
                         <Button
@@ -70,7 +81,7 @@ const WelcomeSection = ({title, description}:WelcomeSectionProps) => {
                         <Button href="/get-started" variant="solid-light" size="sm" className="h-12 w-full sm:w-auto">
                             Get Started
                         </Button>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
         </section>

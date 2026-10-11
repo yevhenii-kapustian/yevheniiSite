@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { AnimatePresence, motion } from "framer-motion"
+import gsap from "gsap"
 import { ArrowsClockwise, CaretLeft, CaretRight, Check, Confetti, Info, Smiley, SmileyMeh, SmileySad, Trash } from "@phosphor-icons/react"
 import Modal from "../Modal"
 import Card from "../Card"
@@ -38,6 +38,27 @@ type WorkoutTrackerProps = {
     hasPlanForWeek: boolean
     isPreviewWeek: boolean
     isDeloadWeek: boolean
+}
+
+const RevealOnMount = ({ children, className, y = 0, scale = 1 }: { children: ReactNode, className?: string, y?: number, scale?: number }) => {
+    const ref = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        gsap.fromTo(ref.current, {
+            autoAlpha: 0,
+            y,
+            scale,
+            height: y ? undefined : "auto",
+        }, {
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.24,
+            ease: "power3.out",
+        })
+    }, [scale, y])
+
+    return <div ref={ref} className={className}>{children}</div>
 }
 
 // Mirrors isIsolationExercise in planGenerator.ts — kept as a small local check rather
@@ -316,31 +337,18 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                         </Card>
                     ) : (
                         <>
-                        <AnimatePresence>
-                            {workoutComplete && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    className="card-shadow flex items-center gap-3 rounded-[28px] bg-black p-5 text-white"
-                                >
+                        {workoutComplete && (
+                            <RevealOnMount scale={0.95} className="card-shadow flex items-center gap-3 rounded-[28px] bg-black p-5 text-white">
                                     <Confetti size={24} weight="fill"/>
                                     <div>
                                         <p className="font-semibold">Workout complete!</p>
                                         <p className="text-sm text-white/70">Every set logged — nice work.</p>
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                            </RevealOnMount>
+                        )}
 
-                        <AnimatePresence>
-                            {restSecondsLeft !== null && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -6 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -6 }}
-                                    className="card-shadow flex items-center justify-between gap-3 rounded-2xl bg-black/[0.045] px-4 py-2.5"
-                                >
+                        {restSecondsLeft !== null && (
+                            <RevealOnMount y={-6} className="card-shadow flex items-center justify-between gap-3 rounded-2xl bg-black/[0.045] px-4 py-2.5">
                                     <span className="text-sm font-medium text-ink-strong">Rest — {restSecondsLeft}s</span>
                                     <button
                                         type="button"
@@ -349,9 +357,8 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                     >
                                         Skip
                                     </button>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                            </RevealOnMount>
+                        )}
 
                         {logError && <p className="text-sm text-red-500">{logError}</p>}
 
@@ -475,31 +482,23 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                                             )}
 
                                                             {isToday && !isDone && (
-                                                                <motion.button
+                                                                <button
                                                                     type="button"
-                                                                    whileTap={{ scale: 0.85 }}
                                                                     onClick={() => updateInput(exerciseIndex, setIndex, { revealDifficulty: !input?.revealDifficulty })}
                                                                     aria-label="Log this set"
                                                                     disabled={saving === key}
-                                                                    className={`ml-auto flex h-7 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-semibold transition-colors duration-200 ${
+                                                                    className={`ml-auto flex h-7 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-semibold transition-all duration-200 active:scale-[0.85] ${
                                                                         input?.revealDifficulty ? "bg-black text-white" : "bg-black/[0.045] text-ink-strong/55 hover:bg-black/[0.08] hover:text-ink-strong"
                                                                     }`}
                                                                 >
                                                                     {input?.revealDifficulty && <Check size={12} weight="bold"/>}
                                                                     Log
-                                                                </motion.button>
+                                                                </button>
                                                             )}
                                                         </div>
 
-                                                        <AnimatePresence>
-                                                            {isToday && !isDone && input?.revealDifficulty && (
-                                                                <motion.div
-                                                                    initial={{ opacity: 0, height: 0 }}
-                                                                    animate={{ opacity: 1, height: "auto" }}
-                                                                    exit={{ opacity: 0, height: 0 }}
-                                                                    transition={{ duration: 0.2 }}
-                                                                    className="overflow-hidden"
-                                                                >
+                                                        {isToday && !isDone && input?.revealDifficulty && (
+                                                            <RevealOnMount y={-4} className="overflow-hidden">
                                                                     <div onClick={e => e.stopPropagation()} className="ml-9 mt-2 flex flex-wrap gap-1.5">
                                                                         {DIFFICULTY_OPTIONS.map(option => {
                                                                             const Icon = option.icon
@@ -517,9 +516,8 @@ const WorkoutTracker = ({ days, todayLogs, todayDayOfWeek, initialDayOfWeek, wee
                                                                             )
                                                                         })}
                                                                     </div>
-                                                                </motion.div>
-                                                            )}
-                                                        </AnimatePresence>
+                                                            </RevealOnMount>
+                                                        )}
                                                     </div>
                                                 )
                                             })}

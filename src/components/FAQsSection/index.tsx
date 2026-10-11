@@ -1,10 +1,35 @@
 'use client'
 
 import { babes } from "@/app/fonts"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import gsap from "gsap"
 import { CaretDown } from "@phosphor-icons/react";
 import { faqs } from "@/data/faqs";
-import {motion, AnimatePresence, useInView} from "framer-motion"
+import Reveal from "@/components/animation/Reveal"
+
+const FAQAnswer = ({ open, answer }: { open: boolean, answer: string }) => {
+    const ref = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const node = ref.current
+        if (!node) return
+
+        gsap.to(node, {
+            height: open ? "auto" : 0,
+            autoAlpha: open ? 1 : 0,
+            duration: 0.28,
+            ease: "power2.inOut",
+        })
+    }, [open])
+
+    return (
+        <div ref={ref} className="h-0 overflow-hidden opacity-0">
+            <p className="px-5 pb-4 text-sm sm:text-base text-ink-strong/70">
+                {answer}
+            </p>
+        </div>
+    )
+}
 
 const FAQs = () => {
     const [isIndexActive, setIsIndexActive] = useState<number | null>(null)
@@ -13,16 +38,10 @@ const FAQs = () => {
        setIsIndexActive((prevIndex) => (prevIndex === index ? null : index))
     }
 
-    const ref = useRef(null)
-    const isInView = useInView(ref, {once: true})
-
     return(
-        <motion.section
-                        ref={ref}
-                        initial={{y: 32, opacity: 0}}
-                        animate={isInView ? {y: 0, opacity: 1} : {}}
-                        transition={{duration: 0.6, ease: "easeOut"}}
-                        className="px-5 sm:px-10 lg:px-20 py-16 flex flex-col items-center"
+        <Reveal
+            as="section"
+            className="px-5 sm:px-10 lg:px-20 py-16 flex flex-col items-center"
         >
             <div className="flex flex-col items-center gap-3 text-center">
                 <h2 className={`${babes.className} text-4xl sm:text-5xl leading-[0.95] text-ink-strong`}>Frequently Asked Questions</h2>
@@ -49,22 +68,11 @@ const FAQs = () => {
                                 />
                             </span>
                         </button>
-                        <AnimatePresence initial={false}>
-                                {isOpen && <motion.div initial={{ opacity: 0, height: 0 }}
-                                                                    animate={{ opacity: 1, height: "auto" }}
-                                                                    exit={{ opacity: 0, height: 0 }}
-                                                                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                                                    >
-                                                        <p className="px-5 pb-4 text-sm sm:text-base text-ink-strong/70">
-                                                            {item.answer}
-                                                        </p>
-                                                    </motion.div>
-                                }
-                        </AnimatePresence>
+                        <FAQAnswer open={isOpen} answer={item.answer}/>
                     </div>
                 )})}
             </div>
-        </motion.section>
+        </Reveal>
     )
 }
 

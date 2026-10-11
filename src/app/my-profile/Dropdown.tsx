@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { AnimatePresence, motion } from "framer-motion"
+import gsap from "gsap"
 import { CaretDown, Check } from "@phosphor-icons/react"
 
 type DropdownOption = { value: number | string, label: string }
@@ -18,6 +18,7 @@ const Dropdown = ({ value, onChange, options }: DropdownProps) => {
     const [rect, setRect] = useState<{ top: number, left: number, width: number } | null>(null)
     const rootRef = useRef<HTMLDivElement>(null)
     const triggerRef = useRef<HTMLButtonElement>(null)
+    const menuRef = useRef<HTMLDivElement>(null)
     const selected = options.find(option => option.value === value)
 
     useEffect(() => {
@@ -49,6 +50,21 @@ const Dropdown = ({ value, onChange, options }: DropdownProps) => {
         }
     }, [open])
 
+    useEffect(() => {
+        if (!open || !rect || !menuRef.current) return
+        gsap.fromTo(menuRef.current, {
+            autoAlpha: 0,
+            y: -6,
+            scale: 0.98,
+        }, {
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.16,
+            ease: "power2.out",
+        })
+    }, [open, rect])
+
     return (
         <div ref={rootRef} className="relative">
             <button
@@ -62,38 +78,33 @@ const Dropdown = ({ value, onChange, options }: DropdownProps) => {
             </button>
 
             {typeof document !== "undefined" && createPortal(
-                <AnimatePresence>
-                    {open && rect && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                            transition={{ duration: 0.15 }}
-                            style={{ top: rect.top, left: rect.left, width: rect.width }}
-                            className="card-shadow fixed z-[110] max-h-60 overflow-y-auto rounded-2xl border border-black/[0.05] bg-white p-1.5"
-                        >
-                            {options.map(option => {
-                                const isSelected = option.value === value
-                                return (
-                                    <button
-                                        key={option.value}
-                                        type="button"
-                                        onClick={() => {
-                                            onChange(option.value)
-                                            setOpen(false)
-                                        }}
-                                        className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors duration-200 ${
-                                            isSelected ? "bg-black text-white" : "text-ink-strong hover:bg-black/[0.045]"
-                                        }`}
-                                    >
-                                        <span className="truncate">{option.label}</span>
-                                        {isSelected && <Check size={13} weight="bold" className="shrink-0"/>}
-                                    </button>
-                                )
-                            })}
-                        </motion.div>
-                    )}
-                </AnimatePresence>,
+                open && rect ? (
+                    <div
+                        ref={menuRef}
+                        style={{ top: rect.top, left: rect.left, width: rect.width }}
+                        className="card-shadow fixed z-[110] max-h-60 overflow-y-auto rounded-2xl border border-black/[0.05] bg-white p-1.5 opacity-0"
+                    >
+                        {options.map(option => {
+                            const isSelected = option.value === value
+                            return (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => {
+                                        onChange(option.value)
+                                        setOpen(false)
+                                    }}
+                                    className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors duration-200 ${
+                                        isSelected ? "bg-black text-white" : "text-ink-strong hover:bg-black/[0.045]"
+                                    }`}
+                                >
+                                    <span className="truncate">{option.label}</span>
+                                    {isSelected && <Check size={13} weight="bold" className="shrink-0"/>}
+                                </button>
+                            )
+                        })}
+                    </div>
+                ) : null,
                 document.body
             )}
         </div>

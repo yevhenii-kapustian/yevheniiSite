@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react"
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import dynamic from "next/dynamic"
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
+import gsap from "gsap"
 import Button from "@/components/Button"
 import { getBodyGoalResult, type Gender } from "@/utils/bodyGoal"
 import BodyAvatarErrorBoundary from "@/components/BodyAvatar/ErrorBoundary"
 import type { QuizAnswers } from "@/types/form"
+import AnimatedNumber from "@/components/animation/AnimatedNumber"
 
 const BodyAvatar = dynamic(() => import("@/components/BodyAvatar"), { ssr: false })
 
@@ -28,18 +29,6 @@ const statFields = [
     { key: "weight", label: "Weight, kg", min: 30, max: 300 },
 ] as const
 
-const AnimatedNumber = ({ value }: { value: number }) => {
-    const motionValue = useMotionValue(value)
-    const spring = useSpring(motionValue, { stiffness: 90, damping: 20 })
-    const rounded = useTransform(spring, latest => Math.round(latest).toLocaleString("en-US"))
-
-    useEffect(() => {
-        motionValue.set(value)
-    }, [value, motionValue])
-
-    return <motion.span>{rounded}</motion.span>
-}
-
 type BodyStatsStepProps = {
     onNext: (values: QuizAnswers) => void
 }
@@ -51,6 +40,8 @@ const BodyStatsStep = ({ onNext }: BodyStatsStepProps) => {
     const [age, setAge] = useState(28)
     const [physiqueStep, setPhysiqueStep] = useState(1)
     const sliderValue = physiqueStep * 50
+    const genderIndicatorRef = useRef<HTMLDivElement>(null)
+    const bodyLabelRef = useRef<HTMLDivElement>(null)
 
     const result = useMemo(
         () => getBodyGoalResult({ gender, heightCm: height, weightKg: weight, age }, sliderValue),
@@ -85,6 +76,24 @@ const BodyStatsStep = ({ onNext }: BodyStatsStepProps) => {
         })
     }
 
+    useEffect(() => {
+        gsap.to(genderIndicatorRef.current, {
+            x: gender === "male" ? 0 : 84,
+            duration: 0.34,
+            ease: "power3.out",
+        })
+    }, [gender])
+
+    useEffect(() => {
+        gsap.to(bodyLabelRef.current, {
+            y: -4,
+            yoyo: true,
+            repeat: -1,
+            duration: 1.5,
+            ease: "sine.inOut",
+        })
+    }, [])
+
     return (
         <div className="transform-page relative">
             <div className="relative mx-auto grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-12">
@@ -98,23 +107,21 @@ const BodyStatsStep = ({ onNext }: BodyStatsStepProps) => {
                             <BodyAvatar sliderValue={sliderValue} gender={gender} />
                         </BodyAvatarErrorBoundary>
                     </div>
-                    <motion.div
-                        animate={{ y: [0, -4, 0] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    <div
+                        ref={bodyLabelRef}
                         className="absolute left-1/2 top-0 -translate-x-1/2 text-xs font-medium uppercase tracking-[0.3em] text-white/35"
                     >
                         {bodyTypeLabel(physiqueStep)}
-                    </motion.div>
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col gap-3">
                         <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/35">Gender</span>
                         <div className="relative flex w-fit rounded-full border border-white/15 p-1">
-                            <motion.div
+                            <div
+                                ref={genderIndicatorRef}
                                 className="absolute inset-y-1 left-1 w-[84px] rounded-full bg-white"
-                                animate={{ x: gender === "male" ? 0 : 84 }}
-                                transition={{ type: "spring", stiffness: 320, damping: 28 }}
                             />
                             <button
                                 type="button"
@@ -183,11 +190,11 @@ const BodyStatsStep = ({ onNext }: BodyStatsStepProps) => {
                         <p className="text-sm text-white/55">
                             A program built around {result.programDescription}.
                         </p>
-                        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="mt-3 w-full sm:w-fit">
+                        <div className="mt-3 w-full transition-transform duration-200 hover:scale-[1.03] active:scale-[0.97] sm:w-fit">
                             <Button variant="solid-light" size="sm" className="w-full sm:w-auto" onClick={handleContinue} disabled={!allStatsValid}>
                                 Continue
                             </Button>
-                        </motion.div>
+                        </div>
                         {!allStatsValid && (
                             <p className="text-xs text-red-400">
                                 Age {statFields[0].min}-{statFields[0].max}, height {statFields[1].min}-{statFields[1].max}cm, weight {statFields[2].min}-{statFields[2].max}kg.
