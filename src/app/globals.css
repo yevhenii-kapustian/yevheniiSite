@@ -45,6 +45,11 @@ body {
   overflow-x: hidden;
 }
 
+body.home2-clean-page > footer,
+body.home2-clean-page main .fixed.z-40 {
+  display: none;
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none; 

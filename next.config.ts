@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   // The whole /my-profile area is dynamically rendered (reads cookies/DB every request),
   // but Next's client Router Cache still holds dynamic pages for 30s by default — so
   // saving settings/logging a meal/etc. and then navigating to another page via a normal
